@@ -45,15 +45,6 @@ matrix:
     os: linux
     script: .ci/lint.sh
 
-  # We do the exact same checks on the beta channel, as both
-  # rustfmt and clippy can change their behavior between releases
-  # and introduce new diffs/lints compared to stable
-  - name: "beta lint"
-    stage: test
-    rust: beta
-    os: linux
-    script: .ci/lint.sh
-
   #  _______        _   
   # |__   __|      | |  
   #    | | ___  ___| |_ 
@@ -71,20 +62,6 @@ matrix:
     rust: stable
     os: linux
     script: .ci/test.sh
-
-  - name: "beta test linux"
-    stage: test
-    rust: beta
-    os: linux
-    script: .ci/test.sh
-
-  - name: "nightly test linux"
-    stage: test
-    rust: nightly
-    script: .ci/test.sh
-    env:
-    # We set this environment variable to indicate it is ok if this job fails
-    - NIGHTLY=1
 
   - name: "stable test osx"
     rust: stable
@@ -118,62 +95,7 @@ matrix:
     deploy:
       provider: cargo
       token:
-        secure: <SEKRET>
+        secure: kFHR6U9EHSCFNOcJDcTMLIA73MqE+CND5QrzVI42F6p2GrJezd+7pnxacER657Fy53ojhgZTobpxR3JspXZzcb7WRQhvHN1Z+/ocggSUXF8ChOFcevQ6YD8ezfw4tdJXFBc/2I6yEiPxuMjYpJ9KrEF9QBCt+n53a2K713JBQ2TNe/+RW4NRutlMlXgFOBI9nEnSPpyGjTgIf5hLFhzJuVoz53b/F00C1pTwCwIzfjosmocN+Rm7YHVrn8t+evdHC9NIYWedx3Ealb6VPtX9XVOEGXPv7HI1l9MHTlp5mSplSnTQfFercmGy+GAzVoxxfp3Yr2xJIBIfmJi2nLURI+g+4VIPwtLd4yH1scad6EbXpfHKxOSxlI60qfmvdaejmkY6YRE06meNfYWxHzQNTFSEifUIlJLK1xLmMfZKmFfHAWeyYRzwQHKpY6/GhVmTJsuL0j2yamQdvX68rgzV2oqfulwlHfCRTKGIWA2Yh7FQqJ5DifcSsEupKAbw98XbTXP1YhcFKsbSljLkonZ5osxtSR+XSfbOtD282pMO8JeD827dYjKEP3SSAVacamwsTl1ivJYBzAvDfXsT1NcTZDh0laPETKstQxSqO9DU2kOgBOuvoKxxWs4HmEp4fsjQeyZHeT9uqA/ZcH0x+iZ7t1dutPDih6Xh5TFxLArW50M=
       on:
-        repo: EmbarkStudios/$REPO_NAME
+        repo: EmbarkStudios/spdx
         tags: true
-
-  # Keep these step if you want to publish tarballed releases to Github.
-  # Generally, this will only make sense for binary crates, so normally
-  # you will want to remove them. If you do, you can also remove the
-  # .ci/prep_deploy and .ci/checksum.ps1
-
-  - name: "publish x86_64-unknown-linux-musl"
-    stage: deploy
-    rust: stable
-    os: linux
-    env:
-    - DEPLOY=1
-    - TARGET=x86_64-unknown-linux-musl
-    script:
-    - .ci/install_musl.sh
-    - .ci/prep_deploy.sh
-
-  - name: "publish x86_64-pc-windows-msvc"
-    stage: deploy
-    os: windows
-    env:
-    - DEPLOY=1
-    - TARGET=x86_64-pc-windows-msvc
-    # Override Travis' rust version, we don't want the gnu default
-    # caused Travis running in bash, the normal Travis Rust install
-    # process will pick up this environment variable
-    - TRAVIS_RUST_VERSION=stable-x86_64-pc-windows-msvc
-    script:
-    - .ci/prep_deploy.sh
-
-  - name: "publish x86_64-apple-darwin"
-    stage: deploy
-    rust: stable
-    os: osx
-    env:
-    - DEPLOY=1
-    - TARGET=x86_64-apple-darwin
-    script:
-    - .ci/prep_deploy.sh
-
-# Just as with the crates.io publish step, you will need
-# to encrypt your API key with `travis encrypt <github_token>` and
-# place it in the deploy.api_key.secure value
-deploy:
-- provider: releases
-  api_key:
-    secure: <SEKRET>
-  file:
-  - $REPO_NAME-$TRAVIS_TAG-$TARGET.tar.gz
-  - $REPO_NAME-$TRAVIS_TAG-$TARGET.tar.gz.sha256
-  skip_cleanup: true
-  on:
-    condition: $DEPLOY = 1
-    repo: EmbarkStudios/$REPO_NAME
-    tags: true

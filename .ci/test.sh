@@ -7,9 +7,7 @@ TARGET=""
 if [ "$(uname)" == "Darwin" ]; then
     TARGET="apple-darwin"
 elif [ "${HOST_OS_NAME::5}" == "Linux" ]; then
-    # If we're on linux, always build for musl
-    TARGET="unknown-linux-musl"
-    .ci/install_musl.sh
+    TARGET="unknown-linux-gnu"
 elif [ "${HOST_OS_NAME::10}" == "MINGW64_NT" ]; then
     TARGET="pc-windows-msvc"
 elif [ "${HOST_OS_NAME::7}" == "MSYS_NT" ]; then # travis uses msys

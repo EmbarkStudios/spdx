@@ -29,6 +29,10 @@ fn get<'a>(m: &'a Map, k: &str) -> Result<&'a Value> {
     m.get(k).ok_or_else(|| failure::format_err!("Malformed JSON: {:?} lacks {}", m, k))
 }
 
+const IS_FSF_LIBRE: u8 = 0x1;
+const IS_OSI_APPROVED: u8 = 0x2;
+const IS_DEPRECATED: u8 = 0x4;
+
 fn real_main() -> Result<()> {
     let mut upstream_tag = None;
     let mut debug = false;
@@ -81,7 +85,7 @@ fn real_main() -> Result<()> {
 
     download(&licenses_json_uri, |json| {
         let licenses = get(&json, "licenses")?;
-        let licenses = if let &Value::Array(ref v) = licenses {
+        let licenses = if let Value::Array(ref v) = licenses {
             v
         } else {
             bail!("Malformed JSON: {:?}", licenses)
@@ -100,24 +104,44 @@ fn real_main() -> Result<()> {
             }
 
             let lic_id = get(&lic, "licenseId")?;
-            if let &Value::String(ref s) = lic_id {
-                v.push(s);
+            if let Value::String(ref s) = lic_id {
+                let mut flags = 0;
+
+                if let Ok(Value::Bool(val)) = get(&lic, "isDeprecatedLicenseId") {
+                    if *val {
+                        flags |= IS_DEPRECATED;
+                    }
+                }
+
+                if let Ok(Value::Bool(val)) = get(&lic, "isOsiApproved") {
+                    if *val {
+                        flags |= IS_OSI_APPROVED;
+                    }
+                }
+
+                if let Ok(Value::Bool(val)) = get(&lic, "isFsfLibre") {
+                    if *val {
+                        flags |= IS_FSF_LIBRE;
+                    }
+                }
+
+                v.push((s, flags));
             } else {
                 bail!("Malformed JSON: {:?}", lic_id);
             }
         }
-        v.sort();
+        v.sort_by_key(|v| v.0);
 
         let lic_list_ver = get(&json, "licenseListVersion")?;
-        if let &Value::String(ref s) = lic_list_ver {
+        if let Value::String(ref s) = lic_list_ver {
             writeln!(stdout, "pub const VERSION: &str = {:?};", s)?;
         } else {
             bail!("Malformed JSON: {:?}", lic_list_ver)
         }
         writeln!(stdout)?;
-        writeln!(stdout, "pub const LICENSES: &[&str] = &[")?;
-        for lic in v.iter() {
-            writeln!(stdout, "    \"{}\",", lic)?;
+        writeln!(stdout, "pub const LICENSES: &[(&str, u8)] = &[")?;
+        for (lic, flags) in v.iter() {
+            writeln!(stdout, "    (\"{}\", {}),", lic, flags)?;
         }
         writeln!(stdout, "];")?;
 
@@ -131,7 +155,7 @@ fn real_main() -> Result<()> {
                 upstream_tag);
     download(&exceptions_json_uri, |json| {
         let exceptions = get(&json, "exceptions")?;
-        let exceptions = if let &Value::Array(ref v) = exceptions {
+        let exceptions = if let Value::Array(ref v) = exceptions {
             v
         } else {
             bail!("Malformed JSON: {:?}", exceptions)
@@ -150,17 +174,22 @@ fn real_main() -> Result<()> {
             }
 
             let lic_exc_id = get(&exc, "licenseExceptionId")?;
-            if let &Value::String(ref s) = lic_exc_id {
-                v.push(s);
+            if let Value::String(ref s) = lic_exc_id {
+                let flags = match get(&exc, "isDeprecatedLicenseId") {
+                    Ok(Value::Bool(val)) => if *val { IS_DEPRECATED } else { 0 },
+                    _ => 0
+                };
+
+                v.push((s, flags));
             } else {
                 bail!("Malformed JSON: {:?}", lic_exc_id)
             };
         }
 
-        writeln!(stdout, "pub const EXCEPTIONS: &[&str] = &[")?;
-        v.sort();
-        for exc in v.iter() {
-            writeln!(stdout, "    \"{}\",", exc)?;
+        writeln!(stdout, "pub const EXCEPTIONS: &[(&str, u8)] = &[")?;
+        v.sort_by_key(|v| v.0);
+        for (exc, flags) in v.iter() {
+            writeln!(stdout, "    (\"{}\", {}),", exc, flags)?;
         }
         writeln!(stdout, "];")?;
 

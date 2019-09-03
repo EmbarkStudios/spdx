@@ -1,3 +1,4 @@
 /target
+update/target
 **/*.rs.bk
 Cargo.lock

@@ -54,7 +54,7 @@ impl<'a> Error for ParseError<'a> {
 }
 
 /// Iterates through the license and exception identifiers in an SPDX expression
-pub fn iter_expr(license_expr: &str) -> impl Iterator<Item = Result<LicenseExpr<'_>, ParseError>> {
+pub fn iter_expr(license_expr: &str) -> impl Iterator<Item = Result<LicenseExpr, ParseError>> {
     license_expr.split_whitespace().map(|word| match word {
         "AND" => Ok(And),
         "OR" => Ok(Or),
@@ -159,4 +159,110 @@ pub fn exception_id(name: &str) -> Option<ExceptionId> {
 #[inline]
 pub fn license_version() -> &'static str {
     identifiers::VERSION
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn parses_single() {
+        let s = "0BSD";
+
+        assert_eq!(
+            iter_expr(s).map(|e| e.unwrap()).collect::<Vec<_>>(),
+            vec![LicenseExpr::License(license_id(s).unwrap())]
+        );
+    }
+
+    #[test]
+    fn parses_or() {
+        let s = "Apache-2.0 OR MIT";
+
+        assert_eq!(
+            iter_expr(s).map(|e| e.unwrap()).collect::<Vec<_>>(),
+            vec![
+                LicenseExpr::License(license_id("Apache-2.0").unwrap()),
+                LicenseExpr::Or,
+                LicenseExpr::License(license_id("MIT").unwrap()),
+            ]
+        );
+    }
+
+    #[test]
+    fn parses_exception() {
+        let s = "Apache-2.0 WITH LLVM-exception";
+
+        assert_eq!(
+            iter_expr(s).map(|e| e.unwrap()).collect::<Vec<_>>(),
+            vec![
+                LicenseExpr::License(license_id("Apache-2.0").unwrap()),
+                LicenseExpr::With,
+                LicenseExpr::Exception(exception_id("LLVM-exception").unwrap()),
+            ]
+        );
+    }
+
+    #[test]
+    fn parses_exceptions_with_ors() {
+        let s = "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT";
+
+        assert_eq!(
+            iter_expr(s).map(|e| e.unwrap()).collect::<Vec<_>>(),
+            vec![
+                LicenseExpr::License(license_id("Apache-2.0").unwrap()),
+                LicenseExpr::With,
+                LicenseExpr::Exception(exception_id("LLVM-exception").unwrap()),
+                LicenseExpr::Or,
+                LicenseExpr::License(license_id("Apache-2.0").unwrap()),
+                LicenseExpr::Or,
+                LicenseExpr::License(license_id("MIT").unwrap()),
+            ]
+        );
+    }
+
+    #[test]
+    fn parses_and() {
+        let s = "BSD-3-Clause AND Zlib";
+
+        assert_eq!(
+            iter_expr(s).map(|e| e.unwrap()).collect::<Vec<_>>(),
+            vec![
+                LicenseExpr::License(license_id("BSD-3-Clause").unwrap()),
+                LicenseExpr::And,
+                LicenseExpr::License(license_id("Zlib").unwrap()),
+            ]
+        );
+    }
+
+    #[test]
+    fn handles_deprecation() {
+        assert!(license_id("GPL-3.0-with-autoconf-exception")
+            .unwrap()
+            .is_deprecated());
+    }
+
+    #[test]
+    fn handles_fsf() {
+        assert!(license_id("ZPL-2.1").unwrap().is_fsf_free_libre());
+    }
+
+    #[test]
+    fn handles_osi() {
+        assert!(license_id("RSCPL").unwrap().is_osi_approved());
+    }
+
+    #[test]
+    fn handles_fsf_and_osi() {
+        let id = license_id("Sleepycat").unwrap();
+
+        assert!(id.is_fsf_free_libre() && id.is_osi_approved());
+    }
+
+    #[test]
+    fn handles_deprecated_fsf_and_osi() {
+        let id = license_id("LGPL-2.1+").unwrap();
+
+        assert!(id.is_deprecated() && id.is_fsf_free_libre() && id.is_osi_approved());
+    }
 }

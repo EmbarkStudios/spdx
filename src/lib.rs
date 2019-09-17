@@ -1,9 +1,11 @@
-use std::{error::Error, fmt};
+use std::{cmp, error::Error, fmt};
 
 mod identifiers;
 mod lexer;
+pub mod parser;
 
 pub use lexer::{Lexer, Token};
+pub use parser::ValidExpression;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ParseError<'a> {
@@ -134,35 +136,63 @@ impl fmt::Debug for ExceptionId {
     }
 }
 
-/// Attempts to find a LicenseId for the string
-/// Note: any '+' at the end is trimmed
-#[inline]
-pub fn license_id(name: &str) -> Option<LicenseId> {
-    let name = &name.trim_end_matches('+');
-    identifiers::LICENSES
-        .binary_search_by(|lic| lic.0.cmp(name))
-        .map(LicenseId)
-        .ok()
+/// Represents a single license requirement, which must include a valid
+/// LicenseItem, and may allow current a future versions of the license,
+/// and may also allow for a specific exception
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct LicenseReq<'a> {
+    /// The license
+    pub license: LicenseItem<'a>,
+    /// The exception allowed for this license, as specified following
+    /// `WITH`
+    pub exception: Option<ExceptionId>,
+    /// Indicates the license had a `+`, allowing the licensee to license
+    /// the software under either the specific version, or any later versions
+    pub or_later: bool,
 }
 
-/// Attempts to find an ExceptionId for the string
-#[inline]
-pub fn exception_id(name: &str) -> Option<ExceptionId> {
-    identifiers::EXCEPTIONS
-        .binary_search_by(|exc| exc.0.cmp(name))
-        .map(ExceptionId)
-        .ok()
+impl<'a> fmt::Display for LicenseReq<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        self.license.fmt(f)?;
+        if self.or_later {
+            write!(f, "+")?;
+        }
+        if let Some(ref exe) = self.exception {
+            write!(f, " WITH {}", exe.name)?;
+        }
+        Ok(())
+    }
 }
 
-/// Returns the version number of the SPDX set
-#[inline]
-pub fn license_version() -> &'static str {
-    identifiers::VERSION
+/// A single license term in a license expression, according to the SPDX spec.
+/// This can be either an SPDX license, which is mapped to a LicenseId from
+/// a valid SPDX short identifier, or else a document AND/OR license ref
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub enum LicenseItem<'a> {
+    /// A regular SPDX license id
+    SPDX(LicenseId),
+    /// Either a documentref or licenseref, see https://spdx.org/spdx-specification-21-web-version#h.h430e9ypa0j9
+    Other {
+        document_ref: Option<&'a str>,
+        license_ref: &'a str,
+    },
 }
 
-#[cfg(test)]
-mod test {
-    use super::*;
+impl<'a> fmt::Display for LicenseItem<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        match self {
+            LicenseItem::SPDX(s) => s.name.fmt(f),
+            LicenseItem::Other {
+                document_ref: Some(d),
+                license_ref: l,
+            } => write!(f, "DocumentRef-{}:LicenseRef-{}", d, l),
+            LicenseItem::Other {
+                document_ref: None,
+                license_ref: l,
+            } => write!(f, "LicenseRef-{}", l),
+        }
+    }
+}
 
     #[test]
     fn parses_single() {

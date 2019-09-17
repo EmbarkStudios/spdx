@@ -194,87 +194,106 @@ impl<'a> fmt::Display for LicenseItem<'a> {
     }
 }
 
-    #[test]
-    fn parses_single() {
-        let s = "0BSD";
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+pub struct AllowedLicense<'a> {
+    pub license: LicenseItem<'a>,
+    pub exception: Option<ExceptionId>,
+}
 
-        assert_eq!(
-            iter_expr(s).map(|e| e.unwrap()).collect::<Vec<_>>(),
-            vec![LicenseExpr::License(license_id(s).unwrap())]
-        );
+impl<'a> AllowedLicense<'a> {
+    pub fn parse(s: &'a str) -> Result<Self, ParseError<'a>> {
+        let mut lexer = Lexer::new(s);
+
+        let license = {
+            let lt = lexer.next().ok_or_else(|| ParseError::Empty)??;
+
+            match lt.token {
+                Token::License(lic) => LicenseItem::SPDX(
+                    license_id(lic).ok_or_else(|| ParseError::UnknownLicenseId(lic))?,
+                ),
+                Token::LicenseRef { doc, lic } => LicenseItem::Other {
+                    document_ref: doc,
+                    license_ref: lic,
+                },
+                _ => {
+                    return Err(ParseError::UnexpectedToken(
+                        &s[lt.start..lt.end],
+                        &["<license_id>"],
+                    ))
+                }
+            }
+        };
+
+        let exception = match lexer.next() {
+            None => None,
+            Some(lt) => {
+                let lt = lt?;
+                match lt.token {
+                    Token::With => {
+                        let lt = lexer.next().ok_or_else(|| ParseError::Empty)??;
+
+                        match lt.token {
+                            Token::Exception(exc) => Some(
+                                exception_id(exc)
+                                    .ok_or_else(|| ParseError::UnknownExceptionId(exc))?,
+                            ),
+                            _ => {
+                                return Err(ParseError::UnexpectedToken(
+                                    &s[lt.start..lt.end],
+                                    &["<exception_id>"],
+                                ))
+                            }
+                        }
+                    }
+                    _ => return Err(ParseError::UnexpectedToken(&s[lt.start..lt.end], &["WITH"])),
+                }
+            }
+        };
+
+        Ok(AllowedLicense { license, exception })
     }
 
-    #[test]
-    fn parses_or() {
-        let s = "Apache-2.0 OR MIT";
+    pub fn satisfies(&self, req: &LicenseReq<'_>) -> bool {
+        match (&self.license, &req.license) {
+            (LicenseItem::SPDX(a), LicenseItem::SPDX(b)) => {
+                // TODO: Handle GPL shenanigans :-/
+                if a.index != b.index {
+                    if req.or_later {
+                        // Most of the SPDX identifiers have end in `-<version number>`,
+                        // so chop that off and ensure the base strings match, and if so,
+                        // just a do a lexical compare, if this "allowed license" is >
+                        // then we satisfed the license requirement
+                        let a_name = &a.name[..a.name.rfind('-').unwrap_or_else(|| a.name.len())];
+                        let b_name = &b.name[..b.name.rfind('-').unwrap_or_else(|| b.name.len())];
 
-        assert_eq!(
-            iter_expr(s).map(|e| e.unwrap()).collect::<Vec<_>>(),
-            vec![
-                LicenseExpr::License(license_id("Apache-2.0").unwrap()),
-                LicenseExpr::Or,
-                LicenseExpr::License(license_id("MIT").unwrap()),
-            ]
-        );
+                        if a_name != b_name || a.name < b.name {
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+            }
+            (
+                LicenseItem::Other {
+                    document_ref: doca,
+                    license_ref: lica,
+                },
+                LicenseItem::Other {
+                    document_ref: docb,
+                    license_ref: licb,
+                },
+            ) => {
+                if doca != docb || lica != licb {
+                    return false;
+                }
+            }
+            _ => return false,
+        }
+
+        req.exception == self.exception
     }
-
-    #[test]
-    fn parses_exception() {
-        let s = "Apache-2.0 WITH LLVM-exception";
-
-        assert_eq!(
-            iter_expr(s).map(|e| e.unwrap()).collect::<Vec<_>>(),
-            vec![
-                LicenseExpr::License(license_id("Apache-2.0").unwrap()),
-                LicenseExpr::With,
-                LicenseExpr::Exception(exception_id("LLVM-exception").unwrap()),
-            ]
-        );
-    }
-
-    #[test]
-    fn parses_exceptions_with_ors() {
-        let s = "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT";
-
-        assert_eq!(
-            iter_expr(s).map(|e| e.unwrap()).collect::<Vec<_>>(),
-            vec![
-                LicenseExpr::License(license_id("Apache-2.0").unwrap()),
-                LicenseExpr::With,
-                LicenseExpr::Exception(exception_id("LLVM-exception").unwrap()),
-                LicenseExpr::Or,
-                LicenseExpr::License(license_id("Apache-2.0").unwrap()),
-                LicenseExpr::Or,
-                LicenseExpr::License(license_id("MIT").unwrap()),
-            ]
-        );
-    }
-
-    #[test]
-    fn parses_and() {
-        let s = "BSD-3-Clause AND Zlib";
-
-        assert_eq!(
-            iter_expr(s).map(|e| e.unwrap()).collect::<Vec<_>>(),
-            vec![
-                LicenseExpr::License(license_id("BSD-3-Clause").unwrap()),
-                LicenseExpr::And,
-                LicenseExpr::License(license_id("Zlib").unwrap()),
-            ]
-        );
-    }
-
-    #[test]
-    fn handles_deprecation() {
-        assert!(license_id("GPL-3.0-with-autoconf-exception")
-            .unwrap()
-            .is_deprecated());
-    }
-
-    #[test]
-    fn handles_fsf() {
-        assert!(license_id("ZPL-2.1").unwrap().is_fsf_free_libre());
-    }
+}
 
 /// Attempts to find a LicenseId for the string
 /// Note: any '+' at the end is trimmed

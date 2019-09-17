@@ -1,34 +1,23 @@
 use std::{error::Error, fmt};
 
 mod identifiers;
+mod lexer;
+
+pub use lexer::{Lexer, Token};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum LicenseExpr {
-    License(LicenseId),
-    Exception(ExceptionId),
-    And,
-    Or,
-    With,
-}
-
-use self::LicenseExpr::*;
-
-impl fmt::Display for LicenseExpr {
-    fn fmt(&self, format: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        match *self {
-            With => format.write_str("WITH"),
-            And => format.write_str("AND"),
-            Or => format.write_str("OR"),
-            License(info) => format.write_str(info.name()),
-            Exception(info) => format.write_str(info.name()),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
 pub enum ParseError<'a> {
     UnknownLicenseId(&'a str),
-    InvalidStructure(LicenseExpr),
+    UnknownExceptionId(&'a str),
+    InvalidCharacters(&'a str),
+    InvaldTerm(&'a str),
+    UnbalancedParen(usize),
+    /// A token did not match one of the expected tokens
+    UnexpectedToken(&'a str, &'static [&'static str]),
+    /// The expression is empty of significant tokens
+    Empty,
+    /// There was whitespace preceding a `+`
+    SeparatedPlus,
 }
 
 impl<'a> fmt::Display for ParseError<'a> {
@@ -37,9 +26,10 @@ impl<'a> fmt::Display for ParseError<'a> {
             ParseError::UnknownLicenseId(info) => {
                 format.write_fmt(format_args!("{}: {}", self.description(), info))
             }
-            ParseError::InvalidStructure(info) => {
-                format.write_fmt(format_args!("{}: {}", self.description(), info))
-            }
+            // ParseError::InvalidStructure(info) => {
+            //     format.write_fmt(format_args!("{}: {}", self.description(), info))
+            // }
+            e => format.write_fmt(format_args!("OOPSIE WOOPSIE: {:?}", e)),
         }
     }
 }
@@ -48,90 +38,99 @@ impl<'a> Error for ParseError<'a> {
     fn description(&self) -> &str {
         match *self {
             ParseError::UnknownLicenseId(_) => "unknown license or other term",
-            ParseError::InvalidStructure(_) => "invalid license expression",
+            //ParseError::InvalidStructure(_) => "invalid license expression",
+            _ => unimplemented!(),
         }
     }
-}
-
-/// Iterates through the license and exception identifiers in an SPDX expression
-pub fn iter_expr(license_expr: &str) -> impl Iterator<Item = Result<LicenseExpr, ParseError>> {
-    license_expr.split_whitespace().map(|word| match word {
-        "AND" => Ok(And),
-        "OR" => Ok(Or),
-        "WITH" => Ok(With),
-        _ => {
-            if let Some(id) = license_id(word) {
-                Ok(License(id))
-            } else if let Some(excid) = exception_id(word) {
-                Ok(Exception(excid))
-            } else {
-                Err(ParseError::UnknownLicenseId(word))
-            }
-        }
-    })
 }
 
 /// Unique identifier for a particular license
-#[derive(Copy, Clone, PartialEq, Eq)]
-pub struct LicenseId(usize);
+#[derive(Copy, Clone, Eq, Ord)]
+pub struct LicenseId {
+    /// The short identifier for the exception
+    pub name: &'static str,
+    index: usize,
+    flags: u8,
+}
 
-const IS_FSF_LIBRE: u8 = 0x1;
-const IS_OSI_APPROVED: u8 = 0x2;
-const IS_DEPRECATED: u8 = 0x4;
+impl PartialEq for LicenseId {
+    #[inline]
+    fn eq(&self, o: &LicenseId) -> bool {
+        self.index == o.index
+    }
+}
+
+impl PartialOrd for LicenseId {
+    #[inline]
+    fn partial_cmp(&self, o: &LicenseId) -> Option<cmp::Ordering> {
+        self.index.partial_cmp(&o.index)
+    }
+}
+
+pub const IS_FSF_LIBRE: u8 = 0x1;
+pub const IS_OSI_APPROVED: u8 = 0x2;
+pub const IS_DEPRECATED: u8 = 0x4;
 
 impl LicenseId {
-    /// The short identifier for the license
-    #[inline]
-    pub fn name(self) -> &'static str {
-        identifiers::LICENSES[self.0].0
-    }
-
     /// Returns true if the license is [considered free by the FSF](https://www.gnu.org/licenses/license-list.en.html)
     #[inline]
     pub fn is_fsf_free_libre(self) -> bool {
-        identifiers::LICENSES[self.0].1 & IS_FSF_LIBRE != 0
+        self.flags & IS_FSF_LIBRE != 0
     }
 
     /// Returns true if the license is [OSI approved](https://opensource.org/licenses)
     #[inline]
     pub fn is_osi_approved(self) -> bool {
-        identifiers::LICENSES[self.0].1 & IS_OSI_APPROVED != 0
+        self.flags & IS_OSI_APPROVED != 0
     }
 
     /// Returns true if the license is deprecated
     #[inline]
     pub fn is_deprecated(self) -> bool {
-        identifiers::LICENSES[self.0].1 & IS_DEPRECATED != 0
+        self.flags & IS_DEPRECATED != 0
     }
 }
 
 impl fmt::Debug for LicenseId {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.name())
+        write!(f, "{}", self.name)
     }
 }
 
 /// Unique identifier for a particular exception
-#[derive(Copy, Clone, PartialEq, Eq)]
-pub struct ExceptionId(usize);
+#[derive(Copy, Clone, Eq, Ord)]
+pub struct ExceptionId {
+    /// The short identifier for the exception
+    pub name: &'static str,
+    index: usize,
+    flags: u8,
+}
+
+impl PartialEq for ExceptionId {
+    #[inline]
+    fn eq(&self, o: &ExceptionId) -> bool {
+        self.index == o.index
+    }
+}
+
+impl PartialOrd for ExceptionId {
+    #[inline]
+    fn partial_cmp(&self, o: &ExceptionId) -> Option<cmp::Ordering> {
+        self.index.partial_cmp(&o.index)
+    }
+}
 
 impl ExceptionId {
-    /// The short identifier for the exception
-    #[inline]
-    pub fn name(self) -> &'static str {
-        identifiers::EXCEPTIONS[self.0].0
-    }
-
     /// Returns true if the exception is deprecated
     #[inline]
     pub fn is_deprecated(self) -> bool {
-        identifiers::EXCEPTIONS[self.0].1 & IS_DEPRECATED != 0
+        self.flags & IS_DEPRECATED != 0
     }
 }
 
 impl fmt::Debug for ExceptionId {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.name())
+        write!(f, "{}", self.name)
     }
 }
 
@@ -247,22 +246,34 @@ mod test {
         assert!(license_id("ZPL-2.1").unwrap().is_fsf_free_libre());
     }
 
-    #[test]
-    fn handles_osi() {
-        assert!(license_id("RSCPL").unwrap().is_osi_approved());
-    }
+/// Attempts to find a LicenseId for the string
+/// Note: any '+' at the end is trimmed
+#[inline]
+pub fn license_id(name: &str) -> Option<LicenseId> {
+    let name = &name.trim_end_matches('+');
+    identifiers::LICENSES
+        .binary_search_by(|lic| lic.0.cmp(name))
+        .map(|index| {
+            let (name, flags) = identifiers::LICENSES[index];
+            LicenseId { name, index, flags }
+        })
+        .ok()
+}
 
-    #[test]
-    fn handles_fsf_and_osi() {
-        let id = license_id("Sleepycat").unwrap();
+/// Attempts to find an ExceptionId for the string
+#[inline]
+pub fn exception_id(name: &str) -> Option<ExceptionId> {
+    identifiers::EXCEPTIONS
+        .binary_search_by(|exc| exc.0.cmp(name))
+        .map(|index| {
+            let (name, flags) = identifiers::EXCEPTIONS[index];
+            ExceptionId { name, index, flags }
+        })
+        .ok()
+}
 
-        assert!(id.is_fsf_free_libre() && id.is_osi_approved());
-    }
-
-    #[test]
-    fn handles_deprecated_fsf_and_osi() {
-        let id = license_id("LGPL-2.1+").unwrap();
-
-        assert!(id.is_deprecated() && id.is_fsf_free_libre() && id.is_osi_approved());
-    }
+/// Returns the version number of the SPDX set
+#[inline]
+pub fn license_version() -> &'static str {
+    identifiers::VERSION
 }

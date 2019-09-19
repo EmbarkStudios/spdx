@@ -1,50 +1,13 @@
-use std::{cmp, error::Error, fmt};
+use std::{cmp, fmt};
 
+pub mod error;
 mod identifiers;
 mod lexer;
 pub mod parser;
 
+pub use error::ParseError;
 pub use lexer::{Lexer, Token};
 pub use parser::ValidExpression;
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum ParseError<'a> {
-    UnknownLicenseId(&'a str),
-    UnknownExceptionId(&'a str),
-    InvalidCharacters(&'a str),
-    InvaldTerm(&'a str),
-    UnbalancedParen(usize),
-    /// A token did not match one of the expected tokens
-    UnexpectedToken(&'a str, &'static [&'static str]),
-    /// The expression is empty of significant tokens
-    Empty,
-    /// There was whitespace preceding a `+`
-    SeparatedPlus,
-}
-
-impl<'a> fmt::Display for ParseError<'a> {
-    fn fmt(&self, format: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        match *self {
-            ParseError::UnknownLicenseId(info) => {
-                format.write_fmt(format_args!("{}: {}", self.description(), info))
-            }
-            // ParseError::InvalidStructure(info) => {
-            //     format.write_fmt(format_args!("{}: {}", self.description(), info))
-            // }
-            e => format.write_fmt(format_args!("OOPSIE WOOPSIE: {:?}", e)),
-        }
-    }
-}
-
-impl<'a> Error for ParseError<'a> {
-    fn description(&self) -> &str {
-        match *self {
-            ParseError::UnknownLicenseId(_) => "unknown license or other term",
-            //ParseError::InvalidStructure(_) => "invalid license expression",
-            _ => unimplemented!(),
-        }
-    }
-}
 
 /// Unique identifier for a particular license
 #[derive(Copy, Clone, Eq, Ord)]

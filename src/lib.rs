@@ -109,17 +109,12 @@ pub struct LicenseReq<'a> {
     /// The exception allowed for this license, as specified following
     /// `WITH`
     pub exception: Option<ExceptionId>,
-    /// Indicates the license had a `+`, allowing the licensee to license
-    /// the software under either the specific version, or any later versions
-    pub or_later: bool,
 }
 
 impl<'a> fmt::Display for LicenseReq<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         self.license.fmt(f)?;
-        if self.or_later {
-            write!(f, "+")?;
-        }
+
         if let Some(ref exe) = self.exception {
             write!(f, " WITH {}", exe.name)?;
         }
@@ -133,128 +128,43 @@ impl<'a> fmt::Display for LicenseReq<'a> {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum LicenseItem<'a> {
     /// A regular SPDX license id
-    SPDX(LicenseId),
-    /// Either a documentref or licenseref, see https://spdx.org/spdx-specification-21-web-version#h.h430e9ypa0j9
+    SPDX {
+        id: LicenseId,
+        /// Indicates the license had a `+`, allowing the licensee to license
+        /// the software under either the specific version, or any later versions
+        or_later: bool,
+    },
     Other {
-        document_ref: Option<&'a str>,
-        license_ref: &'a str,
+        /// Purpose: Identify any external SPDX documents referenced within this SPDX document.
+        /// https://spdx.org/spdx-specification-21-web-version#h.h430e9ypa0j9
+        doc_ref: Option<&'a str>,
+        /// Purpose: Provide a locally unique identifier to refer to licenses that are not found on the SPDX License List.
+        /// https://spdx.org/spdx-specification-21-web-version#h.4f1mdlm
+        lic_ref: &'a str,
     },
 }
 
 impl<'a> fmt::Display for LicenseItem<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match self {
-            LicenseItem::SPDX(s) => s.name.fmt(f),
+            LicenseItem::SPDX { id, or_later } => {
+                id.name.fmt(f)?;
+
+                if *or_later {
+                    f.write_str("+")?;
+                }
+
+                Ok(())
+            }
             LicenseItem::Other {
-                document_ref: Some(d),
-                license_ref: l,
+                doc_ref: Some(d),
+                lic_ref: l,
             } => write!(f, "DocumentRef-{}:LicenseRef-{}", d, l),
             LicenseItem::Other {
-                document_ref: None,
-                license_ref: l,
+                doc_ref: None,
+                lic_ref: l,
             } => write!(f, "LicenseRef-{}", l),
         }
-    }
-}
-
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
-pub struct AllowedLicense<'a> {
-    pub license: LicenseItem<'a>,
-    pub exception: Option<ExceptionId>,
-}
-
-impl<'a> AllowedLicense<'a> {
-    pub fn parse(s: &'a str) -> Result<Self, ParseError<'a>> {
-        let mut lexer = Lexer::new(s);
-
-        let license = {
-            let lt = lexer.next().ok_or_else(|| ParseError::Empty)??;
-
-            match lt.token {
-                Token::License(lic) => LicenseItem::SPDX(
-                    license_id(lic).ok_or_else(|| ParseError::UnknownLicenseId(lic))?,
-                ),
-                Token::LicenseRef { doc, lic } => LicenseItem::Other {
-                    document_ref: doc,
-                    license_ref: lic,
-                },
-                _ => {
-                    return Err(ParseError::UnexpectedToken(
-                        &s[lt.start..lt.end],
-                        &["<license_id>"],
-                    ))
-                }
-            }
-        };
-
-        let exception = match lexer.next() {
-            None => None,
-            Some(lt) => {
-                let lt = lt?;
-                match lt.token {
-                    Token::With => {
-                        let lt = lexer.next().ok_or_else(|| ParseError::Empty)??;
-
-                        match lt.token {
-                            Token::Exception(exc) => Some(
-                                exception_id(exc)
-                                    .ok_or_else(|| ParseError::UnknownExceptionId(exc))?,
-                            ),
-                            _ => {
-                                return Err(ParseError::UnexpectedToken(
-                                    &s[lt.start..lt.end],
-                                    &["<exception_id>"],
-                                ))
-                            }
-                        }
-                    }
-                    _ => return Err(ParseError::UnexpectedToken(&s[lt.start..lt.end], &["WITH"])),
-                }
-            }
-        };
-
-        Ok(AllowedLicense { license, exception })
-    }
-
-    pub fn satisfies(&self, req: &LicenseReq<'_>) -> bool {
-        match (&self.license, &req.license) {
-            (LicenseItem::SPDX(a), LicenseItem::SPDX(b)) => {
-                // TODO: Handle GPL shenanigans :-/
-                if a.index != b.index {
-                    if req.or_later {
-                        // Most of the SPDX identifiers have end in `-<version number>`,
-                        // so chop that off and ensure the base strings match, and if so,
-                        // just a do a lexical compare, if this "allowed license" is >
-                        // then we satisfed the license requirement
-                        let a_name = &a.name[..a.name.rfind('-').unwrap_or_else(|| a.name.len())];
-                        let b_name = &b.name[..b.name.rfind('-').unwrap_or_else(|| b.name.len())];
-
-                        if a_name != b_name || a.name < b.name {
-                            return false;
-                        }
-                    } else {
-                        return false;
-                    }
-                }
-            }
-            (
-                LicenseItem::Other {
-                    document_ref: doca,
-                    license_ref: lica,
-                },
-                LicenseItem::Other {
-                    document_ref: docb,
-                    license_ref: licb,
-                },
-            ) => {
-                if doca != docb || lica != licb {
-                    return false;
-                }
-            }
-            _ => return false,
-        }
-
-        req.exception == self.exception
     }
 }
 

@@ -1,11 +1,13 @@
-use crate::ParseError;
+use crate::{
+    error::{ParseError, Reason},
+    ExceptionId, LicenseItem,
+};
 use lazy_static::lazy_static;
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Token<'a> {
-    License(&'a str),
-    Exception(&'a str),
-    LicenseRef { doc: Option<&'a str>, lic: &'a str },
+    License(LicenseItem<'a>),
+    Exception(ExceptionId),
     Plus,
     OpenParen,
     CloseParen,
@@ -23,19 +25,19 @@ impl<'a> std::fmt::Display for Token<'a> {
 impl<'a> Token<'a> {
     fn len(&self) -> usize {
         match self {
-            Token::License(s) => s.len(),
-            Token::Exception(e) => e.len(),
-            Token::LicenseRef { doc, lic } => {
-                doc.map_or(0, |d| {
-                    // +1 is for the `:`
-                    "DocumentRef-".len() + d.len() + 1
-                }) + "LicenseRef-".len()
-                    + lic.len()
-            }
+            Token::License(LicenseItem::SPDX { id, .. }) => id.name.len(),
+            Token::Exception(e) => e.name.len(),
             Token::With => 4,
             Token::And => 3,
             Token::Or => 2,
             Token::Plus | Token::OpenParen | Token::CloseParen => 1,
+            Token::License(LicenseItem::Other { doc_ref, lic_ref }) => {
+                doc_ref.map_or(0, |d| {
+                    // +1 is for the `:`
+                    "DocumentRef-".len() + d.len() + 1
+                }) + "LicenseRef-".len()
+                    + lic_ref.len()
+            }
         }
     }
 }
@@ -106,19 +108,24 @@ impl<'a> Iterator for Lexer<'a> {
                         Some(Ok(Token::And))
                     } else if m.as_str() == "OR" {
                         Some(Ok(Token::Or))
-                    } else if crate::license_id(&m.as_str()).is_some() {
-                        Some(Ok(Token::License(m.as_str())))
-                    } else if crate::exception_id(&m.as_str()).is_some() {
-                        Some(Ok(Token::Exception(m.as_str())))
+                    } else if let Some(lic_id) = crate::license_id(&m.as_str()) {
+                        Some(Ok(Token::License(LicenseItem::SPDX {
+                            id: lic_id,
+                            or_later: false,
+                        })))
+                    } else if let Some(exc_id) = crate::exception_id(&m.as_str()) {
+                        Some(Ok(Token::Exception(exc_id)))
                     } else if let Some(c) = DOCREFLICREF.captures(m.as_str()) {
-                        Some(Ok(Token::LicenseRef {
-                            doc: Some(c.get(1).unwrap().as_str()),
-                            lic: c.get(2).unwrap().as_str(),
-                        }))
+                        Some(Ok(Token::License(LicenseItem::Other {
+                            doc_ref: Some(c.get(1).unwrap().as_str()),
+                            lic_ref: c.get(2).unwrap().as_str(),
+                        })))
                     } else if let Some(c) = LICREF.captures(m.as_str()) {
-                        Some(Ok(Token::LicenseRef {
-                            doc: None,
-                            lic: c.get(1).unwrap().as_str(),
+                        Some(Ok(Token::License(LicenseItem::Other {
+                            doc_ref: None,
+                            lic_ref: c.get(1).unwrap().as_str(),
+                        })))
+                    } else {
                         }))
                     } else {
                         Some(Err(ParseError::InvaldTerm(m.as_str())))

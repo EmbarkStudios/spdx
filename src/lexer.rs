@@ -46,6 +46,7 @@ impl<'a> Token<'a> {
 /// a token or a parser error
 pub struct Lexer<'a> {
     inner: &'a str,
+    original: &'a str,
     offset: usize,
 }
 
@@ -54,6 +55,7 @@ impl<'a> Lexer<'a> {
     pub fn new(text: &'a str) -> Self {
         Self {
             inner: text,
+            original: text,
             offset: 0,
         }
     }
@@ -63,10 +65,8 @@ impl<'a> Lexer<'a> {
 pub struct LexerToken<'a> {
     /// The token that was lexed
     pub token: Token<'a>,
-    /// The start index of the token in the original license expression
-    pub start: usize,
-    /// The end index of the token in the original license expression
-    pub end: usize,
+    /// The range of the token characters in the original license expression
+    pub span: std::ops::Range<usize>,
 }
 
 impl<'a> Iterator for Lexer<'a> {
@@ -92,15 +92,25 @@ impl<'a> Iterator for Lexer<'a> {
 
         match self.inner.chars().next() {
             None => None,
+            // From SPDX 2.1 spec
+            // There MUST NOT be whitespace between a license-id and any following "+".
             Some('+') => Some(if non_whitespace_index != 0 {
-                Err(ParseError::SeparatedPlus)
+                Err(ParseError {
+                    original: self.original,
+                    span: self.offset - non_whitespace_index..self.offset,
+                    reason: Reason::SeparatedPlus,
+                })
             } else {
                 Ok(Token::Plus)
             }),
             Some('(') => Some(Ok(Token::OpenParen)),
             Some(')') => Some(Ok(Token::CloseParen)),
             _ => match TEXTTOKEN.find(self.inner) {
-                None => Some(Err(ParseError::InvalidCharacters(self.inner))),
+                None => Some(Err(ParseError {
+                    original: self.original,
+                    span: self.offset..self.offset + self.inner.len(),
+                    reason: Reason::InvalidCharacters,
+                })),
                 Some(m) => {
                     if m.as_str() == "WITH" {
                         Some(Ok(Token::With))
@@ -126,9 +136,11 @@ impl<'a> Iterator for Lexer<'a> {
                             lic_ref: c.get(1).unwrap().as_str(),
                         })))
                     } else {
+                        Some(Err(ParseError {
+                            original: self.original,
+                            span: self.offset..self.offset + m.end(),
+                            reason: Reason::UnknownTerm,
                         }))
-                    } else {
-                        Some(Err(ParseError::InvaldTerm(m.as_str())))
                     }
                 }
             },
@@ -142,8 +154,7 @@ impl<'a> Iterator for Lexer<'a> {
 
                 LexerToken {
                     token: tok,
-                    start,
-                    end: self.offset,
+                    span: start..self.offset,
                 }
             })
         })

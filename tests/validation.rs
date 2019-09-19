@@ -40,49 +40,115 @@ macro_rules! test_validate {
             }
         )+
     };
+}
 
-    (err [$($text:expr => $expected:expr),+$(,)?]) => {
-        $(
-            let err = spdx::ValidExpression::parse($text).unwrap_err();
+macro_rules! err {
+    ($text:expr => $reason:ident @ $range:expr) => {
+        let act_err = spdx::ValidExpression::parse($text).unwrap_err();
 
-            if err != $expected {
-                let act_text = format!("{}", err);
-                let exp_text = format!("{}", $expected);
-                assert!(
-                    false,
-                    "{}",
-                    difference::Changeset::new(&exp_text, &act_text, "")
-                );
-            }
-        )+
+        let expected = ParseError {
+            original: $text,
+            span: $range,
+            reason: spdx::error::Reason::$reason,
+        };
+
+        if act_err != expected {
+            let act_text = format!("{:?}", act_err);
+            let exp_text = format!("{:?}", expected);
+            assert!(
+                false,
+                "{}",
+                difference::Changeset::new(&exp_text, &act_text, "")
+            );
+        }
+    };
+
+    ($text:expr => $unexpected:expr; $range:expr) => {
+        let act_err = spdx::ValidExpression::parse($text).unwrap_err();
+
+        let expected = ParseError {
+            original: $text,
+            span: $range,
+            reason: spdx::error::Reason::Unexpected($unexpected),
+        };
+
+        if act_err != expected {
+            let act_text = format!("{:?}", act_err);
+            let exp_text = format!("{:?}", expected);
+            assert!(
+                false,
+                "{}",
+                difference::Changeset::new(&exp_text, &act_text, "")
+            );
+        }
     };
 }
 
 #[test]
 fn fails_empty() {
-    test_validate!(err [
-        "" => ParseError::Empty,
-        " " => ParseError::Empty,
-        "\n\t\n" => ParseError::Empty,
-        "()" => ParseError::Empty,
-        "(   )" => ParseError::Empty,
-        "  (\n)" => ParseError::Empty,
-    ]);
+    err!("" => Empty @ 0..0);
+    err!(" " => Empty @ 0..1);
+    err!("\n\t\n" => Empty @ 0..3);
+    err!("()" => &["<license>", "("]; 1..2);
+    err!("( )" => &["<license>", "("]; 2..3);
+    err!("(   )" => &["<license>", "("]; 4..5);
+    err!("  ( )" => &["<license>", "("]; 4..5);
+    err!("AND" => &["<license>", "("]; 0..3);
+}
+
+#[test]
+fn fails_unbalanced_parens() {
+    err!("(Apache-2.0" => UnclosedParens @ 0..1);
+    err!("BSD-3-Clause-No-Nuclear-License)" => UnopenedParens @ 31..32);
+    err!("((BSD-3-Clause-No-Nuclear-License OR MIT)" => UnclosedParens @ 0..1);
+    err!("(BSD-3-Clause-No-Nuclear-License OR MIT) AND Glulxe)" => UnopenedParens @ 51..52);
+    err!("Glulxe OR MIT) AND BSD-3-Clause-No-Nuclear-License" => UnopenedParens @ 13..14);
+    err!("Glulxe OR ( MIT AND BSD-3-Clause-No-Nuclear-License" => UnclosedParens @ 10..11);
 }
 
 #[test]
 fn fails_bad_exception() {
-    test_validate!(err [
-        "Apache-2.0 WITH+ LLVM-exception" => ParseError::UnexpectedToken("+", &["<license>"]),
-        "Apache-2.0 WITH WITH LLVM-exception" => ParseError::UnexpectedToken("WITH", &["<exception>"]),
-        //"(Apache-2.0) WITH LLVM-exception" => ParseError::Empty,
-        "(Apache-2.0 WITH) LLVM-exception" => ParseError::UnexpectedToken(")", &["<exception>"]),
-        "(Apache-2.0 WITH)+ LLVM-exception" => ParseError::UnexpectedToken(")", &["<exception>"]),
-        //"Apache-2.0 (WITH LLVM-exception)" => ParseError::Empty,
-        //"Apache-2.0 WITH MIT" => ParseError::UnexpectedToken("MIT", &["<exception>"]),
-        //"Apache-2.0 OR WITH MIT" => ParseError::UnexpectedToken("WITH", &["<license>", "("]),
-        //"Apache-2.0 WITH AND MIT" => ParseError::UnexpectedToken("AND", &["<exception>"]),
-    ]);
+    err!("Apache-2.0 WITH WITH LLVM-exception OR Apache-2.0" => &["<exception>"]; 16..20);
+    err!("Apache-2.0 WITH WITH LLVM-exception" => &["<exception>"]; 16..20);
+    err!("(Apache-2.0) WITH LLVM-exception" => &["AND", "OR"]; 13..17);
+    err!("Apache-2.0 (WITH LLVM-exception)" => &["AND", "OR", "WITH", ")", "+"]; 11..12);
+    err!("(Apache-2.0 WITH) LLVM-exception" => &["<exception>"]; 16..17);
+    err!("(Apache-2.0 WITH)+ LLVM-exception" => &["<exception>"]; 16..17);
+    err!("Apache-2.0 WITH MIT" => &["<exception>"]; 16..19);
+    err!("Apache-2.0 WITH WITH MIT" => &["<exception>"]; 16..20);
+    err!("Apache-2.0 AND WITH MIT" => &["<license>", "("]; 15..19);
+    err!("Apache-2.0 WITH AND MIT" => &["<exception>"]; 16..19);
+    err!("Apache-2.0 WITH" => &["<exception>"]; 15..15);
+}
+
+#[test]
+fn fails_bad_plus() {
+    err!("LAL-1.2 +" => SeparatedPlus @ 7..8);
+    err!("+LAL-1.2" => &["<license>", "("]; 0..1);
+    err!("++LAL-1.2" => &["<license>", "("]; 0..1);
+    err!("LAL+-1.2" => UnknownTerm @ 0..3);
+    err!("LAL-+1.2" => UnknownTerm @ 0..4);
+    err!("LAL-1.+2" => UnknownTerm @ 0..6);
+    err!("LAL-1.2++" => &["AND", "OR", "WITH", ")"]; 8..9);
+    // + can only be applied to valid SDPX short identifiers, not license/doc refs
+    err!("LicenseRef-Nope+" => &["AND", "OR", "WITH", ")"]; 15..16);
+    err!("LAL-1.2 AND+" => &["<license>", "("]; 11..12);
+    err!("LAL-1.2 OR +" => SeparatedPlus @ 10..11);
+    err!("LAL-1.2 WITH+ LLVM-exception" => &["<exception>"]; 12..13);
+    err!("LAL-1.2 WITH LLVM-exception+" => &["AND", "OR", ")"]; 27..28);
+}
+
+#[test]
+fn fails_bad_ops() {
+    err!("MIT-advertising AND" => &["<license>", "("]; 19..19);
+    err!("MIT-advertising OR MIT AND" => &["<license>", "("]; 26..26);
+    err!("MIT-advertising OR OR MIT" => &["<license>", "("]; 19..21);
+    err!("MIT-advertising OR AND MIT" => &["<license>", "("]; 19..22);
+    err!("MIT-advertising AND OR MIT" => &["<license>", "("]; 20..22);
+    err!("(MIT-advertising AND) MIT" => &["<license>", "("]; 20..21);
+    err!("MIT-advertising (AND MIT)" => &["AND", "OR", "WITH", ")", "+"]; 16..17);
+    err!("OR MIT-advertising" => &["<license>", "("]; 0..2);
+    err!("MIT-advertising WITH AND" => &["<exception>"]; 21..24);
 }
 
 #[test]

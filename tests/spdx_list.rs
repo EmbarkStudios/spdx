@@ -9,19 +9,27 @@ fn handles_deprecation() {
 
 #[test]
 fn handles_fsf() {
-    assert!(license_id("ZPL-2.1").unwrap().is_fsf_free_libre());
+    let zpl = license_id("ZPL-2.1").unwrap();
+    assert!(zpl.is_fsf_free_libre() && !zpl.is_osi_approved());
 }
 
 #[test]
 fn handles_osi() {
-    assert!(license_id("RSCPL").unwrap().is_osi_approved());
+    let rscpl = license_id("RSCPL").unwrap();
+    assert!(rscpl.is_osi_approved() && !rscpl.is_fsf_free_libre());
 }
 
 #[test]
 fn handles_fsf_and_osi() {
-    let id = license_id("Sleepycat").unwrap();
+    let cat = license_id("Sleepycat").unwrap();
 
-    assert!(id.is_fsf_free_libre() && id.is_osi_approved());
+    assert!(cat.is_fsf_free_libre() && cat.is_osi_approved());
+}
+
+#[test]
+fn handles_neither() {
+    let adobe = license_id("Adobe-2006").unwrap();
+    assert!(!adobe.is_fsf_free_libre() && !adobe.is_osi_approved());
 }
 
 #[test]

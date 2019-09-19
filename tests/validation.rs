@@ -1,38 +1,26 @@
 use spdx::ParseError;
 
 macro_rules! test_validate {
-    (ok [$($text:expr; $stringified:expr => { $([$($expected:expr),+$(,)?]),+$(,)? }),+$(,)?]) => {
+    (ok [$($text:expr => [$($expected:expr),+$(,)?]),+$(,)?]) => {
         $(
             let val_expr = spdx::ValidExpression::parse($text).unwrap();
-            let stringified = format!("{}", val_expr);
-
-            if stringified != $stringified {
-                assert!(
-                    false,
-                    "{}",
-                    difference::Changeset::new(&stringified, $stringified, " ")
-                );
-            }
-
             let mut licenses = val_expr.licenses().enumerate();
 
             $(
-                $(
-                    let actual = licenses.next().unwrap();
-                    println!("{:?}", actual);
+                let actual = licenses.next().unwrap();
+                println!("{:?}", actual);
 
-                    let actual_str = format!("{}", actual.1);
-                    let expected_str = $expected;
+                let actual_str = format!("{}", actual.1);
+                let expected_str = $expected;
 
-                    if actual_str != expected_str {
-                        assert!(
-                            false,
-                            "failed @ index {} - {}",
-                            actual.0,
-                            difference::Changeset::new(expected_str, &actual_str, " ")
-                        );
-                    }
-                )+
+                if actual_str != expected_str {
+                    assert!(
+                        false,
+                        "failed @ index {} - {}",
+                        actual.0,
+                        difference::Changeset::new(expected_str, &actual_str, " ")
+                    );
+                }
             )+
 
             if let Some((_, additional)) = licenses.next() {
@@ -154,8 +142,8 @@ fn fails_bad_ops() {
 #[test]
 fn validates_single() {
     test_validate!(ok [
-        "MIT"; "MIT" => { ["MIT"] },
-        "Apache-2.0"; "Apache-2.0" => { ["Apache-2.0"] },
+        "MIT" => ["MIT"],
+        "Apache-2.0" => ["Apache-2.0"],
     ]);
 }
 
@@ -165,8 +153,8 @@ fn validates_canonical() {
     let canonical_w_parens = "(Apache-2.0 OR MIT)";
 
     test_validate!(ok [
-        canonical; canonical => { ["Apache-2.0", "MIT"] },
-        canonical_w_parens; canonical_w_parens => { ["Apache-2.0", "MIT"] },
+        canonical => ["Apache-2.0", "MIT"],
+        canonical_w_parens => ["Apache-2.0", "MIT"],
     ]);
 }
 
@@ -175,7 +163,7 @@ fn validates_single_with_exception() {
     let with_exception = "Apache-2.0 WITH LLVM-exception";
 
     test_validate!(ok [
-        with_exception; "Apache-2.0 WITH LLVM-exception" => { [with_exception] }
+        with_exception => [with_exception],
     ]);
 }
 
@@ -184,11 +172,11 @@ fn validates_complex() {
     let complex = "(Apache-2.0 WITH LLVM-exception OR Apache-2.0) AND MIT";
 
     test_validate!(ok [
-        complex; complex => { [
+        complex => [
             "Apache-2.0 WITH LLVM-exception",
             "Apache-2.0",
             "MIT",
-        ] }
+        ]
     ]);
 }
 
@@ -197,11 +185,11 @@ fn validates_parens_plus() {
     let expression = "(MIT AND (LGPL-2.1+ OR BSD-3-Clause))";
 
     test_validate!(ok [
-        expression; expression => { [
+        expression => [
             "MIT",
             "LGPL-2.1+",
             "BSD-3-Clause",
-        ] }
+        ]
     ]);
 }
 
@@ -210,12 +198,12 @@ fn validates_leading_parens() {
     let leading_parens = "((Apache-2.0 WITH LLVM-exception) OR Apache-2.0) AND OpenSSL OR MIT";
 
     test_validate!(ok [
-        leading_parens; leading_parens => { [
+        leading_parens => [
             "Apache-2.0 WITH LLVM-exception",
             "Apache-2.0",
             "OpenSSL",
             "MIT",
-        ] }
+        ]
     ]);
 }
 
@@ -224,12 +212,12 @@ fn validates_trailing_parens() {
     let trailing_parens = "Apache-2.0 WITH LLVM-exception OR Apache-2.0 AND (OpenSSL OR MIT)";
 
     test_validate!(ok [
-        trailing_parens; trailing_parens => { [
+        trailing_parens => [
             "Apache-2.0 WITH LLVM-exception",
             "Apache-2.0",
             "OpenSSL",
             "MIT",
-        ] }
+        ]
     ]);
 }
 
@@ -238,12 +226,12 @@ fn validates_middle_parens() {
     let middle_parens = "Apache-2.0 WITH LLVM-exception OR (Apache-2.0 AND OpenSSL) OR MIT";
 
     test_validate!(ok [
-        middle_parens; middle_parens => { [
+        middle_parens => [
             "Apache-2.0 WITH LLVM-exception",
             "Apache-2.0",
             "OpenSSL",
             "MIT",
-        ] }
+        ]
     ]);
 }
 
@@ -253,11 +241,11 @@ fn validates_excessive_parens() {
         "((((Apache-2.0 WITH LLVM-exception) OR (Apache-2.0)) AND (OpenSSL)) OR (MIT))";
 
     test_validate!(ok [
-        excessive_parens; excessive_parens => { [
+        excessive_parens=> [
             "Apache-2.0 WITH LLVM-exception",
             "Apache-2.0",
             "OpenSSL",
             "MIT",
-        ] }
+        ]
     ]);
 }

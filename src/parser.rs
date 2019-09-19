@@ -28,13 +28,20 @@ impl<'a> ValidExpression<'a> {
         })
     }
 
-    pub fn check_allowed<AF: Fn(&LicenseReq<'a>) -> bool>(
+    /// Evaluates the expression, using the provided function
+    /// to determine if the licensee meets the requirements
+    /// for each license term. If enough requirements are
+    /// satisfied
+    pub fn evaluate<AF: Fn(&LicenseReq<'a>) -> bool>(
         &self,
         allow_func: AF,
     ) -> Result<(), &LicenseReq<'a>> {
         let mut failed = None;
         let mut result_stack = SmallVec::<[bool; 8]>::new();
 
+        // We store the expression as postfix, so just evaluate each license
+        // requirement in the order it comes, and then combining the previous
+        // results according to each operator as it comes
         for node in self.expr.iter() {
             match node {
                 ExprNode::Req(req) => {

@@ -1,3 +1,7 @@
+#![allow(clippy::nonminimal_bool, clippy::eq_op, clippy::cognitive_complexity)]
+
+use spdx::LicenseItem;
+
 macro_rules! exact {
     ($req:expr, $e:expr) => {
         spdx::AllowedLicense::parse($e).unwrap().satisfies($req)
@@ -13,7 +17,7 @@ macro_rules! check {
             // expecting an Ok or Err
             let expected = $logical_expr;
 
-            match validated.check_allowed($is_allowed) {
+            match validated.evaluate($is_allowed) {
                 Ok(_) => assert!(expected, stringify!($logical_expr)),
                 Err(_) => assert!(!expected, stringify!($logical_expr)),
             }
@@ -87,6 +91,29 @@ fn allow_excessive_parens() {
         ((true || false) && false) || false => |req| exact!(req, "Apache-2.0 WITH LLVM-exception"),
         ((false || true) && false) || false => |req| exact!(req, "Apache-2.0"),
         ((false || true) && true) || false => |req| exact!(req, "Apache-2.0") || exact!(req, "OpenSSL"),
+    ]);
+}
+
+#[test]
+fn allow_osi_fsf() {
+    // Borceux is neither OSI or FSF
+    // MIT is both
+    // BitTorrent-1.1 is only FSF
+    check!("Borceux OR MIT AND BitTorrent-1.1" => [
+        false || true && true => |req| {
+            if let LicenseItem::SPDX { id, .. } = req.license {
+                return id.is_osi_approved() || id.is_fsf_free_libre();
+            }
+
+            false
+        },
+        false || true && false => |req| {
+            if let LicenseItem::SPDX { id, .. } = req.license {
+                return id.is_osi_approved() && id.is_fsf_free_libre();
+            }
+
+            false
+        }
     ]);
 }
 

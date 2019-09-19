@@ -196,7 +196,8 @@ pub fn exception_id(name: &str) -> Option<ExceptionId> {
         .ok()
 }
 
-/// Returns the version number of the SPDX set
+/// Returns the version number of the SPDX list from which
+/// the license and exception identifiers are sourced from
 #[inline]
 pub fn license_version() -> &'static str {
     identifiers::VERSION

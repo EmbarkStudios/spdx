@@ -1,44 +1,4 @@
-use spdx::{Lexer, ParseError, Token};
-
-#[test]
-fn lexes_all_the_things() {
-    let text = "MIT OR + () Apache-2.0 WITH AND LicenseRef-World Classpath-exception-2.0 DocumentRef-Test:LicenseRef-Hello";
-    let mut lexer = Lexer::new(text);
-    assert_eq!(lexer.next().unwrap().unwrap().token, Token::License("MIT"));
-    assert_eq!(lexer.next().unwrap().unwrap().token, Token::Or);
-    assert_eq!(
-        lexer.next().unwrap().unwrap_err(),
-        ParseError::SeparatedPlus
-    );
-    assert_eq!(lexer.next().unwrap().unwrap().token, Token::Plus);
-    assert_eq!(lexer.next().unwrap().unwrap().token, Token::OpenParen);
-    assert_eq!(lexer.next().unwrap().unwrap().token, Token::CloseParen);
-    assert_eq!(
-        lexer.next().unwrap().unwrap().token,
-        Token::License("Apache-2.0")
-    );
-    assert_eq!(lexer.next().unwrap().unwrap().token, Token::With);
-    assert_eq!(lexer.next().unwrap().unwrap().token, Token::And);
-    assert_eq!(
-        lexer.next().unwrap().unwrap().token,
-        Token::LicenseRef {
-            doc: None,
-            lic: "World"
-        }
-    );
-    assert_eq!(
-        lexer.next().unwrap().unwrap().token,
-        Token::Exception("Classpath-exception-2.0")
-    );
-    assert_eq!(
-        lexer.next().unwrap().unwrap().token,
-        Token::LicenseRef {
-            doc: Some("Test"),
-            lic: "Hello"
-        }
-    );
-    assert!(lexer.next().is_none());
-}
+use spdx::{Lexer, LicenseItem, Token};
 
 macro_rules! test_lex {
     ($text:expr, [$($token:expr),+$(,)?]) => {
@@ -55,25 +15,61 @@ macro_rules! test_lex {
     }
 }
 
+macro_rules! lic_tok {
+    ($id:expr) => {
+        Token::License(LicenseItem::SPDX {
+            id: spdx::license_id($id).unwrap(),
+            or_later: false,
+        })
+    };
+}
+
+macro_rules! exc_tok {
+    ($id:expr) => {
+        Token::Exception(spdx::exception_id($id).unwrap())
+    };
+}
+
+#[test]
+fn lexes_all_the_things() {
+    let text = "MIT+ OR () Apache-2.0 WITH AND LicenseRef-World Classpath-exception-2.0 DocumentRef-Test:LicenseRef-Hello";
+
+    test_lex!(
+        text,
+        [
+            lic_tok!("MIT"),
+            Token::Plus,
+            Token::Or,
+            Token::OpenParen,
+            Token::CloseParen,
+            lic_tok!("Apache-2.0"),
+            Token::With,
+            Token::And,
+            Token::License(LicenseItem::Other {
+                doc_ref: None,
+                lic_ref: "World",
+            }),
+            exc_tok!("Classpath-exception-2.0"),
+            Token::License(LicenseItem::Other {
+                doc_ref: Some("Test"),
+                lic_ref: "Hello",
+            }),
+        ]
+    );
+}
+
 #[test]
 fn lexes_single() {
     let s = "0BSD";
 
-    test_lex!(s, [Token::License(s)]);
+    test_lex!(s, [lic_tok!(s)]);
 }
 
 #[test]
 fn lexes_or() {
     let s = "Apache-2.0 OR MIT";
 
-    test_lex!(
-        s,
-        [
-            Token::License("Apache-2.0"),
-            Token::Or,
-            Token::License("MIT"),
-        ]
-    );
+    test_lex!(s, [lic_tok!("Apache-2.0"), Token::Or, lic_tok!("MIT"),]);
 }
 
 #[test]
@@ -83,9 +79,9 @@ fn lexes_exception() {
     test_lex!(
         s,
         [
-            Token::License("Apache-2.0"),
+            lic_tok!("Apache-2.0"),
             Token::With,
-            Token::Exception("LLVM-exception"),
+            exc_tok!("LLVM-exception"),
         ]
     );
 }
@@ -97,13 +93,13 @@ fn lexes_exceptions_with_ors() {
     test_lex!(
         s,
         [
-            Token::License("Apache-2.0"),
+            lic_tok!("Apache-2.0"),
             Token::With,
-            Token::Exception("LLVM-exception"),
+            exc_tok!("LLVM-exception"),
             Token::Or,
-            Token::License("Apache-2.0"),
+            lic_tok!("Apache-2.0"),
             Token::Or,
-            Token::License("MIT"),
+            lic_tok!("MIT"),
         ]
     );
 }
@@ -112,14 +108,7 @@ fn lexes_exceptions_with_ors() {
 fn lexes_and() {
     let s = "BSD-3-Clause AND Zlib";
 
-    test_lex!(
-        s,
-        [
-            Token::License("BSD-3-Clause"),
-            Token::And,
-            Token::License("Zlib"),
-        ]
-    );
+    test_lex!(s, [lic_tok!("BSD-3-Clause"), Token::And, lic_tok!("Zlib"),]);
 }
 
 #[test]
@@ -130,14 +119,14 @@ fn lexes_complex() {
         complex,
         [
             Token::OpenParen,
-            Token::License("Apache-2.0"),
+            lic_tok!("Apache-2.0"),
             Token::With,
-            Token::Exception("LLVM-exception"),
+            exc_tok!("LLVM-exception"),
             Token::CloseParen,
             Token::Or,
-            Token::License("Apache-2.0"),
+            lic_tok!("Apache-2.0"),
             Token::Or,
-            Token::License("MIT"),
+            lic_tok!("MIT"),
         ]
     );
 }

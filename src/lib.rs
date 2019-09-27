@@ -105,15 +105,15 @@ impl fmt::Debug for ExceptionId {
 /// LicenseItem, and may allow current a future versions of the license,
 /// and may also allow for a specific exception
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct LicenseReq<'a> {
+pub struct LicenseReq {
     /// The license
-    pub license: LicenseItem<'a>,
+    pub license: LicenseItem,
     /// The exception allowed for this license, as specified following
-    /// `WITH`
+    /// the `WITH` operator
     pub exception: Option<ExceptionId>,
 }
 
-impl<'a> fmt::Display for LicenseReq<'a> {
+impl fmt::Display for LicenseReq {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         self.license.fmt(f)?;
 
@@ -127,8 +127,8 @@ impl<'a> fmt::Display for LicenseReq<'a> {
 /// A single license term in a license expression, according to the SPDX spec.
 /// This can be either an SPDX license, which is mapped to a LicenseId from
 /// a valid SPDX short identifier, or else a document AND/OR license ref
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub enum LicenseItem<'a> {
+#[derive(Debug, Clone, Eq, Ord)]
+pub enum LicenseItem {
     /// A regular SPDX license id
     SPDX {
         id: LicenseId,
@@ -139,14 +139,46 @@ pub enum LicenseItem<'a> {
     Other {
         /// Purpose: Identify any external SPDX documents referenced within this SPDX document.
         /// https://spdx.org/spdx-specification-21-web-version#h.h430e9ypa0j9
-        doc_ref: Option<&'a str>,
+        doc_ref: Option<String>,
         /// Purpose: Provide a locally unique identifier to refer to licenses that are not found on the SPDX License List.
         /// https://spdx.org/spdx-specification-21-web-version#h.4f1mdlm
-        lic_ref: &'a str,
+        lic_ref: String,
     },
 }
 
-impl<'a> fmt::Display for LicenseItem<'a> {
+impl PartialOrd for LicenseItem {
+    fn partial_cmp(&self, o: &Self) -> Option<cmp::Ordering> {
+        match (self, o) {
+            (Self::SPDX { id: a, .. }, Self::SPDX { id: b, .. }) => {
+                a.partial_cmp(b)
+            }
+            (Self::Other { doc_ref: ad, lic_ref: al }, Self::Other { doc_ref: bd, lic_ref: bl }) => {
+                match ad.cmp(bd) {
+                    cmp::Ordering::Equal => al.partial_cmp(bl),
+                    o => Some(o),
+                }
+            }
+            (Self::SPDX { .. }, Self::Other { .. }) => {
+                Some(cmp::Ordering::Less)
+            }
+            (Self::Other { .. }, Self::SPDX { .. }) => {
+                Some(cmp::Ordering::Greater)
+            }
+        }
+    }
+}
+
+impl PartialEq for LicenseItem {
+    fn eq(&self, o: &Self) -> bool {
+        if let Some(cmp::Ordering::Equal) = self.partial_cmp(o) {
+            true
+        } else {
+            false
+        }
+    }
+}
+
+impl fmt::Display for LicenseItem {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match self {
             LicenseItem::SPDX { id, or_later } => {

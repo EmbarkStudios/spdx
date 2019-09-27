@@ -164,10 +164,8 @@ impl<'a> ValidExpression<'a> {
                 }
                 Some(Token::CloseParen) => &["AND", "OR"],
                 Some(Token::Exception(_)) => &["AND", "OR", ")"],
-                Some(Token::License(LicenseItem::SPDX { .. })) => &["AND", "OR", "WITH", ")", "+"],
-                Some(Token::License(LicenseItem::Other { .. })) | Some(Token::Plus) => {
-                    &["AND", "OR", "WITH", ")"]
-                }
+                Some(Token::SPDX(_)) => &["AND", "OR", "WITH", ")", "+"],
+                Some(Token::LicenseRef { .. }) | Some(Token::Plus) => &["AND", "OR", "WITH", ")"],
                 Some(Token::With) => &["<exception>"],
             };
 
@@ -182,35 +180,60 @@ impl<'a> ValidExpression<'a> {
         'outer: for tok in lexer {
             let lt = tok?;
             match &lt.token {
-                Token::License(item) => match last_token {
+                Token::SPDX(id) => match last_token {
                     None | Some(Token::And) | Some(Token::Or) | Some(Token::OpenParen) => {
-                        expr_queue.push(ExprNode::Req(LicenseReq {
-                            license: item.clone(),
-                            exception: None,
-                        }));
+                        expr_queue.push(ExprNode::Req(
+                            ExpressionReq {
+                                req: LicenseReq {
+                                    license: LicenseItem::SPDX {
+                                        id: *id,
+                                        or_later: false,
+                                    },
+                                    exception: None,
+                                },
+                                span: lt.span.start as u32..lt.span.end as u32,
+                            }));
+                    }
+                    _ => return make_err_for_token(last_token, lt.span),
+                },
+                Token::LicenseRef { doc_ref, lic_ref } => match last_token {
+                    None | Some(Token::And) | Some(Token::Or) | Some(Token::OpenParen) => {
+                        expr_queue.push(ExprNode::Req(
+                            ExpressionReq {
+                                req: LicenseReq {
+                                    license: LicenseItem::Other {
+                                        doc_ref: doc_ref.map(String::from),
+                                        lic_ref: String::from(*lic_ref),
+                                    },
+                                    exception: None,
+                                },
+                                span: lt.span.start as u32..lt.span.end as u32,
+                            }));
                     }
                     _ => return make_err_for_token(last_token, lt.span),
                 },
                 Token::Plus => match last_token {
-                    Some(Token::License(LicenseItem::SPDX { .. })) => {
-                        match expr_queue.last_mut().unwrap() {
-                            ExprNode::Req(LicenseReq {
+                    Some(Token::SPDX(_)) => match expr_queue.last_mut().unwrap() {
+                        ExprNode::Req(ExpressionReq {
+                            req: LicenseReq {
                                 license: LicenseItem::SPDX { or_later, .. },
                                 ..
-                            }) => {
-                                *or_later = true;
-                            }
-                            _ => unreachable!(),
+                            },
+                            ..
+                        }) => {
+                            *or_later = true;
                         }
-                    }
+                        _ => unreachable!(),
+                    },
                     _ => return make_err_for_token(last_token, lt.span),
                 },
                 Token::With => match last_token {
-                    Some(Token::License(_)) | Some(Token::Plus) => {}
+                    Some(Token::SPDX(_)) | Some(Token::LicenseRef { .. }) | Some(Token::Plus) => {}
                     _ => return make_err_for_token(last_token, lt.span),
                 },
                 Token::Or | Token::And => match last_token {
-                    Some(Token::License(_))
+                    Some(Token::SPDX(_))
+                    | Some(Token::LicenseRef { .. })
                     | Some(Token::CloseParen)
                     | Some(Token::Exception(_))
                     | Some(Token::Plus) => {
@@ -256,7 +279,8 @@ impl<'a> ValidExpression<'a> {
                 },
                 Token::CloseParen => {
                     match last_token {
-                        Some(Token::License(_))
+                        Some(Token::SPDX(_))
+                        | Some(Token::LicenseRef { .. })
                         | Some(Token::Plus)
                         | Some(Token::Exception(_))
                         | Some(Token::CloseParen) => {
@@ -298,7 +322,8 @@ impl<'a> ValidExpression<'a> {
 
         // Validate that the terminating token is valid
         match last_token {
-            Some(Token::License(_))
+            Some(Token::SPDX(_))
+            | Some(Token::LicenseRef { .. })
             | Some(Token::Exception(_))
             | Some(Token::CloseParen)
             | Some(Token::Plus) => {}

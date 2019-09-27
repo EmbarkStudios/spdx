@@ -1,12 +1,16 @@
 use crate::{
     error::{ParseError, Reason},
-    ExceptionId, LicenseItem,
+    ExceptionId, LicenseId,
 };
 use lazy_static::lazy_static;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Token<'a> {
-    License(LicenseItem<'a>),
+    SPDX(LicenseId),
+    LicenseRef {
+        doc_ref: Option<&'a str>,
+        lic_ref: &'a str,
+    },
     Exception(ExceptionId),
     Plus,
     OpenParen,
@@ -25,13 +29,13 @@ impl<'a> std::fmt::Display for Token<'a> {
 impl<'a> Token<'a> {
     fn len(&self) -> usize {
         match self {
-            Token::License(LicenseItem::SPDX { id, .. }) => id.name.len(),
+            Token::SPDX(id) => id.name.len(),
             Token::Exception(e) => e.name.len(),
             Token::With => 4,
             Token::And => 3,
             Token::Or => 2,
             Token::Plus | Token::OpenParen | Token::CloseParen => 1,
-            Token::License(LicenseItem::Other { doc_ref, lic_ref }) => {
+            Token::LicenseRef { doc_ref, lic_ref } => {
                 doc_ref.map_or(0, |d| {
                     // +1 is for the `:`
                     "DocumentRef-".len() + d.len() + 1
@@ -119,22 +123,19 @@ impl<'a> Iterator for Lexer<'a> {
                     } else if m.as_str() == "OR" {
                         Some(Ok(Token::Or))
                     } else if let Some(lic_id) = crate::license_id(&m.as_str()) {
-                        Some(Ok(Token::License(LicenseItem::SPDX {
-                            id: lic_id,
-                            or_later: false,
-                        })))
+                        Some(Ok(Token::SPDX(lic_id)))
                     } else if let Some(exc_id) = crate::exception_id(&m.as_str()) {
                         Some(Ok(Token::Exception(exc_id)))
                     } else if let Some(c) = DOCREFLICREF.captures(m.as_str()) {
-                        Some(Ok(Token::License(LicenseItem::Other {
+                        Some(Ok(Token::LicenseRef {
                             doc_ref: Some(c.get(1).unwrap().as_str()),
                             lic_ref: c.get(2).unwrap().as_str(),
-                        })))
+                        }))
                     } else if let Some(c) = LICREF.captures(m.as_str()) {
-                        Some(Ok(Token::License(LicenseItem::Other {
+                        Some(Ok(Token::LicenseRef {
                             doc_ref: None,
                             lic_ref: c.get(1).unwrap().as_str(),
-                        })))
+                        }))
                     } else {
                         Some(Err(ParseError {
                             original: self.original,

@@ -42,12 +42,8 @@ impl ValidExpression {
     /// Evaluates the expression, using the provided function
     /// to determine if the licensee meets the requirements
     /// for each license term. If enough requirements are
-    /// satisfied
-    pub fn evaluate<AF: Fn(&LicenseReq<'a>) -> bool>(
-        &self,
-        allow_func: AF,
-    ) -> Result<(), &LicenseReq<'a>> {
-        let mut failed = None;
+    /// satisfied the evaluation will return true.
+    pub fn evaluate<AF: FnMut(&LicenseReq) -> bool>(&self, mut allow_func: AF) -> bool {
         let mut result_stack = SmallVec::<[bool; 8]>::new();
 
         // We store the expression as postfix, so just evaluate each license
@@ -56,11 +52,47 @@ impl ValidExpression {
         for node in self.expr.iter() {
             match node {
                 ExprNode::Req(req) => {
-                    let allowed = allow_func(req);
+                    let allowed = allow_func(&req.req);
+                    result_stack.push(allowed);
+                }
+                ExprNode::Op(Operator::Or) => {
+                    let a = result_stack.pop().unwrap();
+                    let b = result_stack.pop().unwrap();
+
+                    result_stack.push(a || b);
+                }
+                ExprNode::Op(Operator::And) => {
+                    let a = result_stack.pop().unwrap();
+                    let b = result_stack.pop().unwrap();
+
+                    result_stack.push(a && b);
+                }
+            }
+        }
+
+        result_stack.pop().unwrap()
+    }
+
+    /// Just as with evaluate, the license expression is evaluated to see if
+    /// enough license requirements in the expresssion are met for the evaluation
+    /// to succeed, except this method also keeps track of each failed requirement
+    /// and returns them, allowing for more detailed error reporting about precisely
+    /// what terms in the expression caused the overall failure
+    pub fn evaluate_with_failures<AF: FnMut(&LicenseReq) -> bool>(&self, mut allow_func: AF) -> Result<(), Vec<&ExpressionReq>> {
+        let mut result_stack = SmallVec::<[bool; 8]>::new();
+        let mut failures = Vec::new();
+
+        // We store the expression as postfix, so just evaluate each license
+        // requirement in the order it comes, and then combining the previous
+        // results according to each operator as it comes
+        for node in self.expr.iter() {
+            match node {
+                ExprNode::Req(req) => {
+                    let allowed = allow_func(&req.req);
                     result_stack.push(allowed);
 
                     if !allowed {
-                        failed = Some(req);
+                        failures.push(req);
                     }
                 }
                 ExprNode::Op(Operator::Or) => {
@@ -78,8 +110,8 @@ impl ValidExpression {
             }
         }
 
-        if result_stack.pop() == Some(false) {
-            Err(failed.unwrap())
+        if let Some(false) = result_stack.pop() {
+            Err(failures)
         } else {
             Ok(())
         }

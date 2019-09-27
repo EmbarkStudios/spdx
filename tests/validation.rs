@@ -4,13 +4,13 @@ macro_rules! test_validate {
     (ok [$($text:expr => [$($expected:expr),+$(,)?]),+$(,)?]) => {
         $(
             let val_expr = spdx::ValidExpression::parse($text).unwrap();
-            let mut licenses = val_expr.licenses().enumerate();
+            let mut reqs = val_expr.requirements().enumerate();
 
             $(
-                let actual = licenses.next().unwrap();
+                let actual = reqs.next().unwrap();
                 println!("{:?}", actual);
 
-                let actual_str = format!("{}", actual.1);
+                let actual_str = format!("{}", actual.1.req);
                 let expected_str = $expected;
 
                 if actual_str != expected_str {
@@ -23,8 +23,8 @@ macro_rules! test_validate {
                 }
             )+
 
-            if let Some((_, additional)) = licenses.next() {
-                assert!(false, "found additional requirement {}", additional);
+            if let Some((_, additional)) = reqs.next() {
+                assert!(false, "found additional requirement {}", additional.req);
             }
         )+
     };

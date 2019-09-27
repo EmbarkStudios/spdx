@@ -4,7 +4,7 @@ use spdx::LicenseItem;
 
 macro_rules! exact {
     ($req:expr, $e:expr) => {
-        spdx::AllowedLicense::parse($e).unwrap().satisfies($req)
+        spdx::Licensee::parse($e).unwrap().satisfies($req)
     };
 }
 
@@ -17,16 +17,16 @@ macro_rules! check {
             // expecting an Ok or Err
             let expected = $logical_expr;
 
-            match validated.evaluate($is_allowed) {
+            match validated.evaluate_with_failures($is_allowed) {
                 Ok(_) => assert!(expected, stringify!($logical_expr)),
-                Err(_) => assert!(!expected, stringify!($logical_expr)),
+                Err(f) => assert!(!expected, "{} {:?}", stringify!($logical_expr), f),
             }
         )+
     };
 }
 
 #[test]
-fn allow_single_from_or() {
+fn single_or() {
     check!("Apache-2.0 OR MIT" => [
         false || true => |req| exact!(req, "MIT"),
         true || false => |req| exact!(req, "Apache-2.0"),
@@ -35,7 +35,7 @@ fn allow_single_from_or() {
 }
 
 #[test]
-fn disallow_single_from_both() {
+fn single_and() {
     check!("Apache-2.0 AND MIT" => [
         false && true => |req| exact!(req, "MIT"),
         true && false => |req| exact!(req, "Apache-2.0"),
@@ -45,17 +45,28 @@ fn disallow_single_from_both() {
 }
 
 #[test]
-fn allow_complex() {
+fn or_and() {
+    check!("MIT OR Apache-2.0 AND BSD-2-Clause" => [
+        true || true && false => |req| exact!(req, "MIT") || exact!(req, "Apache-2.0"),
+        true || false && false => |req| exact!(req, "MIT"),
+        false || false && true => |req| exact!(req, "BSD-2-Clause"),
+        false || true && false => |req| exact!(req, "Apache-2.0"),
+    ]);
+}
+
+#[test]
+fn complex() {
     check!("(MIT AND (LGPL-2.1+ OR BSD-3-Clause))" => [
         false && (false || true) => |req| exact!(req, "MIT"),
         false && (false || false) => |req| exact!(req, "Apache-2.0"),
         true && (false || false) => |req| exact!(req, "MIT"),
         true && (false || true) => |req| exact!(req, "MIT") || exact!(req, "BSD-3-Clause"),
+        true && (true || false) => |req| exact!(req, "MIT") || exact!(req, "LGPL-2.1"),
     ]);
 }
 
 #[test]
-fn allow_leading() {
+fn leading_parens() {
     check!("((Apache-2.0 WITH LLVM-exception) OR Apache-2.0) AND OpenSSL OR MIT" => [
         (false || false) && false || true => |req| exact!(req, "MIT"),
         (false || true) && false || false => |req| exact!(req, "Apache-2.0"),

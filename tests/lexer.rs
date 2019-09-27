@@ -1,4 +1,4 @@
-use spdx::{Lexer, LicenseItem, Token};
+use spdx::{Lexer, Token};
 
 macro_rules! test_lex {
     ($text:expr, [$($token:expr),+$(,)?]) => {
@@ -17,10 +17,7 @@ macro_rules! test_lex {
 
 macro_rules! lic_tok {
     ($id:expr) => {
-        Token::License(LicenseItem::SPDX {
-            id: spdx::license_id($id).unwrap(),
-            or_later: false,
-        })
+        Token::SPDX(spdx::license_id($id).unwrap())
     };
 }
 
@@ -45,15 +42,15 @@ fn lexes_all_the_things() {
             lic_tok!("Apache-2.0"),
             Token::With,
             Token::And,
-            Token::License(LicenseItem::Other {
+            Token::LicenseRef {
                 doc_ref: None,
                 lic_ref: "World",
-            }),
+            },
             exc_tok!("Classpath-exception-2.0"),
-            Token::License(LicenseItem::Other {
+            Token::LicenseRef {
                 doc_ref: Some("Test"),
                 lic_ref: "Hello",
-            }),
+            },
         ]
     );
 }
@@ -109,6 +106,20 @@ fn lexes_and() {
     let s = "BSD-3-Clause AND Zlib";
 
     test_lex!(s, [lic_tok!("BSD-3-Clause"), Token::And, lic_tok!("Zlib"),]);
+}
+
+#[test]
+fn fails_with_slash() {
+    let mut lexer = Lexer::new("MIT/Apache-2.0");
+    assert_eq!(lexer.next().unwrap().unwrap().token, lic_tok!("MIT"));
+    assert_eq!(
+        lexer.next().unwrap().unwrap_err(),
+        spdx::ParseError {
+            original: "MIT/Apache-2.0",
+            span: 3..14,
+            reason: spdx::error::Reason::InvalidCharacters,
+        }
+    );
 }
 
 #[test]

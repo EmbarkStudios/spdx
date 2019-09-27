@@ -72,12 +72,18 @@ impl fmt::Display for Reason {
             Self::UnopenedParens => f.write_str("unopened parens"),
             Self::Empty => f.write_str("empty expression"),
             Self::Unexpected(expected) => {
-                f.write_str("expected one of ")?;
+                if expected.len() > 1 {
+                    f.write_str("expected one of ")?;
 
-                for (i, exp) in expected.iter().enumerate() {
-                    f.write_fmt(format_args!("{}`{}`", if i > 0 { ", " } else { "" }, exp))?;
+                    for (i, exp) in expected.iter().enumerate() {
+                        f.write_fmt(format_args!("{}`{}`", if i > 0 { ", " } else { "" }, exp))?;
+                    }
+                    f.write_str(" here")
+                } else if !expected.is_empty() {
+                    f.write_fmt(format_args!("expected a `{}` here", expected[0]))
+                } else {
+                    f.write_str("the term was not expected here")
                 }
-                f.write_str(" here")
             }
             Self::SeparatedPlus => f.write_str("`+` must not follow whitespace"),
             Self::UnknownTerm => f.write_str("unknown term"),

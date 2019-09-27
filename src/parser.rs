@@ -6,24 +6,33 @@ use crate::{
 use smallvec::SmallVec;
 use std::fmt;
 
-#[derive(Debug)]
-enum ExprNode<'a> {
+/// A license requirement inside an SPDX license expression, including
+/// the span in the expression where it is located
+#[derive(Debug, Clone)]
+pub struct ExpressionReq {
+    pub req: LicenseReq,
+    pub span: std::ops::Range<u32>,
+}
+
+#[derive(Debug, Clone)]
+enum ExprNode {
     Op(Operator),
-    Req(LicenseReq<'a>),
+    Req(ExpressionReq),
 }
 
 /// An SPDX license expression that is both syntactically
 /// and semantically valid, and can be evaluated
-pub struct ValidExpression<'a> {
-    expr: SmallVec<[ExprNode<'a>; 5]>,
+#[derive(Clone)]
+pub struct ValidExpression {
+    expr: SmallVec<[ExprNode; 5]>,
     // We keep the original string around for display purposes only
-    original: &'a str,
+    original: String,
 }
 
-impl<'a> ValidExpression<'a> {
+impl ValidExpression {
     /// Returns each of the license requirements in the license expression,
     /// but not the operators that join them together
-    pub fn licenses(&self) -> impl Iterator<Item = &LicenseReq<'a>> {
+    pub fn requirements(&self) -> impl Iterator<Item = &ExpressionReq> {
         self.expr.iter().filter_map(|item| match item {
             ExprNode::Req(req) => Some(req),
             _ => None,
@@ -77,7 +86,13 @@ impl<'a> ValidExpression<'a> {
     }
 }
 
-impl<'a> fmt::Debug for ValidExpression<'a> {
+impl AsRef<str> for ValidExpression {
+    fn as_ref(&self) -> &str {
+        &self.original
+    }
+}
+
+impl fmt::Debug for ValidExpression {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for (i, node) in self.expr.iter().enumerate() {
             if i > 0 {
@@ -85,7 +100,7 @@ impl<'a> fmt::Debug for ValidExpression<'a> {
             }
 
             match node {
-                ExprNode::Req(req) => write!(f, "{}", req)?,
+                ExprNode::Req(req) => write!(f, "{}", req.req)?,
                 ExprNode::Op(Operator::And) => f.write_str("AND")?,
                 ExprNode::Op(Operator::Or) => f.write_str("OR")?,
             }
@@ -95,9 +110,9 @@ impl<'a> fmt::Debug for ValidExpression<'a> {
     }
 }
 
-impl<'a> fmt::Display for ValidExpression<'a> {
+impl<'a> fmt::Display for ValidExpression {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(self.original)
+        f.write_str(&self.original)
     }
 }
 
@@ -107,7 +122,7 @@ pub enum Operator {
     Or,
 }
 
-impl<'a> ValidExpression<'a> {
+impl ValidExpression {
     /// Given a license expression, attempts to parse and validate it as a valid SPDX expression
     ///
     /// The validation can fail for many reasons:
@@ -118,7 +133,7 @@ impl<'a> ValidExpression<'a> {
     /// * A license or exception immediately follows another license or exception, without
     /// a valid AND, OR, or WITH operator separating them
     /// * An AND, OR, or WITH doesn't have a license or `)` preceding it
-    pub fn parse(original: &'a str) -> Result<Self, ParseError> {
+    pub fn parse(original: &str) -> Result<Self, ParseError> {
         let lexer = Lexer::new(original);
 
         // Operator precedence in SPDX 2.1
@@ -146,7 +161,7 @@ impl<'a> ValidExpression<'a> {
         // Keep track of the last token to simplify validation of the token stream
         let mut last_token: Option<Token<'_>> = None;
 
-        let apply_op = |op: OpAndSpan, q: &mut SmallVec<[ExprNode<'_>; 5]>| {
+        let apply_op = |op: OpAndSpan, q: &mut SmallVec<[ExprNode; 5]>| {
             let op = match op.op {
                 Op::And => Operator::And,
                 Op::Or => Operator::Or,
@@ -309,7 +324,7 @@ impl<'a> ValidExpression<'a> {
                 Token::Exception(exc) => match last_token {
                     Some(Token::With) => match expr_queue.last_mut() {
                         Some(ExprNode::Req(lic)) => {
-                            lic.exception = Some(*exc);
+                            lic.req.exception = Some(*exc);
                         }
                         _ => unreachable!(),
                     },
@@ -351,8 +366,11 @@ impl<'a> ValidExpression<'a> {
             }
         }
 
+        // TODO: Investigate using https://github.com/oli-obk/quine-mc_cluskey to simplify
+        // expressions, but not really critical. Just cool.
+
         Ok(ValidExpression {
-            original,
+            original: original.to_owned(),
             expr: expr_queue,
         })
     }

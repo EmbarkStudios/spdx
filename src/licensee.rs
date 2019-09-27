@@ -139,3 +139,108 @@ impl Licensee {
         req.exception == self.inner.exception
     }
 }
+
+impl PartialOrd<LicenseReq> for Licensee {
+    fn partial_cmp(&self, o: &LicenseReq) -> Option<std::cmp::Ordering> {
+        self.inner.partial_cmp(o)
+    }
+}
+
+impl PartialEq<LicenseReq> for Licensee {
+    fn eq(&self, o: &LicenseReq) -> bool {
+        self.inner.eq(o)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{Licensee, LicenseReq, LicenseItem, exception_id, license_id};
+
+    const LICENSEES: &[&str] = &[
+        "LicenseRef-Embark-Proprietary",
+        "BSD-2-Clause",
+        "Apache-2.0 WITH LLVM-exception",
+        "BSD-2-Clause-FreeBSD",
+        "BSL-1.0",
+        "Zlib",
+        "CC0-1.0",
+        "FTL",
+        "ISC",
+        "MIT",
+        "MPL-2.0",
+        "BSD-3-Clause",
+        "Unicode-DFS-2016",
+        "Unlicense",
+        "Apache-2.0",
+    ];
+
+    #[test]
+    fn handles_or_later() {
+        let mut licensees: Vec<_> = LICENSEES.iter().map(|l| Licensee::parse(l).unwrap()).collect();
+        licensees.sort();
+
+        let mpl_id = license_id("MPL-2.0").unwrap();
+        let req = LicenseReq {
+            license: LicenseItem::SPDX { id: mpl_id, or_later: true },
+            exception: None,
+        };
+        
+        // Licensees can't have the `or_later`
+        assert!(licensees.binary_search_by(|l| l.inner.cmp(&req)).is_err());
+
+        match &licensees[licensees.binary_search_by(|l| l.partial_cmp(&req).unwrap()).unwrap()].inner.license {
+            LicenseItem::SPDX { id, .. } => assert_eq!(*id, mpl_id),
+            o => panic!("unexepcted {:?}", o),
+        }
+    }
+
+    #[test]
+    fn handles_exceptions() {
+        let mut licensees: Vec<_> = LICENSEES.iter().map(|l| Licensee::parse(l).unwrap()).collect();
+        licensees.sort();
+
+        let apache_id = license_id("Apache-2.0").unwrap();
+        let llvm_exc = exception_id("LLVM-exception").unwrap();
+        let req = LicenseReq {
+            license: LicenseItem::SPDX { id: apache_id, or_later: false },
+            exception: Some(llvm_exc),
+        };
+
+        assert_eq!(&req, &licensees[licensees.binary_search_by(|l| l.partial_cmp(&req).unwrap()).unwrap()].inner);
+    }
+
+    #[test]
+    fn handles_license_ref() {
+        let mut licensees: Vec<_> = LICENSEES.iter().map(|l| Licensee::parse(l).unwrap()).collect();
+        licensees.sort();
+
+        let req = LicenseReq {
+            license: LicenseItem::Other { doc_ref: None, lic_ref: "Embark-Proprietary".to_owned() },
+            exception: None,
+        };
+
+        assert_eq!(&req, &licensees[licensees.binary_search_by(|l| l.partial_cmp(&req).unwrap()).unwrap()].inner);
+    }
+
+    #[test]
+    fn handles_close() {
+        let mut licensees: Vec<_> = LICENSEES.iter().map(|l| Licensee::parse(l).unwrap()).collect();
+        licensees.sort();
+
+        for id in &["BSD-2-Clause", "BSD-2-Clause-FreeBSD"] {
+            let lic_id = license_id(id).unwrap();
+            let req = LicenseReq {
+                license: LicenseItem::SPDX { id: lic_id, or_later: true },
+                exception: None,
+            };
+            
+            // Licensees can't have the `or_later`
+            assert!(licensees.binary_search_by(|l| l.inner.cmp(&req)).is_err());
+
+            match &licensees[licensees.binary_search_by(|l| l.partial_cmp(&req).unwrap()).unwrap()].inner.license {
+                LicenseItem::SPDX { id, .. } => assert_eq!(*id, lic_id),
+                o => panic!("unexepcted {:?}", o),
+            }
+        }
+    }
+}

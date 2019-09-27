@@ -1,14 +1,14 @@
 use std::{cmp, fmt};
 
-mod allowed;
 pub mod error;
 mod identifiers;
 mod lexer;
+mod licensee;
 pub mod parser;
 
-pub use allowed::AllowedLicense;
 pub use error::ParseError;
 pub use lexer::{Lexer, Token};
+pub use licensee::Licensee;
 pub use parser::ValidExpression;
 
 /// Unique identifier for a particular license

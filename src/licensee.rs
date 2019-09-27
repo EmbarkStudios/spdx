@@ -1,24 +1,34 @@
 use crate::{
     error::{ParseError, Reason},
-    ExceptionId, Lexer, LicenseItem, LicenseReq, Token,
+    Lexer, LicenseItem, LicenseReq, Token, ExceptionId,
 };
 
 /// A convenience wrapper for a license and optional exception
 /// that can be checked against a license requirement to see
-/// if it satisfies the requirement
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
-pub struct AllowedLicense<'a> {
-    pub license: LicenseItem<'a>,
-    pub exception: Option<ExceptionId>,
+/// if it satisfies/matches the requirement
+#[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
+pub struct Licensee {
+    inner: LicenseReq,
 }
 
-impl<'a> AllowedLicense<'a> {
+impl Licensee {
+    /// Creates a licensee from its component parts. Note that use of SPDX's
+    /// `or_later` is completely ignore for licensees as it only applies
+    /// to the license holder
+    pub fn new(license: LicenseItem, exception: Option<ExceptionId>) -> Self {
+        if let LicenseItem::SPDX { or_later, .. } = &license { debug_assert!(!or_later) }
+
+        Self {
+            inner: LicenseReq { license, exception }
+        }
+    }
+
     /// Parses an simplified version of an SPDX license expression that
     /// can contain at most 1 valid SDPX license with an optional exception
     /// joined by a WITH.
     ///
     /// eg `<license-id>` | `<license-id> WITH <exception-id>`
-    pub fn parse(original: &'a str) -> Result<Self, ParseError<'a>> {
+    pub fn parse(original: &str) -> Result<Self, ParseError<'_>> {
         let mut lexer = Lexer::new(original);
 
         let license = {
@@ -29,7 +39,14 @@ impl<'a> AllowedLicense<'a> {
             })??;
 
             match lt.token {
-                Token::License(lic) => lic,
+                Token::SPDX(id) => LicenseItem::SPDX {
+                    id,
+                    or_later: false,
+                },
+                Token::LicenseRef { doc_ref, lic_ref } => LicenseItem::Other {
+                    doc_ref: doc_ref.map(String::from),
+                    lic_ref: lic_ref.to_owned(),
+                },
                 _ => {
                     return Err(ParseError {
                         original,
@@ -74,13 +91,15 @@ impl<'a> AllowedLicense<'a> {
             }
         };
 
-        Ok(AllowedLicense { license, exception })
+        Ok(Licensee {
+            inner: LicenseReq { license, exception },
+        })
     }
 
     /// Determines whether the specified license requirement is satisfied by
     /// this license (+exception)
-    pub fn satisfies(&self, req: &LicenseReq<'_>) -> bool {
-        match (&self.license, &req.license) {
+    pub fn satisfies(&self, req: &LicenseReq) -> bool {
+        match (&self.inner.license, &req.license) {
             (LicenseItem::SPDX { id: a, .. }, LicenseItem::SPDX { id: b, or_later }) => {
                 // TODO: Handle GPL shenanigans :-/
                 if a.index != b.index {
@@ -117,6 +136,6 @@ impl<'a> AllowedLicense<'a> {
             _ => return false,
         }
 
-        req.exception == self.exception
+        req.exception == self.inner.exception
     }
 }

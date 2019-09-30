@@ -229,43 +229,42 @@ impl ValidExpression {
             match &lt.token {
                 Token::SPDX(id) => match last_token {
                     None | Some(Token::And) | Some(Token::Or) | Some(Token::OpenParen) => {
-                        expr_queue.push(ExprNode::Req(
-                            ExpressionReq {
-                                req: LicenseReq {
-                                    license: LicenseItem::SPDX {
-                                        id: *id,
-                                        or_later: false,
-                                    },
-                                    exception: None,
+                        expr_queue.push(ExprNode::Req(ExpressionReq {
+                            req: LicenseReq {
+                                license: LicenseItem::SPDX {
+                                    id: *id,
+                                    or_later: false,
                                 },
-                                span: lt.span.start as u32..lt.span.end as u32,
-                            }));
+                                exception: None,
+                            },
+                            span: lt.span.start as u32..lt.span.end as u32,
+                        }));
                     }
                     _ => return make_err_for_token(last_token, lt.span),
                 },
                 Token::LicenseRef { doc_ref, lic_ref } => match last_token {
                     None | Some(Token::And) | Some(Token::Or) | Some(Token::OpenParen) => {
-                        expr_queue.push(ExprNode::Req(
-                            ExpressionReq {
-                                req: LicenseReq {
-                                    license: LicenseItem::Other {
-                                        doc_ref: doc_ref.map(String::from),
-                                        lic_ref: String::from(*lic_ref),
-                                    },
-                                    exception: None,
+                        expr_queue.push(ExprNode::Req(ExpressionReq {
+                            req: LicenseReq {
+                                license: LicenseItem::Other {
+                                    doc_ref: doc_ref.map(String::from),
+                                    lic_ref: String::from(*lic_ref),
                                 },
-                                span: lt.span.start as u32..lt.span.end as u32,
-                            }));
+                                exception: None,
+                            },
+                            span: lt.span.start as u32..lt.span.end as u32,
+                        }));
                     }
                     _ => return make_err_for_token(last_token, lt.span),
                 },
                 Token::Plus => match last_token {
                     Some(Token::SPDX(_)) => match expr_queue.last_mut().unwrap() {
                         ExprNode::Req(ExpressionReq {
-                            req: LicenseReq {
-                                license: LicenseItem::SPDX { or_later, .. },
-                                ..
-                            },
+                            req:
+                                LicenseReq {
+                                    license: LicenseItem::SPDX { or_later, .. },
+                                    ..
+                                },
                             ..
                         }) => {
                             *or_later = true;

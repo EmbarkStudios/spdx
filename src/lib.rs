@@ -149,21 +149,22 @@ pub enum LicenseItem {
 impl PartialOrd for LicenseItem {
     fn partial_cmp(&self, o: &Self) -> Option<cmp::Ordering> {
         match (self, o) {
-            (Self::SPDX { id: a, .. }, Self::SPDX { id: b, .. }) => {
-                a.partial_cmp(b)
-            }
-            (Self::Other { doc_ref: ad, lic_ref: al }, Self::Other { doc_ref: bd, lic_ref: bl }) => {
-                match ad.cmp(bd) {
-                    cmp::Ordering::Equal => al.partial_cmp(bl),
-                    o => Some(o),
-                }
-            }
-            (Self::SPDX { .. }, Self::Other { .. }) => {
-                Some(cmp::Ordering::Less)
-            }
-            (Self::Other { .. }, Self::SPDX { .. }) => {
-                Some(cmp::Ordering::Greater)
-            }
+            (Self::SPDX { id: a, .. }, Self::SPDX { id: b, .. }) => a.partial_cmp(b),
+            (
+                Self::Other {
+                    doc_ref: ad,
+                    lic_ref: al,
+                },
+                Self::Other {
+                    doc_ref: bd,
+                    lic_ref: bl,
+                },
+            ) => match ad.cmp(bd) {
+                cmp::Ordering::Equal => al.partial_cmp(bl),
+                o => Some(o),
+            },
+            (Self::SPDX { .. }, Self::Other { .. }) => Some(cmp::Ordering::Less),
+            (Self::Other { .. }, Self::SPDX { .. }) => Some(cmp::Ordering::Greater),
         }
     }
 }

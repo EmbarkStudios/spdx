@@ -1,15 +1,16 @@
 use std::{cmp, fmt};
 
 pub mod error;
+pub mod expression;
 mod identifiers;
 mod lexer;
 mod licensee;
 pub mod parser;
 
 pub use error::ParseError;
+pub use expression::Expression;
 pub use lexer::{Lexer, Token};
 pub use licensee::Licensee;
-pub use parser::ValidExpression;
 
 /// Unique identifier for a particular license
 #[derive(Copy, Clone, Eq, Ord)]

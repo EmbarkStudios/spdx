@@ -10,7 +10,7 @@ macro_rules! exact {
 
 macro_rules! check {
     ($le:expr => [$($logical_expr:expr => $is_allowed:expr),+$(,)?]) => {
-        let validated = spdx::ValidExpression::parse($le).unwrap();
+        let validated = spdx::Expression::parse($le).unwrap();
 
         $(
             // Evaluate the logical expression to determine if we are

@@ -3,7 +3,7 @@ use spdx::ParseError;
 macro_rules! test_validate {
     (ok [$($text:expr => [$($expected:expr),+$(,)?]),+$(,)?]) => {
         $(
-            let val_expr = spdx::ValidExpression::parse($text).unwrap();
+            let val_expr = spdx::Expression::parse($text).unwrap();
             let mut reqs = val_expr.requirements().enumerate();
 
             $(
@@ -32,7 +32,7 @@ macro_rules! test_validate {
 
 macro_rules! err {
     ($text:expr => $reason:ident @ $range:expr) => {
-        let act_err = spdx::ValidExpression::parse($text).unwrap_err();
+        let act_err = spdx::Expression::parse($text).unwrap_err();
 
         let expected = ParseError {
             original: $text,
@@ -52,7 +52,7 @@ macro_rules! err {
     };
 
     ($text:expr => $unexpected:expr; $range:expr) => {
-        let act_err = spdx::ValidExpression::parse($text).unwrap_err();
+        let act_err = spdx::Expression::parse($text).unwrap_err();
 
         let expected = ParseError {
             original: $text,

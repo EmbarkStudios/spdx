@@ -1,6 +1,6 @@
 # 🆔 spdx
 
-[![Build Status](https://travis-ci.com/EmbarkStudios/spdx.svg?branch=master)](https://travis-ci.com/EmbarkStudios/spdx)
+[![Build Status](https://github.com/EmbarkStudios/spdx/workflows/CI/badge.svg)](https://github.com/EmbarkStudios/spdx/actions)
 [![Crates.io](https://img.shields.io/crates/v/spdx.svg)](https://crates.io/crates/spdx)
 [![Docs](https://docs.rs/spdx/badge.svg)](https://docs.rs/spdx)
 [![Contributor Covenant](https://img.shields.io/badge/contributor%20covenant-v1.4%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)

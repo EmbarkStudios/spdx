@@ -10,6 +10,12 @@ pub struct ExpressionReq {
     pub span: std::ops::Range<u32>,
 }
 
+impl PartialEq for ExpressionReq {
+    fn eq(&self, o: &Self) -> bool {
+        self.req == o.req
+    }
+}
+
 /// The joining operators supported by SPDX 2.1
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Copy, Clone)]
 pub enum Operator {
@@ -17,7 +23,7 @@ pub enum Operator {
     Or,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub(crate) enum ExprNode {
     Op(Operator),
     Req(ExpressionReq),
@@ -148,8 +154,41 @@ impl fmt::Debug for Expression {
     }
 }
 
-impl<'a> fmt::Display for Expression {
+impl fmt::Display for Expression {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(&self.original)
+    }
+}
+
+impl PartialEq for Expression {
+    fn eq(&self, o: &Self) -> bool {
+        // The expressions can be semantically the same but not
+        // syntactically the same, if the user wants to compare
+        // the raw expressions they can just do a string compare
+        if self.expr.len() != o.expr.len() {
+            return false;
+        }
+
+        !self.expr.iter().zip(o.expr.iter()).any(|(a, b)| a != b)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::Expression;
+
+    #[test]
+    fn eq() {
+        let normal = Expression::parse("MIT OR Apache-2.0").unwrap();
+        let extra_parens = Expression::parse("(MIT OR (Apache-2.0))").unwrap();
+        let llvm_exc = Expression::parse("MIT OR Apache-2.0 WITH LLVM-exception").unwrap();
+
+        assert_eq!(normal, normal);
+        assert_eq!(extra_parens, extra_parens);
+        assert_eq!(llvm_exc, llvm_exc);
+
+        assert_eq!(normal, extra_parens);
+
+        assert_ne!(normal, llvm_exc);
     }
 }

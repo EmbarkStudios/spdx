@@ -47,6 +47,11 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: fetch
+      - name: cargo build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --tests
       - name: cargo test
         uses: actions-rs/cargo@v1
         with:

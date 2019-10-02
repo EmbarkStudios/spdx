@@ -14,7 +14,7 @@ Helper crate for SPDX identifiers.
 use spdx::Expression;
 
 fn main() {
-    let this_is_fine = Expression::parse("MIT OR Apache-2.0").unwrap();\
+    let this_is_fine = Expression::parse("MIT OR Apache-2.0").unwrap();
 
     assert!(this_is_fine.evaluate(|req| {
         if let spdx::LicenseItem::SPDX { id, .. } = req.license {

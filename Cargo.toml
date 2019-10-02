@@ -1,6 +1,3 @@
-[workspace]
-members = [".", "update"]
-
 [package]
 name = "spdx"
 version = "0.1.0"

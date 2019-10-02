@@ -43,6 +43,11 @@ fn main() {
 }
 ```
 
+## Updating SPDX list
+
+You can update the list of SPDX identifiers for licenses and exceptions by running the update program `cargo run --manifest-path=update/Cargo.toml -- v3.6` where `v3.6` is the tag in the [SPDX data repo](https://github.com/spdx/license-list-data).
+
+
 ## Contributing
 
 We welcome community contributions to this project.

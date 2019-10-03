@@ -1,12 +1,12 @@
 # 🆔 spdx
 
-[![Build Status](https://github.com/EmbarkStudios/spdx/workflows/CI/badge.svg)](https://github.com/EmbarkStudios/spdx/actions)
+[![Build Status](https://github.com/EmbarkStudios/spdx/workflows/CI/badge.svg)](https://github.com/EmbarkStudios/spdx/actions?workflow=CI)
 [![Crates.io](https://img.shields.io/crates/v/spdx.svg)](https://crates.io/crates/spdx)
 [![Docs](https://docs.rs/spdx/badge.svg)](https://docs.rs/spdx)
 [![Contributor Covenant](https://img.shields.io/badge/contributor%20covenant-v1.4%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
 [![Embark](https://img.shields.io/badge/embark-open%20source-blueviolet.svg)](http://embark.rs)
 
-Helper crate for SPDX identifiers.
+Helper crate for [SPDX](https://spdx.org/about) [license expressions](https://spdx.org/spdx-specification-21-web-version#h.jxpfx0ykyb60).
 
 ## Usage
 

@@ -1,12 +1,52 @@
 # 🆔 spdx
 
-[![Build Status](https://travis-ci.com/EmbarkStudios/spdx.svg?branch=master)](https://travis-ci.com/EmbarkStudios/spdx)
+[![Build Status](https://github.com/EmbarkStudios/spdx/workflows/CI/badge.svg)](https://github.com/EmbarkStudios/spdx/actions)
 [![Crates.io](https://img.shields.io/crates/v/spdx.svg)](https://crates.io/crates/spdx)
 [![Docs](https://docs.rs/spdx/badge.svg)](https://docs.rs/spdx)
 [![Contributor Covenant](https://img.shields.io/badge/contributor%20covenant-v1.4%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
 [![Embark](https://img.shields.io/badge/embark-open%20source-blueviolet.svg)](http://embark.rs)
 
 Helper crate for SPDX identifiers.
+
+## Usage
+
+```rust
+use spdx::Expression;
+
+fn main() {
+    let this_is_fine = Expression::parse("MIT OR Apache-2.0").unwrap();
+
+    assert!(this_is_fine.evaluate(|req| {
+        if let spdx::LicenseItem::SPDX { id, .. } = req.license {
+            // Both MIT and Apache-2.0 are OSI approved, so this expression
+            // evaluates to true
+            return id.is_osi_approved();
+        }
+
+        false
+    }));
+
+    assert!(!this_is_fine.evaluate(|req| {
+        if let spdx::LicenseItem::SPDX { id, .. } = req.license {
+            // This is saying we don't accept any licenses that are OSI approved
+            // so the expression will evaluate to false as both sides of the OR
+            // are now rejected
+            return !id.is_osi_approved();
+        }
+
+        false
+    }));
+
+    // `NOPE` is not a valid SPDX license identifier, so this expression
+    // will fail to parse
+    let _this_is_not = Expression::parse("MIT OR NOPE").unwrap_err();
+}
+```
+
+## Updating SPDX list
+
+You can update the list of SPDX identifiers for licenses and exceptions by running the update program `cargo run --manifest-path=update/Cargo.toml -- v3.6` where `v3.6` is the tag in the [SPDX data repo](https://github.com/spdx/license-list-data).
+
 
 ## Contributing
 

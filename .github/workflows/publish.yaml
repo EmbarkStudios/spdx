@@ -9,9 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
-    - name: Publish to crates.io
-      env:
-        CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
     - uses: actions/checkout@v1
     - uses: actions-rs/toolchain@v1
       with:
@@ -31,5 +28,7 @@ jobs:
         command: test
     - name: cargo publish
       uses: actions-rs/cargo@v1
+      env:
+        CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
       with:
         command: publish

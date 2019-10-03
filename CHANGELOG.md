@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.2.0] - 2019-10-03
 ### Added
 - Added a `Expression` which can parse and validate an SPDX license expression is
 both syntactically and semantically correct, as well as evaluate the expression via
@@ -20,5 +22,6 @@ a user provided callback
 ### Added
 - Initial add of spdx crate, based primarly on [`license-exprs`](https://github.com/rust-lang-nursery/license-exprs)
 
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.1.0...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.2.0...HEAD
+[0.2.0]: https://github.com/EmbarkStudios/cargo-deny/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/EmbarkStudios/spdx/releases/tag/0.1.0

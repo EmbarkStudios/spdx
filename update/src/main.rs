@@ -38,10 +38,6 @@ fn get<'a>(m: &'a Map, k: &str) -> Result<&'a Value> {
         .ok_or_else(|| failure::format_err!("Malformed JSON: {:?} lacks {}", m, k))
 }
 
-const IS_FSF_LIBRE: u8 = 0x1;
-const IS_OSI_APPROVED: u8 = 0x2;
-const IS_DEPRECATED: u8 = 0x4;
-
 fn real_main() -> Result<()> {
     let mut upstream_tag = None;
     let mut debug = false;
@@ -85,6 +81,10 @@ fn real_main() -> Result<()> {
  *
  * cargo run --manifest-path update/Cargo.toml -- v<version> > src/identifiers.rs
  */
+
+pub const IS_FSF_LIBRE: u8 = 0x1;
+pub const IS_OSI_APPROVED: u8 = 0x2;
+pub const IS_DEPRECATED: u8 = 0x4;
 ",
         upstream_tag
     )?;
@@ -118,23 +118,23 @@ fn real_main() -> Result<()> {
 
                 let lic_id = get(&lic, "licenseId")?;
                 if let Value::String(ref s) = lic_id {
-                    let mut flags = 0;
+                    let mut flags: String = "0x0".to_string();
 
                     if let Ok(Value::Bool(val)) = get(&lic, "isDeprecatedLicenseId") {
                         if *val {
-                            flags |= IS_DEPRECATED;
+                            flags.push_str(" | IS_DEPRECATED");
                         }
                     }
 
                     if let Ok(Value::Bool(val)) = get(&lic, "isOsiApproved") {
                         if *val {
-                            flags |= IS_OSI_APPROVED;
+                            flags.push_str(" | IS_OSI_APPROVED");
                         }
                     }
 
                     if let Ok(Value::Bool(val)) = get(&lic, "isFsfLibre") {
                         if *val {
-                            flags |= IS_FSF_LIBRE;
+                            flags.push_str(" | IS_FSF_LIBRE");
                         }
                     }
 
@@ -201,12 +201,12 @@ fn real_main() -> Result<()> {
                     let flags = match get(&exc, "isDeprecatedLicenseId") {
                         Ok(Value::Bool(val)) => {
                             if *val {
-                                IS_DEPRECATED
+                                "IS_DEPRECATED"
                             } else {
-                                0
+                                "0"
                             }
                         }
-                        _ => 0,
+                        _ => "0",
                     };
 
                     v.push((s, flags));

@@ -9,7 +9,7 @@ pub mod parser;
 
 pub use error::ParseError;
 pub use expression::Expression;
-pub use identifiers::{IS_DEPRECATED, IS_FSF_LIBRE, IS_OSI_APPROVED};
+pub use identifiers::{IS_COPYLEFT, IS_DEPRECATED, IS_FSF_LIBRE, IS_OSI_APPROVED};
 pub use lexer::{Lexer, Token};
 pub use licensee::Licensee;
 
@@ -53,6 +53,12 @@ impl LicenseId {
     #[inline]
     pub fn is_deprecated(self) -> bool {
         self.flags & IS_DEPRECATED != 0
+    }
+
+    /// Returns true if the license is copyleft
+    #[inline]
+    pub fn is_copyleft(self) -> bool {
+        self.flags & IS_COPYLEFT != 0
     }
 }
 

@@ -38,6 +38,14 @@ fn get<'a>(m: &'a Map, k: &str) -> Result<&'a Value> {
         .ok_or_else(|| failure::format_err!("Malformed JSON: {:?} lacks {}", m, k))
 }
 
+fn is_copyleft(license: &str) -> bool {
+    if license.contains("GPL-") || license.contains("BY-SA") || license.contains("MPL")  || license.contains("EUPL") {
+        return  true;
+    } else {
+        return false;
+    }
+}
+
 fn real_main() -> Result<()> {
     let mut upstream_tag = None;
     let mut debug = false;
@@ -85,6 +93,7 @@ fn real_main() -> Result<()> {
 pub const IS_FSF_LIBRE: u8 = 0x1;
 pub const IS_OSI_APPROVED: u8 = 0x2;
 pub const IS_DEPRECATED: u8 = 0x4;
+pub const IS_COPYLEFT: u8 = 0x8;
 ",
         upstream_tag
     )?;
@@ -136,6 +145,10 @@ pub const IS_DEPRECATED: u8 = 0x4;
                         if *val {
                             flags.push_str(" | IS_FSF_LIBRE");
                         }
+                    }
+
+                    if is_copyleft(s) {
+                        flags.push_str(" | IS_COPYLEFT");
                     }
 
                     v.push((s, flags));

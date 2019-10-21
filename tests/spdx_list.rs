@@ -45,3 +45,9 @@ fn handles_exception_deprecation() {
         .unwrap()
         .is_deprecated());
 }
+
+#[test]
+fn handles_copyleft() {
+    let gpl = license_id("GPL-3.0").unwrap();
+    assert!(gpl.is_copyleft());
+}

@@ -9,6 +9,7 @@ pub mod parser;
 
 pub use error::ParseError;
 pub use expression::Expression;
+pub use identifiers::{IS_COPYLEFT, IS_DEPRECATED, IS_FSF_LIBRE, IS_OSI_APPROVED};
 pub use lexer::{Lexer, Token};
 pub use licensee::Licensee;
 
@@ -35,10 +36,6 @@ impl PartialOrd for LicenseId {
     }
 }
 
-pub const IS_FSF_LIBRE: u8 = 0x1;
-pub const IS_OSI_APPROVED: u8 = 0x2;
-pub const IS_DEPRECATED: u8 = 0x4;
-
 impl LicenseId {
     /// Returns true if the license is [considered free by the FSF](https://www.gnu.org/licenses/license-list.en.html)
     #[inline]
@@ -56,6 +53,12 @@ impl LicenseId {
     #[inline]
     pub fn is_deprecated(self) -> bool {
         self.flags & IS_DEPRECATED != 0
+    }
+
+    /// Returns true if the license is copyleft
+    #[inline]
+    pub fn is_copyleft(self) -> bool {
+        self.flags & IS_COPYLEFT != 0
     }
 }
 

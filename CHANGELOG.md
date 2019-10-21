@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.2.1] - 2019-10-21
 ### Added
 - [#9](https://github.com/EmbarkStudios/spdx/pull/9) Added a flag for determining if a license is considered [copyleft](https://en.wikipedia.org/wiki/Copyleft). Thanks [@kain88-de](https://github.com/kain88-de)
 
@@ -24,6 +26,7 @@ a user provided callback
 ### Added
 - Initial add of spdx crate, based primarly on [`license-exprs`](https://github.com/rust-lang-nursery/license-exprs)
 
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.2.0...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.2.1...HEAD
+[0.2.1]: https://github.com/EmbarkStudios/cargo-deny/compare/0.2.0...0.2.1
 [0.2.0]: https://github.com/EmbarkStudios/cargo-deny/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/EmbarkStudios/spdx/releases/tag/0.1.0

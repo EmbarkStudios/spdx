@@ -55,7 +55,7 @@ impl LicenseId {
         self.flags & IS_DEPRECATED != 0
     }
 
-    /// Returns true if the license is copyleft
+    /// Returns true if the license is [copyleft](https://en.wikipedia.org/wiki/Copyleft)
     #[inline]
     pub fn is_copyleft(self) -> bool {
         self.flags & IS_COPYLEFT != 0

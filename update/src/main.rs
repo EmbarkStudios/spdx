@@ -39,11 +39,28 @@ fn get<'a>(m: &'a Map, k: &str) -> Result<&'a Value> {
 }
 
 fn is_copyleft(license: &str) -> bool {
-    if license.contains("GPL-") || license.contains("BY-SA") || license.contains("MPL")  || license.contains("EUPL") {
-        return  true;
-    } else {
-        return false;
-    }
+    // Copyleft licenses are determined from
+    // https://www.gnu.org/licenses/license-list.en.html
+    // and no distinction is made between "weak" and "strong"
+    // copyleft, for simplicity
+    license.contains("GPL-")
+        || license.starts_with("CC-BY-NC-SA-")
+        || license.starts_with("CC-BY-SA-")
+        || license.starts_with("CECILL-")
+        || license.starts_with("CPL-")
+        || license.starts_with("CDDL-")
+        || license.starts_with("EUPL")
+        || license.starts_with("MPL-")
+        || license.starts_with("NPL-")
+        || license.starts_with("OSL-")
+        || license == "BSD-Protection"
+        || license == "MS-PL"
+        || license == "MS-RL"
+        //|| license == "OpenSSL" <- this one seems to be debated, but not really copyleft
+        || license == "Parity-6.0.0"
+        || license == "SISSL"
+        || license == "xinetd"
+        || license == "YPL-1.1"
 }
 
 fn real_main() -> Result<()> {
@@ -127,28 +144,34 @@ pub const IS_COPYLEFT: u8 = 0x8;
 
                 let lic_id = get(&lic, "licenseId")?;
                 if let Value::String(ref s) = lic_id {
-                    let mut flags: String = "0x0".to_string();
+                    let mut flags = String::with_capacity(100);
 
                     if let Ok(Value::Bool(val)) = get(&lic, "isDeprecatedLicenseId") {
                         if *val {
-                            flags.push_str(" | IS_DEPRECATED");
+                            flags.push_str("IS_DEPRECATED | ");
                         }
                     }
 
                     if let Ok(Value::Bool(val)) = get(&lic, "isOsiApproved") {
                         if *val {
-                            flags.push_str(" | IS_OSI_APPROVED");
+                            flags.push_str("IS_OSI_APPROVED | ");
                         }
                     }
 
                     if let Ok(Value::Bool(val)) = get(&lic, "isFsfLibre") {
                         if *val {
-                            flags.push_str(" | IS_FSF_LIBRE");
+                            flags.push_str("IS_FSF_LIBRE | ");
                         }
                     }
 
                     if is_copyleft(s) {
-                        flags.push_str(" | IS_COPYLEFT");
+                        flags.push_str("IS_COPYLEFT | ");
+                    }
+
+                    if flags.is_empty() {
+                        flags.push_str("0x0");
+                    } else {
+                        flags.truncate(flags.len() - 3);
                     }
 
                     v.push((s, flags));

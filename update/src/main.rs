@@ -144,28 +144,34 @@ pub const IS_COPYLEFT: u8 = 0x8;
 
                 let lic_id = get(&lic, "licenseId")?;
                 if let Value::String(ref s) = lic_id {
-                    let mut flags: String = "0x0".to_string();
+                    let mut flags = String::with_capacity(100);
 
                     if let Ok(Value::Bool(val)) = get(&lic, "isDeprecatedLicenseId") {
                         if *val {
-                            flags.push_str(" | IS_DEPRECATED");
+                            flags.push_str("IS_DEPRECATED | ");
                         }
                     }
 
                     if let Ok(Value::Bool(val)) = get(&lic, "isOsiApproved") {
                         if *val {
-                            flags.push_str(" | IS_OSI_APPROVED");
+                            flags.push_str("IS_OSI_APPROVED | ");
                         }
                     }
 
                     if let Ok(Value::Bool(val)) = get(&lic, "isFsfLibre") {
                         if *val {
-                            flags.push_str(" | IS_FSF_LIBRE");
+                            flags.push_str("IS_FSF_LIBRE | ");
                         }
                     }
 
                     if is_copyleft(s) {
-                        flags.push_str(" | IS_COPYLEFT");
+                        flags.push_str("IS_COPYLEFT | ");
+                    }
+
+                    if flags.is_empty() {
+                        flags.push_str("0x0");
+                    } else {
+                        flags.truncate(flags.len() - 3);
                     }
 
                     v.push((s, flags));

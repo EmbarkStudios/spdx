@@ -213,7 +213,7 @@ impl fmt::Display for LicenseItem {
 /// Note: any '+' at the end is trimmed
 #[inline]
 pub fn license_id(name: &str) -> Option<LicenseId> {
-    let name = &name.trim_end_matches('+');
+    let name = name.trim_end_matches('+');
     identifiers::LICENSES
         .binary_search_by(|lic| lic.0.cmp(name))
         .map(|index| {

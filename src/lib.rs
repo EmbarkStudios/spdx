@@ -16,8 +16,10 @@ pub use licensee::Licensee;
 /// Unique identifier for a particular license
 #[derive(Copy, Clone, Eq, Ord)]
 pub struct LicenseId {
-    /// The short identifier for the exception
+    /// The short identifier for the license
     pub name: &'static str,
+    /// The full name of the license
+    pub full_name: &'static str,
     index: usize,
     flags: u8,
 }
@@ -211,12 +213,17 @@ impl fmt::Display for LicenseItem {
 /// Note: any '+' at the end is trimmed
 #[inline]
 pub fn license_id(name: &str) -> Option<LicenseId> {
-    let name = &name.trim_end_matches('+');
+    let name = name.trim_end_matches('+');
     identifiers::LICENSES
         .binary_search_by(|lic| lic.0.cmp(name))
         .map(|index| {
-            let (name, flags) = identifiers::LICENSES[index];
-            LicenseId { name, index, flags }
+            let (name, full_name, flags) = identifiers::LICENSES[index];
+            LicenseId {
+                name,
+                full_name,
+                index,
+                flags,
+            }
         })
         .ok()
 }

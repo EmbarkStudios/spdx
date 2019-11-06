@@ -174,11 +174,18 @@ pub const IS_COPYLEFT: u8 = 0x8;
                         flags.truncate(flags.len() - 3);
                     }
 
-                    v.push((s, flags));
+                    let name = if let Value::String(ref name) = get(&lic, "name")? {
+                        name
+                    } else {
+                        s
+                    };
+
+                    v.push((s, name, flags));
                 } else {
                     bail!("Malformed JSON: {:?}", lic_id);
                 }
             }
+
             v.sort_by_key(|v| v.0);
 
             let lic_list_ver = get(&json, "licenseListVersion")?;
@@ -188,9 +195,9 @@ pub const IS_COPYLEFT: u8 = 0x8;
                 bail!("Malformed JSON: {:?}", lic_list_ver)
             }
             writeln!(identifiers)?;
-            writeln!(identifiers, "pub const LICENSES: &[(&str, u8)] = &[")?;
-            for (lic, flags) in v.iter() {
-                writeln!(identifiers, "    (\"{}\", {}),", lic, flags)?;
+            writeln!(identifiers, "pub const LICENSES: &[(&str, &str, u8)] = &[")?;
+            for (id, name, flags) in v.iter() {
+                writeln!(identifiers, "    (\"{}\", r#\"{}\"#, {}),", id, name, flags)?;
             }
             writeln!(identifiers, "];")?;
 

@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Added `LicenseId::full_name` which is the full name for the license, eg "MIT License" for the "MIT" short identifier
 
 ## [0.2.1] - 2019-10-21
 ### Added

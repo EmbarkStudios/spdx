@@ -34,7 +34,8 @@ a user provided callback
 ### Added
 - Initial add of spdx crate, based primarly on [`license-exprs`](https://github.com/rust-lang-nursery/license-exprs)
 
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.2.2...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.2.3...HEAD
+[0.2.3]: https://github.com/EmbarkStudios/spdx/compare/0.2.2...0.2.3
 [0.2.2]: https://github.com/EmbarkStudios/spdx/compare/0.2.1...0.2.2
 [0.2.1]: https://github.com/EmbarkStudios/spdx/compare/0.2.0...0.2.1
 [0.2.0]: https://github.com/EmbarkStudios/spdx/compare/0.1.0...0.2.0

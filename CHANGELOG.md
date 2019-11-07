@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] - 2019-11-07
+### Changed
+- Updated the list of licenses to version 3.7 of the SPDX license list
+
 ## [0.2.2] - 2019-11-06
 ### Added
 - Added `LicenseId::full_name` which is the full name for the license, eg "MIT License" for the "MIT" short identifier

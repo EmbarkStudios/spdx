@@ -118,6 +118,57 @@ pub struct LicenseReq {
     /// the `WITH` operator
     pub exception: Option<ExceptionId>,
 }
+impl LicenseReq {
+    pub fn try_license_id(&self) -> Option<LicenseId> {
+        match self.license {
+            LicenseItem::SPDX { id, .. } => Some(id),
+            _ => None,
+        }
+    }
+
+    /// Determines whether the specified license requirement is satisfied by
+    /// this license (+exception)
+    pub fn satisfies(&self, req: &LicenseReq) -> bool {
+        match (&self.license, &req.license) {
+            (LicenseItem::SPDX { id: a, .. }, LicenseItem::SPDX { id: b, or_later }) => {
+                // TODO: Handle GPL shenanigans :-/
+                if a.index != b.index {
+                    if *or_later {
+                        // Many of the SPDX identifiers end with `-<version number>`,
+                        // so chop that off and ensure the base strings match, and if so,
+                        // just a do a lexical compare, if this "allowed license" is >,
+                        // then we satisfed the license requirement
+                        let a_name = &a.name[..a.name.rfind('-').unwrap_or_else(|| a.name.len())];
+                        let b_name = &b.name[..b.name.rfind('-').unwrap_or_else(|| b.name.len())];
+
+                        if a_name != b_name || a.name < b.name {
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+            }
+            (
+                LicenseItem::Other {
+                    doc_ref: doca,
+                    lic_ref: lica,
+                },
+                LicenseItem::Other {
+                    doc_ref: docb,
+                    lic_ref: licb,
+                },
+            ) => {
+                if doca != docb || lica != licb {
+                    return false;
+                }
+            }
+            _ => return false,
+        }
+
+        req.exception == self.exception
+    }
+}
 
 impl fmt::Display for LicenseReq {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {

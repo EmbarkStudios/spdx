@@ -2,13 +2,19 @@ use crate::{
     error::{ParseError, Reason},
     ExceptionId, Lexer, LicenseItem, LicenseReq, Token,
 };
+use std::fmt;
 
 /// A convenience wrapper for a license and optional exception
 /// that can be checked against a license requirement to see
 /// if it satisfies/matches the requirement
-#[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone)]
 pub struct Licensee {
     inner: LicenseReq,
+}
+impl fmt::Display for Licensee {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.inner.fmt(f)
+    }
 }
 
 impl Licensee {
@@ -97,48 +103,12 @@ impl Licensee {
             inner: LicenseReq { license, exception },
         })
     }
+}
 
-    /// Determines whether the specified license requirement is satisfied by
-    /// this license (+exception)
-    pub fn satisfies(&self, req: &LicenseReq) -> bool {
-        match (&self.inner.license, &req.license) {
-            (LicenseItem::SPDX { id: a, .. }, LicenseItem::SPDX { id: b, or_later }) => {
-                // TODO: Handle GPL shenanigans :-/
-                if a.index != b.index {
-                    if *or_later {
-                        // Many of the SPDX identifiers end with `-<version number>`,
-                        // so chop that off and ensure the base strings match, and if so,
-                        // just a do a lexical compare, if this "allowed license" is >,
-                        // then we satisfed the license requirement
-                        let a_name = &a.name[..a.name.rfind('-').unwrap_or_else(|| a.name.len())];
-                        let b_name = &b.name[..b.name.rfind('-').unwrap_or_else(|| b.name.len())];
-
-                        if a_name != b_name || a.name < b.name {
-                            return false;
-                        }
-                    } else {
-                        return false;
-                    }
-                }
-            }
-            (
-                LicenseItem::Other {
-                    doc_ref: doca,
-                    lic_ref: lica,
-                },
-                LicenseItem::Other {
-                    doc_ref: docb,
-                    lic_ref: licb,
-                },
-            ) => {
-                if doca != docb || lica != licb {
-                    return false;
-                }
-            }
-            _ => return false,
-        }
-
-        req.exception == self.inner.exception
+impl std::ops::Deref for Licensee {
+    type Target = LicenseReq;
+    fn deref(&self) -> &Self::Target {
+        &self.inner
     }
 }
 

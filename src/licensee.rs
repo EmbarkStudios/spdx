@@ -2,6 +2,7 @@ use crate::{
     error::{ParseError, Reason},
     ExceptionId, Lexer, LicenseItem, LicenseReq, Token,
 };
+use std::fmt;
 
 /// A convenience wrapper for a license and optional exception
 /// that can be checked against a license requirement to see
@@ -9,6 +10,12 @@ use crate::{
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub struct Licensee {
     inner: LicenseReq,
+}
+
+impl fmt::Display for Licensee {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.inner.fmt(f)
+    }
 }
 
 impl Licensee {

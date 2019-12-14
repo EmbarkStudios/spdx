@@ -193,10 +193,7 @@ impl From<LicenseId> for LicenseReq {
         };
 
         Self {
-            license: LicenseItem::SPDX {
-                id,
-                or_later,
-            },
+            license: LicenseItem::SPDX { id, or_later },
             exception: None,
         }
     }

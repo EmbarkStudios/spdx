@@ -123,7 +123,7 @@ impl Expression {
                                     original,
                                     span: lt.span,
                                     reason: Reason::GnuNoPlus,
-                                })
+                                });
                             }
 
                             *or_later = true;

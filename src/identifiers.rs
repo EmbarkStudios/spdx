@@ -541,47 +541,47 @@ pub const LICENSES: &[(&str, &str, u8)] = &[
     (
         "GFDL-1.1",
         r#"GNU Free Documentation License v1.1"#,
-        IS_DEPRECATED | IS_FSF_LIBRE,
+        IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT,
     ),
     (
         "GFDL-1.1-only",
         r#"GNU Free Documentation License v1.1 only"#,
-        IS_FSF_LIBRE,
+        IS_FSF_LIBRE | IS_COPYLEFT,
     ),
     (
         "GFDL-1.1-or-later",
         r#"GNU Free Documentation License v1.1 or later"#,
-        IS_FSF_LIBRE,
+        IS_FSF_LIBRE | IS_COPYLEFT,
     ),
     (
         "GFDL-1.2",
         r#"GNU Free Documentation License v1.2"#,
-        IS_DEPRECATED | IS_FSF_LIBRE,
+        IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT,
     ),
     (
         "GFDL-1.2-only",
         r#"GNU Free Documentation License v1.2 only"#,
-        IS_FSF_LIBRE,
+        IS_FSF_LIBRE | IS_COPYLEFT,
     ),
     (
         "GFDL-1.2-or-later",
         r#"GNU Free Documentation License v1.2 or later"#,
-        IS_FSF_LIBRE,
+        IS_FSF_LIBRE | IS_COPYLEFT,
     ),
     (
         "GFDL-1.3",
         r#"GNU Free Documentation License v1.3"#,
-        IS_DEPRECATED | IS_FSF_LIBRE,
+        IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT,
     ),
     (
         "GFDL-1.3-only",
         r#"GNU Free Documentation License v1.3 only"#,
-        IS_FSF_LIBRE,
+        IS_FSF_LIBRE | IS_COPYLEFT,
     ),
     (
         "GFDL-1.3-or-later",
         r#"GNU Free Documentation License v1.3 or later"#,
-        IS_FSF_LIBRE,
+        IS_FSF_LIBRE | IS_COPYLEFT,
     ),
     ("GL2PS", r#"GL2PS License"#, 0x0),
     (

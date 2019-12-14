@@ -43,13 +43,14 @@ fn is_copyleft(license: &str) -> bool {
     // https://www.gnu.org/licenses/license-list.en.html
     // and no distinction is made between "weak" and "strong"
     // copyleft, for simplicity
-    license.contains("GPL-")
+    license.contains("GPL-") // Handles GPL, AGPL, LGPL
         || license.starts_with("CC-BY-NC-SA-")
         || license.starts_with("CC-BY-SA-")
         || license.starts_with("CECILL-")
         || license.starts_with("CPL-")
         || license.starts_with("CDDL-")
         || license.starts_with("EUPL")
+        || license.starts_with("GFDL-")
         || license.starts_with("MPL-")
         || license.starts_with("NPL-")
         || license.starts_with("OSL-")

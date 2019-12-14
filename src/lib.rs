@@ -170,10 +170,32 @@ pub struct LicenseReq {
 
 impl From<LicenseId> for LicenseReq {
     fn from(id: LicenseId) -> Self {
+        let mut or_later = false;
+
+        // We need to special case GNU licenses because reasons
+        let id = if id.is_gnu() {
+            let root = if id.name.ends_with("-or-later") {
+                or_later = true;
+                &id.name[..id.name.len() - 9]
+            } else if id.name.ends_with("-only") {
+                &id.name[..id.name.len() - 5]
+            } else {
+                &id.name[..]
+            };
+
+            // If the root, eg GPL-2.0 licenses, which are currently deprecated,
+            // are actually removed we will need to add them manually, but that
+            // should only occur on a major revision of the SPDX license list,
+            // so for now we should be fine with this
+            license_id(root).expect("Unable to find root GNU license")
+        } else {
+            id
+        };
+
         Self {
             license: LicenseItem::SPDX {
                 id,
-                or_later: false,
+                or_later,
             },
             exception: None,
         }

@@ -86,13 +86,7 @@ impl Expression {
                 Token::SPDX(id) => match last_token {
                     None | Some(Token::And) | Some(Token::Or) | Some(Token::OpenParen) => {
                         expr_queue.push(ExprNode::Req(ExpressionReq {
-                            req: LicenseReq {
-                                license: LicenseItem::SPDX {
-                                    id: *id,
-                                    or_later: false,
-                                },
-                                exception: None,
-                            },
+                            req: LicenseReq::from(*id),
                             span: lt.span.start as u32..lt.span.end as u32,
                         }));
                     }

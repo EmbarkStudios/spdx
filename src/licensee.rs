@@ -174,43 +174,19 @@ impl Licensee {
         match (&self.inner.license, &req.license) {
             (LicenseItem::SPDX { id: a, .. }, LicenseItem::SPDX { id: b, or_later }) => {
                 if a.index != b.index {
-                    let (a_name, b_name, or_later) = if *or_later {
-                        (&a.name[..], &b.name[..], true)
-                    } else if b.is_gnu() {
-                        let (b_name, or_later) = if b.name.ends_with("-or-later") {
-                            (&b.name[..b.name.len() - 9], true)
-                        } else if b.name.ends_with("-only") {
-                            (&b.name[..b.name.len() - 5], false)
-                        } else {
-                            (&b.name[..], false)
-                        };
+                    if *or_later {
+                        // Many of the SPDX identifiers end with `-<version number>`,
+                        // so chop that off and ensure the base strings match, and if so,
+                        // just a do a lexical compare, if this "allowed license" is >,
+                        // then we satisfed the license requirement
+                        let a_name = &a.name[..a.name.rfind('-').unwrap_or_else(|| a.name.len())];
+                        let b_name = &b.name[..b.name.rfind('-').unwrap_or_else(|| b.name.len())];
 
-                        // We already don't allow suffixed GNU licenses during parse, so just return it as is
-                        (&a.name[..], b_name, or_later)
+                        if a_name != b_name || a.name < b.name {
+                            return false;
+                        }
                     } else {
                         return false;
-                    };
-
-                    // Many of the SPDX identifiers end with `-<version number>`,
-                    // so chop that off and ensure the base strings match, and if so,
-                    // just a do a lexical compare, if this "allowed license" is >,
-                    // then we satisfed the license requirement
-                    let a_base = &a_name[..a_name.rfind('-').unwrap_or_else(|| a_name.len())];
-                    let b_base = &b_name[..b_name.rfind('-').unwrap_or_else(|| b_name.len())];
-
-                    //println!("comparing {}({}) to {}({}) with {} and a_name < b_name is {}", a_name, a.name, b_name, b.name, or_later, a_name < b_name);
-                    if a_base != b_base {
-                        return false;
-                    }
-
-                    match a_name.cmp(b_name) {
-                        std::cmp::Ordering::Equal => {}
-                        std::cmp::Ordering::Less => return false,
-                        std::cmp::Ordering::Greater => {
-                            if !or_later {
-                                return false;
-                            }
-                        }
                     }
                 }
             }

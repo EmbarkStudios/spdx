@@ -6,7 +6,7 @@ use std::fmt;
 
 /// A convenience wrapper for a license and optional exception
 /// that can be checked against a license requirement to see
-/// if it satisfies/matches the requirement
+/// if it satisfies/matches the requirement.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub struct Licensee {
     inner: LicenseReq,
@@ -48,10 +48,28 @@ impl Licensee {
             })??;
 
             match lt.token {
-                Token::SPDX(id) => LicenseItem::SPDX {
-                    id,
-                    or_later: false,
-                },
+                Token::SPDX(id) => {
+                    // If we have one of the GNU licenses which use the `-only` or `-or-later` suffixes
+                    // return an error rather than silently truncating, the `-only` and `-or-later`
+                    // suffixes are for the license holder(s) to specify what license(s) they can be
+                    // licensed under, not for the licensee, similarly to the `+`
+                    if id.is_gnu() {
+                        let is_only = original.ends_with("-only");
+                        let or_later = original.ends_with("-or-later");
+                        if is_only || or_later {
+                            return Err(ParseError {
+                                original,
+                                span: if is_only { original.len() - 5..original.len() } else { original.len() - 9..original.len() },
+                                reason: Reason::Unexpected(&["<bare-gnu-license>"]),
+                            })
+                        }
+                    }
+
+                    LicenseItem::SPDX {
+                        id,
+                        or_later: false,
+                    }
+                }
                 Token::LicenseRef { doc_ref, lic_ref } => LicenseItem::Other {
                     doc_ref: doc_ref.map(String::from),
                     lic_ref: lic_ref.to_owned(),
@@ -110,21 +128,40 @@ impl Licensee {
     pub fn satisfies(&self, req: &LicenseReq) -> bool {
         match (&self.inner.license, &req.license) {
             (LicenseItem::SPDX { id: a, .. }, LicenseItem::SPDX { id: b, or_later }) => {
-                // TODO: Handle GPL shenanigans :-/
                 if a.index != b.index {
-                    if *or_later {
-                        // Many of the SPDX identifiers end with `-<version number>`,
-                        // so chop that off and ensure the base strings match, and if so,
-                        // just a do a lexical compare, if this "allowed license" is >,
-                        // then we satisfed the license requirement
-                        let a_name = &a.name[..a.name.rfind('-').unwrap_or_else(|| a.name.len())];
-                        let b_name = &b.name[..b.name.rfind('-').unwrap_or_else(|| b.name.len())];
+                    let (a_name, b_name, or_later) = if *or_later {
+                        (&a.name[..], &b.name[..], true)
+                    } else if b.is_gnu() {
+                         let (b_name, or_later) = if b.name.ends_with("-or-later") {
+                            (&b.name[..b.name.len() - 9], true)
+                         } else if b.name.ends_with("-only") {
+                            (&b.name[..b.name.len() - 5], false)
+                         } else {
+                            (&b.name[..], false)
+                         };
 
-                        if a_name != b_name || a.name < b.name {
-                            return false;
-                        }
+                        // We already don't allow suffixed GNU licenses during parse, so just return it as is
+                        (&a.name[..], b_name, or_later)
                     } else {
                         return false;
+                    };
+
+                    // Many of the SPDX identifiers end with `-<version number>`,
+                    // so chop that off and ensure the base strings match, and if so,
+                    // just a do a lexical compare, if this "allowed license" is >,
+                    // then we satisfed the license requirement
+                    let a_base = &a_name[..a_name.rfind('-').unwrap_or_else(|| a_name.len())];
+                    let b_base = &b_name[..b_name.rfind('-').unwrap_or_else(|| b_name.len())];
+                    
+                    //println!("comparing {}({}) to {}({}) with {} and a_name < b_name is {}", a_name, a.name, b_name, b.name, or_later, a_name < b_name);
+                    if a_base != b_base {
+                        return false;
+                    }
+
+                    match a_name.cmp(b_name) {
+                        std::cmp::Ordering::Equal => {},
+                        std::cmp::Ordering::Less => return false,
+                        std::cmp::Ordering::Greater => if !or_later { return false },
                     }
                 }
             }

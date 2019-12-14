@@ -4,19 +4,30 @@ use crate::{
 };
 use lazy_static::lazy_static;
 
+/// A single token in an SPDX license expression
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Token<'a> {
+    /// A recognized SPDX license id
     SPDX(LicenseId),
+    /// A `LicenseRef-` prefixed id, with an optional
+    /// `DocRef-`
     LicenseRef {
         doc_ref: Option<&'a str>,
         lic_ref: &'a str,
     },
+    /// A recognized SPDX exception id
     Exception(ExceptionId),
+    /// A postfix `+` indicating "or later" for a particular SPDX license id
     Plus,
+    /// A `(` for starting a group
     OpenParen,
+    /// A `)` for ending a group
     CloseParen,
+    /// A `WITH` operator
     With,
+    /// An `AND` operator
     And,
+    /// An `OR` operator
     Or,
 }
 
@@ -46,8 +57,11 @@ impl<'a> Token<'a> {
     }
 }
 
-/// Allows iteration through a license expression, yielding
-/// a token or a parser error
+/// Allows iteration through an SPDX license expression, yielding
+/// a token or a `ParseError`.
+/// 
+/// Prefer to use `Expression::parse` or `Licensee::parse` rather
+/// than directly using the lexer
 pub struct Lexer<'a> {
     inner: &'a str,
     original: &'a str,
@@ -65,6 +79,8 @@ impl<'a> Lexer<'a> {
     }
 }
 
+/// A wrapper around a particular token that includes the span of the characters
+/// in the original string, for diagnostic purposes
 #[derive(Debug)]
 pub struct LexerToken<'a> {
     /// The token that was lexed

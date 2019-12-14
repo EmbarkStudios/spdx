@@ -29,8 +29,38 @@ pub(crate) enum ExprNode {
     Req(ExpressionReq),
 }
 
-/// An SPDX license expression that is both syntactically
-/// and semantically valid, and can be evaluated
+/// An SPDX license expression that is both syntactically and semantically valid,
+/// and can be evaluated
+/// 
+/// ```
+/// use spdx::Expression;
+/// 
+/// let this_is_fine = Expression::parse("MIT OR Apache-2.0").unwrap();
+/// assert!(this_is_fine.evaluate(|req| {
+///     if let spdx::LicenseItem::SPDX { id, .. } = req.license {
+///         // Both MIT and Apache-2.0 are OSI approved, so this expression
+///         // evaluates to true
+///         return id.is_osi_approved();
+///     }
+///
+///    false
+/// }));
+/// 
+/// assert!(!this_is_fine.evaluate(|req| {
+///     if let spdx::LicenseItem::SPDX { id, .. } = req.license {
+///         // This is saying we don't accept any licenses that are OSI approved
+///         // so the expression will evaluate to false as both sides of the OR
+///         // are now rejected
+///         return !id.is_osi_approved();
+///     }
+///
+///     false
+/// }));
+/// 
+/// // `NOPE` is not a valid SPDX license identifier, so this expression
+/// // will fail to parse
+/// let _this_is_not = Expression::parse("MIT OR NOPE").unwrap_err();
+/// ```
 #[derive(Clone)]
 pub struct Expression {
     pub(crate) expr: SmallVec<[ExprNode; 5]>,
@@ -41,6 +71,17 @@ pub struct Expression {
 impl Expression {
     /// Returns each of the license requirements in the license expression,
     /// but not the operators that join them together
+    /// 
+    /// ```
+    /// let expr = spdx::Expression::parse("MIT AND BSD-2-Clause").unwrap();
+    /// 
+    /// assert_eq!(
+    ///     &expr.requirements().map(|er| er.req.license.id()).collect::<Vec<_>>(), &[
+    ///         spdx::license_id("MIT"),
+    ///         spdx::license_id("BSD-2-Clause")
+    ///     ]
+    /// ); 
+    /// ```
     pub fn requirements(&self) -> impl Iterator<Item = &ExpressionReq> {
         self.expr.iter().filter_map(|item| match item {
             ExprNode::Req(req) => Some(req),
@@ -48,10 +89,19 @@ impl Expression {
         })
     }
 
-    /// Evaluates the expression, using the provided function
-    /// to determine if the licensee meets the requirements
-    /// for each license term. If enough requirements are
+    /// Evaluates the expression, using the provided function to determine if the 
+    /// licensee meets the requirements for each license term. If enough requirements are
     /// satisfied the evaluation will return true.
+    ///
+    /// ``` 
+    /// use spdx::Expression;
+    /// 
+    /// let this_is_fine = Expression::parse("MIT OR Apache-2.0").unwrap();
+    /// assert!(this_is_fine.evaluate(|req| {
+    ///     // If we find MIT, then we're happy!
+    ///     req.license.id() == spdx::license_id("MIT")
+    /// }));
+    /// ```
     pub fn evaluate<AF: FnMut(&LicenseReq) -> bool>(&self, mut allow_func: AF) -> bool {
         let mut result_stack = SmallVec::<[bool; 8]>::new();
 

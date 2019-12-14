@@ -1,12 +1,19 @@
 use std::{error::Error, fmt};
 
+/// An error related to parsing of an SPDX license expression
+/// or identifier
 #[derive(Debug, PartialEq)]
 pub struct ParseError<'a> {
+    /// The string that was parsed
     pub original: &'a str,
+    /// The range of characters in the original string that result
+    /// in this error
     pub span: std::ops::Range<usize>,
+    /// The specific reason for the error
     pub reason: Reason,
 }
 
+/// The particular reason for a `ParseError`
 #[derive(Debug, PartialEq)]
 pub enum Reason {
     /// The specified license short-identifier was not

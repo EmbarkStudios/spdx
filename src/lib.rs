@@ -5,7 +5,6 @@ mod identifiers;
 /// Contains types for lexing an SPDX license expression
 pub mod lexer;
 mod licensee;
-mod parser;
 
 pub use error::ParseError;
 pub use expression::Expression;

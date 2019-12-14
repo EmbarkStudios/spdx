@@ -9,7 +9,7 @@ pub mod parser;
 
 pub use error::ParseError;
 pub use expression::Expression;
-pub use identifiers::{IS_COPYLEFT, IS_DEPRECATED, IS_FSF_LIBRE, IS_OSI_APPROVED};
+pub use identifiers::{IS_COPYLEFT, IS_DEPRECATED, IS_FSF_LIBRE, IS_OSI_APPROVED, IS_GNU};
 pub use lexer::{Lexer, Token};
 pub use licensee::Licensee;
 
@@ -61,6 +61,13 @@ impl LicenseId {
     #[inline]
     pub fn is_copyleft(self) -> bool {
         self.flags & IS_COPYLEFT != 0
+    }
+
+    /// Returns true if the license is a [GNU license](https://www.gnu.org/licenses/identify-licenses-clearly.html),
+    /// which operate differently than all other SPDX license identifiers
+    #[inline]
+    pub fn is_gnu(self) -> bool {
+        self.flags & IS_GNU != 0
     }
 }
 

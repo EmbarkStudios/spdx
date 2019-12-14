@@ -11,6 +11,7 @@ pub const IS_FSF_LIBRE: u8 = 0x1;
 pub const IS_OSI_APPROVED: u8 = 0x2;
 pub const IS_DEPRECATED: u8 = 0x4;
 pub const IS_COPYLEFT: u8 = 0x8;
+pub const IS_GNU: u8 = 0x10;
 
 pub const VERSION: &str = "3.7";
 
@@ -46,32 +47,32 @@ pub const LICENSES: &[(&str, &str, u8)] = &[
     (
         "AGPL-1.0",
         r#"Affero General Public License v1.0"#,
-        IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "AGPL-1.0-only",
         r#"Affero General Public License v1.0 only"#,
-        IS_COPYLEFT,
+        IS_COPYLEFT | IS_GNU,
     ),
     (
         "AGPL-1.0-or-later",
         r#"Affero General Public License v1.0 or later"#,
-        IS_COPYLEFT,
+        IS_COPYLEFT | IS_GNU,
     ),
     (
         "AGPL-3.0",
         r#"GNU Affero General Public License v3.0"#,
-        IS_DEPRECATED | IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_DEPRECATED | IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "AGPL-3.0-only",
         r#"GNU Affero General Public License v3.0 only"#,
-        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "AGPL-3.0-or-later",
         r#"GNU Affero General Public License v3.0 or later"#,
-        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     ("AMDPLPA", r#"AMD's plpa_map.c License"#, 0x0),
     ("AML", r#"Apple MIT License"#, 0x0),
@@ -446,7 +447,7 @@ pub const LICENSES: &[(&str, &str, u8)] = &[
     (
         "CNRI-Python-GPL-Compatible",
         r#"CNRI Python Open Source GPL Compatible License Agreement"#,
-        IS_COPYLEFT,
+        0x0,
     ),
     (
         "CPAL-1.0",
@@ -541,143 +542,143 @@ pub const LICENSES: &[(&str, &str, u8)] = &[
     (
         "GFDL-1.1",
         r#"GNU Free Documentation License v1.1"#,
-        IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GFDL-1.1-only",
         r#"GNU Free Documentation License v1.1 only"#,
-        IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GFDL-1.1-or-later",
         r#"GNU Free Documentation License v1.1 or later"#,
-        IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GFDL-1.2",
         r#"GNU Free Documentation License v1.2"#,
-        IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GFDL-1.2-only",
         r#"GNU Free Documentation License v1.2 only"#,
-        IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GFDL-1.2-or-later",
         r#"GNU Free Documentation License v1.2 or later"#,
-        IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GFDL-1.3",
         r#"GNU Free Documentation License v1.3"#,
-        IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GFDL-1.3-only",
         r#"GNU Free Documentation License v1.3 only"#,
-        IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GFDL-1.3-or-later",
         r#"GNU Free Documentation License v1.3 or later"#,
-        IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     ("GL2PS", r#"GL2PS License"#, 0x0),
     (
         "GPL-1.0",
         r#"GNU General Public License v1.0 only"#,
-        IS_DEPRECATED | IS_COPYLEFT,
+        IS_DEPRECATED | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GPL-1.0+",
         r#"GNU General Public License v1.0 or later"#,
-        IS_DEPRECATED | IS_COPYLEFT,
+        IS_DEPRECATED | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GPL-1.0-only",
         r#"GNU General Public License v1.0 only"#,
-        IS_COPYLEFT,
+        IS_COPYLEFT | IS_GNU,
     ),
     (
         "GPL-1.0-or-later",
         r#"GNU General Public License v1.0 or later"#,
-        IS_COPYLEFT,
+        IS_COPYLEFT | IS_GNU,
     ),
     (
         "GPL-2.0",
         r#"GNU General Public License v2.0 only"#,
-        IS_DEPRECATED | IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_DEPRECATED | IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GPL-2.0+",
         r#"GNU General Public License v2.0 or later"#,
-        IS_DEPRECATED | IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_DEPRECATED | IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GPL-2.0-only",
         r#"GNU General Public License v2.0 only"#,
-        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GPL-2.0-or-later",
         r#"GNU General Public License v2.0 or later"#,
-        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GPL-2.0-with-GCC-exception",
         r#"GNU General Public License v2.0 w/GCC Runtime Library exception"#,
-        IS_DEPRECATED | IS_COPYLEFT,
+        IS_DEPRECATED | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GPL-2.0-with-autoconf-exception",
         r#"GNU General Public License v2.0 w/Autoconf exception"#,
-        IS_DEPRECATED | IS_COPYLEFT,
+        IS_DEPRECATED | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GPL-2.0-with-bison-exception",
         r#"GNU General Public License v2.0 w/Bison exception"#,
-        IS_DEPRECATED | IS_COPYLEFT,
+        IS_DEPRECATED | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GPL-2.0-with-classpath-exception",
         r#"GNU General Public License v2.0 w/Classpath exception"#,
-        IS_DEPRECATED | IS_COPYLEFT,
+        IS_DEPRECATED | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GPL-2.0-with-font-exception",
         r#"GNU General Public License v2.0 w/Font exception"#,
-        IS_DEPRECATED | IS_COPYLEFT,
+        IS_DEPRECATED | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GPL-3.0",
         r#"GNU General Public License v3.0 only"#,
-        IS_DEPRECATED | IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_DEPRECATED | IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GPL-3.0+",
         r#"GNU General Public License v3.0 or later"#,
-        IS_DEPRECATED | IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_DEPRECATED | IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GPL-3.0-only",
         r#"GNU General Public License v3.0 only"#,
-        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GPL-3.0-or-later",
         r#"GNU General Public License v3.0 or later"#,
-        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GPL-3.0-with-GCC-exception",
         r#"GNU General Public License v3.0 w/GCC Runtime Library exception"#,
-        IS_DEPRECATED | IS_OSI_APPROVED | IS_COPYLEFT,
+        IS_DEPRECATED | IS_OSI_APPROVED | IS_COPYLEFT | IS_GNU,
     ),
     (
         "GPL-3.0-with-autoconf-exception",
         r#"GNU General Public License v3.0 w/Autoconf exception"#,
-        IS_DEPRECATED | IS_COPYLEFT,
+        IS_DEPRECATED | IS_COPYLEFT | IS_GNU,
     ),
     ("Giftware", r#"Giftware License"#, 0x0),
     ("Glide", r#"3dfx Glide License"#, 0x0),
@@ -729,62 +730,62 @@ pub const LICENSES: &[(&str, &str, u8)] = &[
     (
         "LGPL-2.0",
         r#"GNU Library General Public License v2 only"#,
-        IS_DEPRECATED | IS_OSI_APPROVED | IS_COPYLEFT,
+        IS_DEPRECATED | IS_OSI_APPROVED | IS_COPYLEFT | IS_GNU,
     ),
     (
         "LGPL-2.0+",
         r#"GNU Library General Public License v2 or later"#,
-        IS_DEPRECATED | IS_OSI_APPROVED | IS_COPYLEFT,
+        IS_DEPRECATED | IS_OSI_APPROVED | IS_COPYLEFT | IS_GNU,
     ),
     (
         "LGPL-2.0-only",
         r#"GNU Library General Public License v2 only"#,
-        IS_OSI_APPROVED | IS_COPYLEFT,
+        IS_OSI_APPROVED | IS_COPYLEFT | IS_GNU,
     ),
     (
         "LGPL-2.0-or-later",
         r#"GNU Library General Public License v2 or later"#,
-        IS_OSI_APPROVED | IS_COPYLEFT,
+        IS_OSI_APPROVED | IS_COPYLEFT | IS_GNU,
     ),
     (
         "LGPL-2.1",
         r#"GNU Lesser General Public License v2.1 only"#,
-        IS_DEPRECATED | IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_DEPRECATED | IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "LGPL-2.1+",
         r#"GNU Library General Public License v2.1 or later"#,
-        IS_DEPRECATED | IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_DEPRECATED | IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "LGPL-2.1-only",
         r#"GNU Lesser General Public License v2.1 only"#,
-        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "LGPL-2.1-or-later",
         r#"GNU Lesser General Public License v2.1 or later"#,
-        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "LGPL-3.0",
         r#"GNU Lesser General Public License v3.0 only"#,
-        IS_DEPRECATED | IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_DEPRECATED | IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "LGPL-3.0+",
         r#"GNU Lesser General Public License v3.0 or later"#,
-        IS_DEPRECATED | IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_DEPRECATED | IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "LGPL-3.0-only",
         r#"GNU Lesser General Public License v3.0 only"#,
-        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "LGPL-3.0-or-later",
         r#"GNU Lesser General Public License v3.0 or later"#,
-        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT,
+        IS_OSI_APPROVED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
         "LGPLLR",

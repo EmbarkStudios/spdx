@@ -43,7 +43,7 @@ fn is_copyleft(license: &str) -> bool {
     // https://www.gnu.org/licenses/license-list.en.html
     // and no distinction is made between "weak" and "strong"
     // copyleft, for simplicity
-    license.contains("GPL-") // Handles GPL, AGPL, LGPL
+    license.starts_with("AGPL-")
         || license.starts_with("CC-BY-NC-SA-")
         || license.starts_with("CC-BY-SA-")
         || license.starts_with("CECILL-")
@@ -51,6 +51,8 @@ fn is_copyleft(license: &str) -> bool {
         || license.starts_with("CDDL-")
         || license.starts_with("EUPL")
         || license.starts_with("GFDL-")
+        || license.starts_with("GPL-")
+        || license.starts_with("LGPL-")
         || license.starts_with("MPL-")
         || license.starts_with("NPL-")
         || license.starts_with("OSL-")
@@ -62,6 +64,13 @@ fn is_copyleft(license: &str) -> bool {
         || license == "SISSL"
         || license == "xinetd"
         || license == "YPL-1.1"
+}
+
+fn is_gnu(license: &str) -> bool {
+    license.starts_with("AGPL-")
+        || license.starts_with("GFDL-")
+        || license.starts_with("GPL-")
+        || license.starts_with("LGPL-")
 }
 
 fn real_main() -> Result<()> {
@@ -112,6 +121,7 @@ pub const IS_FSF_LIBRE: u8 = 0x1;
 pub const IS_OSI_APPROVED: u8 = 0x2;
 pub const IS_DEPRECATED: u8 = 0x4;
 pub const IS_COPYLEFT: u8 = 0x8;
+pub const IS_GNU: u8 = 0x10;
 ",
         upstream_tag
     )?;
@@ -169,9 +179,14 @@ pub const IS_COPYLEFT: u8 = 0x8;
                         flags.push_str("IS_COPYLEFT | ");
                     }
 
+                    if is_gnu(s) {
+                        flags.push_str("IS_GNU | ");
+                    }
+
                     if flags.is_empty() {
                         flags.push_str("0x0");
                     } else {
+                        // Strip the trailing ` | `
                         flags.truncate(flags.len() - 3);
                     }
 

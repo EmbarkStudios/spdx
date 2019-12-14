@@ -9,7 +9,7 @@ pub mod parser;
 
 pub use error::ParseError;
 pub use expression::Expression;
-pub use identifiers::{IS_COPYLEFT, IS_DEPRECATED, IS_FSF_LIBRE, IS_OSI_APPROVED, IS_GNU};
+pub use identifiers::{IS_COPYLEFT, IS_DEPRECATED, IS_FSF_LIBRE, IS_GNU, IS_OSI_APPROVED};
 pub use lexer::{Lexer, Token};
 pub use licensee::Licensee;
 

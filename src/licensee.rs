@@ -59,9 +59,13 @@ impl Licensee {
                         if is_only || or_later {
                             return Err(ParseError {
                                 original,
-                                span: if is_only { original.len() - 5..original.len() } else { original.len() - 9..original.len() },
+                                span: if is_only {
+                                    original.len() - 5..original.len()
+                                } else {
+                                    original.len() - 9..original.len()
+                                },
                                 reason: Reason::Unexpected(&["<bare-gnu-license>"]),
-                            })
+                            });
                         }
                     }
 
@@ -132,13 +136,13 @@ impl Licensee {
                     let (a_name, b_name, or_later) = if *or_later {
                         (&a.name[..], &b.name[..], true)
                     } else if b.is_gnu() {
-                         let (b_name, or_later) = if b.name.ends_with("-or-later") {
+                        let (b_name, or_later) = if b.name.ends_with("-or-later") {
                             (&b.name[..b.name.len() - 9], true)
-                         } else if b.name.ends_with("-only") {
+                        } else if b.name.ends_with("-only") {
                             (&b.name[..b.name.len() - 5], false)
-                         } else {
+                        } else {
                             (&b.name[..], false)
-                         };
+                        };
 
                         // We already don't allow suffixed GNU licenses during parse, so just return it as is
                         (&a.name[..], b_name, or_later)
@@ -152,16 +156,20 @@ impl Licensee {
                     // then we satisfed the license requirement
                     let a_base = &a_name[..a_name.rfind('-').unwrap_or_else(|| a_name.len())];
                     let b_base = &b_name[..b_name.rfind('-').unwrap_or_else(|| b_name.len())];
-                    
+
                     //println!("comparing {}({}) to {}({}) with {} and a_name < b_name is {}", a_name, a.name, b_name, b.name, or_later, a_name < b_name);
                     if a_base != b_base {
                         return false;
                     }
 
                     match a_name.cmp(b_name) {
-                        std::cmp::Ordering::Equal => {},
+                        std::cmp::Ordering::Equal => {}
                         std::cmp::Ordering::Less => return false,
-                        std::cmp::Ordering::Greater => if !or_later { return false },
+                        std::cmp::Ordering::Greater => {
+                            if !or_later {
+                                return false;
+                            }
+                        }
                     }
                 }
             }

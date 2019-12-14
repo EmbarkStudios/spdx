@@ -93,10 +93,16 @@ impl fmt::Display for Reason {
 
 impl<'a> Error for ParseError<'a> {
     fn description(&self) -> &str {
-        match *self {
-            //ParseError::UnknownLicenseId(_) => "unknown license or other term",
-            //ParseError::InvalidStructure(_) => "invalid license expression",
-            _ => unimplemented!(),
+        match self.reason {
+            Reason::UnknownLicense => "unknown license id",
+            Reason::UnknownException => "unknown exception id",
+            Reason::InvalidCharacters => "invalid character(s)",
+            Reason::UnclosedParens => "unclosed parens",
+            Reason::UnopenedParens => "unopened parens",
+            Reason::Empty => "empty expression",
+            Reason::Unexpected(_) => "unexpected term",
+            Reason::SeparatedPlus => "`+` must not follow whitespace",
+            Reason::UnknownTerm => "unknown term",
         }
     }
 }

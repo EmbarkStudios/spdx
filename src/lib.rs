@@ -14,10 +14,10 @@ pub use licensee::Licensee;
 use std::{cmp, fmt};
 
 /// Unique identifier for a particular license
-/// 
+///
 /// ```
 /// let bsd = spdx::license_id("BSD-3-Clause").unwrap();
-/// 
+///
 /// assert!(
 ///     bsd.is_fsf_free_libre()
 ///     && bsd.is_osi_approved()
@@ -51,7 +51,7 @@ impl PartialOrd for LicenseId {
 
 impl LicenseId {
     /// Returns true if the license is [considered free by the FSF](https://www.gnu.org/licenses/license-list.en.html)
-    /// 
+    ///
     /// ```
     /// assert!(spdx::license_id("GPL-2.0-only").unwrap().is_fsf_free_libre());
     /// ```
@@ -61,7 +61,7 @@ impl LicenseId {
     }
 
     /// Returns true if the license is [OSI approved](https://opensource.org/licenses)
-    /// 
+    ///
     /// ```
     /// assert!(spdx::license_id("MIT").unwrap().is_osi_approved());
     /// ```
@@ -71,7 +71,7 @@ impl LicenseId {
     }
 
     /// Returns true if the license is deprecated
-    /// 
+    ///
     /// ```
     /// assert!(spdx::license_id("wxWindows").unwrap().is_deprecated());
     /// ```
@@ -81,7 +81,7 @@ impl LicenseId {
     }
 
     /// Returns true if the license is [copyleft](https://en.wikipedia.org/wiki/Copyleft)
-    /// 
+    ///
     /// ```
     /// assert!(spdx::license_id("LGPL-3.0-or-later").unwrap().is_copyleft());
     /// ```
@@ -92,7 +92,7 @@ impl LicenseId {
 
     /// Returns true if the license is a [GNU license](https://www.gnu.org/licenses/identify-licenses-clearly.html),
     /// which operate differently than all other SPDX license identifiers
-    /// 
+    ///
     /// ```
     /// assert!(spdx::license_id("AGPL-3.0-only").unwrap().is_gnu());
     /// ```
@@ -109,7 +109,7 @@ impl fmt::Debug for LicenseId {
 }
 
 /// Unique identifier for a particular exception
-/// 
+///
 /// ```
 /// let exception_id = spdx::exception_id("LLVM-exception").unwrap();
 /// assert!(!exception_id.is_deprecated());
@@ -138,7 +138,7 @@ impl PartialOrd for ExceptionId {
 
 impl ExceptionId {
     /// Returns true if the exception is deprecated
-    /// 
+    ///
     /// ```
     /// assert!(spdx::exception_id("Nokia-Qt-exception-1.1").unwrap().is_deprecated());
     /// ```
@@ -157,7 +157,7 @@ impl fmt::Debug for ExceptionId {
 /// Represents a single license requirement, which must include a valid
 /// LicenseItem, and may allow current and future versions of the license,
 /// and may also allow for a specific exception
-/// 
+///
 /// While they can be constructed manually, most of the time these will
 /// be parsed and combined in an `Expression`
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -286,7 +286,7 @@ impl fmt::Display for LicenseItem {
 
 /// Attempts to find a LicenseId for the string
 /// Note: any '+' at the end is trimmed
-/// 
+///
 /// ```
 /// assert!(spdx::license_id("MIT").is_some());
 /// assert!(spdx::license_id("BitTorrent-1.1+").is_some());
@@ -309,7 +309,7 @@ pub fn license_id(name: &str) -> Option<LicenseId> {
 }
 
 /// Attempts to find an ExceptionId for the string
-/// 
+///
 /// ```
 /// assert!(spdx::exception_id("LLVM-exception").is_some());
 /// ```
@@ -326,7 +326,7 @@ pub fn exception_id(name: &str) -> Option<ExceptionId> {
 
 /// Returns the version number of the SPDX list from which
 /// the license and exception identifiers are sourced from
-/// 
+///
 /// ```
 /// assert_eq!(spdx::license_version(), "3.7");
 /// ```

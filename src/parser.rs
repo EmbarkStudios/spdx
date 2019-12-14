@@ -17,7 +17,7 @@ impl Expression {
     /// * A license or exception immediately follows another license or exception, without
     /// a valid AND, OR, or WITH operator separating them
     /// * An AND, OR, or WITH doesn't have a license or `)` preceding it
-    /// 
+    ///
     /// ```
     /// spdx::Expression::parse("MIT OR Apache-2.0 WITH LLVM-exception").unwrap();
     /// ```

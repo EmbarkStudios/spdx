@@ -1,17 +1,17 @@
 use crate::{
     error::{ParseError, Reason},
-    ExceptionId, LicenseItem, LicenseReq,
     lexer::{Lexer, Token},
+    ExceptionId, LicenseItem, LicenseReq,
 };
 use std::fmt;
 
 /// A convenience wrapper for a license and optional exception
 /// that can be checked against a license requirement to see
 /// if it satisfies the requirement placed by a license holder
-/// 
+///
 /// ```
 /// let licensee = spdx::Licensee::parse("GPL-2.0").unwrap();
-/// 
+///
 /// assert!(licensee.satisfies(&spdx::LicenseReq::from(spdx::license_id("GPL-2.0-only").unwrap())));
 /// ```
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
@@ -45,25 +45,25 @@ impl Licensee {
     ///
     /// ```
     /// use spdx::Licensee;
-    /// 
+    ///
     /// // Normal single license
     /// Licensee::parse("MIT").unwrap();
-    /// 
+    ///
     /// // SPDX allows license identifiers outside of the official license list
     /// // via the LicenseRef- prefix
     /// Licensee::parse("LicenseRef-My-Super-Extra-Special-License").unwrap();
-    /// 
+    ///
     /// // License and exception
     /// Licensee::parse("Apache-2.0 WITH LLVM-exception").unwrap();
-    /// 
+    ///
     /// // `+` is only allowed to be used by license requirements from the license holder
     /// Licensee::parse("Apache-2.0+").unwrap_err();
-    /// 
+    ///
     /// Licensee::parse("GPL-2.0").unwrap();
-    /// 
+    ///
     /// // GNU suffix license (GPL, AGPL, LGPL, GFDL) must not contain the suffix
     /// Licensee::parse("GPL-3.0-or-later").unwrap_err();
-    /// 
+    ///
     /// ```
     pub fn parse(original: &str) -> Result<Self, ParseError<'_>> {
         let mut lexer = Lexer::new(original);
@@ -157,10 +157,10 @@ impl Licensee {
 
     /// Determines whether the specified license requirement is satisfied by
     /// this license (+exception)
-    /// 
+    ///
     /// ```
     /// let licensee = spdx::Licensee::parse("Apache-2.0 WITH LLVM-exception").unwrap();
-    /// 
+    ///
     /// assert!(licensee.satisfies(&spdx::LicenseReq {
     ///     license: spdx::LicenseItem::SPDX {
     ///         id: spdx::license_id("Apache-2.0").unwrap(),

@@ -31,10 +31,10 @@ pub(crate) enum ExprNode {
 
 /// An SPDX license expression that is both syntactically and semantically valid,
 /// and can be evaluated
-/// 
+///
 /// ```
 /// use spdx::Expression;
-/// 
+///
 /// let this_is_fine = Expression::parse("MIT OR Apache-2.0").unwrap();
 /// assert!(this_is_fine.evaluate(|req| {
 ///     if let spdx::LicenseItem::SPDX { id, .. } = req.license {
@@ -45,7 +45,7 @@ pub(crate) enum ExprNode {
 ///
 ///    false
 /// }));
-/// 
+///
 /// assert!(!this_is_fine.evaluate(|req| {
 ///     if let spdx::LicenseItem::SPDX { id, .. } = req.license {
 ///         // This is saying we don't accept any licenses that are OSI approved
@@ -56,7 +56,7 @@ pub(crate) enum ExprNode {
 ///
 ///     false
 /// }));
-/// 
+///
 /// // `NOPE` is not a valid SPDX license identifier, so this expression
 /// // will fail to parse
 /// let _this_is_not = Expression::parse("MIT OR NOPE").unwrap_err();
@@ -71,16 +71,16 @@ pub struct Expression {
 impl Expression {
     /// Returns each of the license requirements in the license expression,
     /// but not the operators that join them together
-    /// 
+    ///
     /// ```
     /// let expr = spdx::Expression::parse("MIT AND BSD-2-Clause").unwrap();
-    /// 
+    ///
     /// assert_eq!(
     ///     &expr.requirements().map(|er| er.req.license.id()).collect::<Vec<_>>(), &[
     ///         spdx::license_id("MIT"),
     ///         spdx::license_id("BSD-2-Clause")
     ///     ]
-    /// ); 
+    /// );
     /// ```
     pub fn requirements(&self) -> impl Iterator<Item = &ExpressionReq> {
         self.expr.iter().filter_map(|item| match item {
@@ -89,13 +89,13 @@ impl Expression {
         })
     }
 
-    /// Evaluates the expression, using the provided function to determine if the 
+    /// Evaluates the expression, using the provided function to determine if the
     /// licensee meets the requirements for each license term. If enough requirements are
     /// satisfied the evaluation will return true.
     ///
-    /// ``` 
+    /// ```
     /// use spdx::Expression;
-    /// 
+    ///
     /// let this_is_fine = Expression::parse("MIT OR Apache-2.0").unwrap();
     /// assert!(this_is_fine.evaluate(|req| {
     ///     // If we find MIT, then we're happy!

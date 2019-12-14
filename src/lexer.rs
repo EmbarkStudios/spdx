@@ -59,7 +59,7 @@ impl<'a> Token<'a> {
 
 /// Allows iteration through an SPDX license expression, yielding
 /// a token or a `ParseError`.
-/// 
+///
 /// Prefer to use `Expression::parse` or `Licensee::parse` rather
 /// than directly using the lexer
 pub struct Lexer<'a> {

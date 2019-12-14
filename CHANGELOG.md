@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 eg. `GPL-2.0-or-later` becomes `GPL-2.0+` so that the GNU style license identifiers can be used just the same
 as all of the other ones. See [this issue](https://github.com/EmbarkStudios/cargo-deny/issues/55)
 
-## [0.2.4] - 2019-25-11
+## [0.2.4] - 2019-11-25
 ### Added
 - Impl Display for Licensee
 

@@ -1,17 +1,17 @@
-use std::{cmp, fmt};
-
+/// Error types
 pub mod error;
-pub mod expression;
+mod expression;
 mod identifiers;
-mod lexer;
+/// Contains types for lexing an SPDX license expression
+pub mod lexer;
 mod licensee;
-pub mod parser;
+mod parser;
 
 pub use error::ParseError;
 pub use expression::Expression;
-pub use identifiers::{IS_COPYLEFT, IS_DEPRECATED, IS_FSF_LIBRE, IS_GNU, IS_OSI_APPROVED};
-pub use lexer::{Lexer, Token};
+use identifiers::{IS_COPYLEFT, IS_DEPRECATED, IS_FSF_LIBRE, IS_GNU, IS_OSI_APPROVED};
 pub use licensee::Licensee;
+use std::{cmp, fmt};
 
 /// Unique identifier for a particular license
 #[derive(Copy, Clone, Eq, Ord)]

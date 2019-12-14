@@ -1,6 +1,7 @@
 use crate::{
     error::{ParseError, Reason},
-    ExceptionId, Lexer, LicenseItem, LicenseReq, Token,
+    ExceptionId, LicenseItem, LicenseReq,
+    lexer::{Lexer, Token},
 };
 use std::fmt;
 

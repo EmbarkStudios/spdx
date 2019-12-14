@@ -182,12 +182,12 @@ fn validates_complex() {
 
 #[test]
 fn validates_parens_plus() {
-    let expression = "(MIT AND (LGPL-2.1+ OR BSD-3-Clause))";
+    let expression = "(MIT AND (BitTorrent-1.1+ OR BSD-3-Clause))";
 
     test_validate!(ok [
         expression => [
             "MIT",
-            "LGPL-2.1+",
+            "BitTorrent-1.1+",
             "BSD-3-Clause",
         ]
     ]);

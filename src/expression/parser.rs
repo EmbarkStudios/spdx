@@ -118,11 +118,20 @@ impl Expression {
                         ExprNode::Req(ExpressionReq {
                             req:
                                 LicenseReq {
-                                    license: LicenseItem::SPDX { or_later, .. },
+                                    license: LicenseItem::SPDX { or_later, id },
                                     ..
                                 },
                             ..
                         }) => {
+                            // Handle GNU licenses differently, as they should *NOT* be used with the `+`
+                            if id.is_gnu() {
+                                return Err(ParseError {
+                                    original,
+                                    span: lt.span,
+                                    reason: Reason::GnuNoPlus,
+                                })
+                            }
+
                             *or_later = true;
                         }
                         _ => unreachable!(),

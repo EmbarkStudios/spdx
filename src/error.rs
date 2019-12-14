@@ -42,6 +42,9 @@ pub enum Reason {
     /// 3. Not a document/license ref
     /// 4. Not an AND, OR, or WITH
     UnknownTerm,
+    /// GNU suffix licenses don't allow `+` because they already have
+    /// the `-or-later` suffix to denote that
+    GnuNoPlus,
 }
 
 impl<'a> fmt::Display for ParseError<'a> {
@@ -94,6 +97,7 @@ impl fmt::Display for Reason {
             }
             Self::SeparatedPlus => f.write_str("`+` must not follow whitespace"),
             Self::UnknownTerm => f.write_str("unknown term"),
+            Self::GnuNoPlus => f.write_str("a GNU license was followed by a `+`"),
         }
     }
 }
@@ -110,6 +114,7 @@ impl<'a> Error for ParseError<'a> {
             Reason::Unexpected(_) => "unexpected term",
             Reason::SeparatedPlus => "`+` must not follow whitespace",
             Reason::UnknownTerm => "unknown term",
+            Reason::GnuNoPlus => "a GNU license was followed by a `+`",
         }
     }
 }

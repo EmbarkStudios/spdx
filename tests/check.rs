@@ -56,12 +56,12 @@ fn or_and() {
 
 #[test]
 fn complex() {
-    check!("(MIT AND (LGPL-2.1+ OR BSD-3-Clause))" => [
+    check!("(MIT AND (LGPL-2.1-or-later OR BSD-3-Clause))" => [
         false && (false || true) => |req| exact!(req, "MIT"),
         false && (false || false) => |req| exact!(req, "Apache-2.0"),
         true && (false || false) => |req| exact!(req, "MIT"),
         true && (false || true) => |req| exact!(req, "MIT") || exact!(req, "BSD-3-Clause"),
-        true && (true || false) => |req| exact!(req, "MIT") || exact!(req, "LGPL-2.1"),
+        true && (true || false) => |req| exact!(req, "MIT") || exact!(req, "LGPL-3.0"),
     ]);
 }
 
@@ -165,10 +165,5 @@ fn gpl_or_later() {
 
 #[test]
 fn gpl_or_later_plus() {
-    check!("GPL-2.0+" => [
-        false => |req| exact!(req, "GPL-1.0"),
-        true => |req| exact!(req, "GPL-2.0"),
-        true => |req| exact!(req, "GPL-3.0"),
-        //true => |req| exact!(req, "GPL-4.0"),
-    ]);
+    spdx::Expression::parse("GPL-2.0+").unwrap_err();
 }

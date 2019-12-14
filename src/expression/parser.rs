@@ -17,6 +17,10 @@ impl Expression {
     /// * A license or exception immediately follows another license or exception, without
     /// a valid AND, OR, or WITH operator separating them
     /// * An AND, OR, or WITH doesn't have a license or `)` preceding it
+    ///
+    /// ```
+    /// spdx::Expression::parse("MIT OR Apache-2.0 WITH LLVM-exception").unwrap();
+    /// ```
     pub fn parse(original: &str) -> Result<Self, ParseError> {
         let lexer = Lexer::new(original);
 
@@ -82,13 +86,7 @@ impl Expression {
                 Token::SPDX(id) => match last_token {
                     None | Some(Token::And) | Some(Token::Or) | Some(Token::OpenParen) => {
                         expr_queue.push(ExprNode::Req(ExpressionReq {
-                            req: LicenseReq {
-                                license: LicenseItem::SPDX {
-                                    id: *id,
-                                    or_later: false,
-                                },
-                                exception: None,
-                            },
+                            req: LicenseReq::from(*id),
                             span: lt.span.start as u32..lt.span.end as u32,
                         }));
                     }
@@ -114,11 +112,20 @@ impl Expression {
                         ExprNode::Req(ExpressionReq {
                             req:
                                 LicenseReq {
-                                    license: LicenseItem::SPDX { or_later, .. },
+                                    license: LicenseItem::SPDX { or_later, id },
                                     ..
                                 },
                             ..
                         }) => {
+                            // Handle GNU licenses differently, as they should *NOT* be used with the `+`
+                            if id.is_gnu() {
+                                return Err(ParseError {
+                                    original,
+                                    span: lt.span,
+                                    reason: Reason::GnuNoPlus,
+                                });
+                            }
+
                             *or_later = true;
                         }
                         _ => unreachable!(),

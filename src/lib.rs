@@ -1,19 +1,29 @@
-use std::{cmp, fmt};
-
+/// Error types
 pub mod error;
-pub mod expression;
+mod expression;
 mod identifiers;
-mod lexer;
+/// Contains types for lexing an SPDX license expression
+pub mod lexer;
 mod licensee;
-pub mod parser;
 
 pub use error::ParseError;
 pub use expression::Expression;
-pub use identifiers::{IS_COPYLEFT, IS_DEPRECATED, IS_FSF_LIBRE, IS_OSI_APPROVED};
-pub use lexer::{Lexer, Token};
+use identifiers::{IS_COPYLEFT, IS_DEPRECATED, IS_FSF_LIBRE, IS_GNU, IS_OSI_APPROVED};
 pub use licensee::Licensee;
+use std::{cmp, fmt};
 
 /// Unique identifier for a particular license
+///
+/// ```
+/// let bsd = spdx::license_id("BSD-3-Clause").unwrap();
+///
+/// assert!(
+///     bsd.is_fsf_free_libre()
+///     && bsd.is_osi_approved()
+///     && !bsd.is_deprecated()
+///     && !bsd.is_copyleft()
+/// );
+/// ```
 #[derive(Copy, Clone, Eq, Ord)]
 pub struct LicenseId {
     /// The short identifier for the license
@@ -40,27 +50,54 @@ impl PartialOrd for LicenseId {
 
 impl LicenseId {
     /// Returns true if the license is [considered free by the FSF](https://www.gnu.org/licenses/license-list.en.html)
+    ///
+    /// ```
+    /// assert!(spdx::license_id("GPL-2.0-only").unwrap().is_fsf_free_libre());
+    /// ```
     #[inline]
     pub fn is_fsf_free_libre(self) -> bool {
         self.flags & IS_FSF_LIBRE != 0
     }
 
     /// Returns true if the license is [OSI approved](https://opensource.org/licenses)
+    ///
+    /// ```
+    /// assert!(spdx::license_id("MIT").unwrap().is_osi_approved());
+    /// ```
     #[inline]
     pub fn is_osi_approved(self) -> bool {
         self.flags & IS_OSI_APPROVED != 0
     }
 
     /// Returns true if the license is deprecated
+    ///
+    /// ```
+    /// assert!(spdx::license_id("wxWindows").unwrap().is_deprecated());
+    /// ```
     #[inline]
     pub fn is_deprecated(self) -> bool {
         self.flags & IS_DEPRECATED != 0
     }
 
     /// Returns true if the license is [copyleft](https://en.wikipedia.org/wiki/Copyleft)
+    ///
+    /// ```
+    /// assert!(spdx::license_id("LGPL-3.0-or-later").unwrap().is_copyleft());
+    /// ```
     #[inline]
     pub fn is_copyleft(self) -> bool {
         self.flags & IS_COPYLEFT != 0
+    }
+
+    /// Returns true if the license is a [GNU license](https://www.gnu.org/licenses/identify-licenses-clearly.html),
+    /// which operate differently than all other SPDX license identifiers
+    ///
+    /// ```
+    /// assert!(spdx::license_id("AGPL-3.0-only").unwrap().is_gnu());
+    /// ```
+    #[inline]
+    pub fn is_gnu(self) -> bool {
+        self.flags & IS_GNU != 0
     }
 }
 
@@ -71,6 +108,11 @@ impl fmt::Debug for LicenseId {
 }
 
 /// Unique identifier for a particular exception
+///
+/// ```
+/// let exception_id = spdx::exception_id("LLVM-exception").unwrap();
+/// assert!(!exception_id.is_deprecated());
+/// ```
 #[derive(Copy, Clone, Eq, Ord)]
 pub struct ExceptionId {
     /// The short identifier for the exception
@@ -95,6 +137,10 @@ impl PartialOrd for ExceptionId {
 
 impl ExceptionId {
     /// Returns true if the exception is deprecated
+    ///
+    /// ```
+    /// assert!(spdx::exception_id("Nokia-Qt-exception-1.1").unwrap().is_deprecated());
+    /// ```
     #[inline]
     pub fn is_deprecated(self) -> bool {
         self.flags & IS_DEPRECATED != 0
@@ -108,8 +154,11 @@ impl fmt::Debug for ExceptionId {
 }
 
 /// Represents a single license requirement, which must include a valid
-/// LicenseItem, and may allow current a future versions of the license,
+/// LicenseItem, and may allow current and future versions of the license,
 /// and may also allow for a specific exception
+///
+/// While they can be constructed manually, most of the time these will
+/// be parsed and combined in an `Expression`
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct LicenseReq {
     /// The license
@@ -117,6 +166,37 @@ pub struct LicenseReq {
     /// The exception allowed for this license, as specified following
     /// the `WITH` operator
     pub exception: Option<ExceptionId>,
+}
+
+impl From<LicenseId> for LicenseReq {
+    fn from(id: LicenseId) -> Self {
+        let mut or_later = false;
+
+        // We need to special case GNU licenses because reasons
+        let id = if id.is_gnu() {
+            let root = if id.name.ends_with("-or-later") {
+                or_later = true;
+                &id.name[..id.name.len() - 9]
+            } else if id.name.ends_with("-only") {
+                &id.name[..id.name.len() - 5]
+            } else {
+                &id.name[..]
+            };
+
+            // If the root, eg GPL-2.0 licenses, which are currently deprecated,
+            // are actually removed we will need to add them manually, but that
+            // should only occur on a major revision of the SPDX license list,
+            // so for now we should be fine with this
+            license_id(root).expect("Unable to find root GNU license")
+        } else {
+            id
+        };
+
+        Self {
+            license: LicenseItem::SPDX { id, or_later },
+            exception: None,
+        }
+    }
 }
 
 impl fmt::Display for LicenseReq {
@@ -144,12 +224,25 @@ pub enum LicenseItem {
     },
     Other {
         /// Purpose: Identify any external SPDX documents referenced within this SPDX document.
-        /// https://spdx.org/spdx-specification-21-web-version#h.h430e9ypa0j9
+        /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.h430e9ypa0j9) for
+        /// more details.
         doc_ref: Option<String>,
         /// Purpose: Provide a locally unique identifier to refer to licenses that are not found on the SPDX License List.
-        /// https://spdx.org/spdx-specification-21-web-version#h.4f1mdlm
+        /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.4f1mdlm) for
+        /// more details.
         lic_ref: String,
     },
+}
+
+impl LicenseItem {
+    /// Returns the license identifier, if it is a recognized SPDX license and not
+    /// a license referencer
+    pub fn id(&self) -> Option<LicenseId> {
+        match self {
+            Self::SPDX { id, .. } => Some(*id),
+            _ => None,
+        }
+    }
 }
 
 impl PartialOrd for LicenseItem {
@@ -211,6 +304,11 @@ impl fmt::Display for LicenseItem {
 
 /// Attempts to find a LicenseId for the string
 /// Note: any '+' at the end is trimmed
+///
+/// ```
+/// assert!(spdx::license_id("MIT").is_some());
+/// assert!(spdx::license_id("BitTorrent-1.1+").is_some());
+/// ```
 #[inline]
 pub fn license_id(name: &str) -> Option<LicenseId> {
     let name = name.trim_end_matches('+');
@@ -229,6 +327,10 @@ pub fn license_id(name: &str) -> Option<LicenseId> {
 }
 
 /// Attempts to find an ExceptionId for the string
+///
+/// ```
+/// assert!(spdx::exception_id("LLVM-exception").is_some());
+/// ```
 #[inline]
 pub fn exception_id(name: &str) -> Option<ExceptionId> {
     identifiers::EXCEPTIONS
@@ -242,6 +344,10 @@ pub fn exception_id(name: &str) -> Option<ExceptionId> {
 
 /// Returns the version number of the SPDX list from which
 /// the license and exception identifiers are sourced from
+///
+/// ```
+/// assert_eq!(spdx::license_version(), "3.7");
+/// ```
 #[inline]
 pub fn license_version() -> &'static str {
     identifiers::VERSION

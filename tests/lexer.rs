@@ -1,4 +1,4 @@
-use spdx::{Lexer, Token};
+use spdx::lexer::{Lexer, Token};
 
 macro_rules! test_lex {
     ($text:expr, [$($token:expr),+$(,)?]) => {

@@ -1,12 +1,19 @@
 use crate::{
     error::{ParseError, Reason},
-    ExceptionId, Lexer, LicenseItem, LicenseReq, Token,
+    lexer::{Lexer, Token},
+    ExceptionId, LicenseItem, LicenseReq,
 };
 use std::fmt;
 
 /// A convenience wrapper for a license and optional exception
 /// that can be checked against a license requirement to see
-/// if it satisfies/matches the requirement
+/// if it satisfies the requirement placed by a license holder
+///
+/// ```
+/// let licensee = spdx::Licensee::parse("GPL-2.0").unwrap();
+///
+/// assert!(licensee.satisfies(&spdx::LicenseReq::from(spdx::license_id("GPL-2.0-only").unwrap())));
+/// ```
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub struct Licensee {
     inner: LicenseReq,
@@ -20,8 +27,8 @@ impl fmt::Display for Licensee {
 
 impl Licensee {
     /// Creates a licensee from its component parts. Note that use of SPDX's
-    /// `or_later` is completely ignore for licensees as it only applies
-    /// to the license holder
+    /// `or_later` is completely ignored for licensees as it only applies
+    /// to the license holder(s) not the licensee
     pub fn new(license: LicenseItem, exception: Option<ExceptionId>) -> Self {
         if let LicenseItem::SPDX { or_later, .. } = &license {
             debug_assert!(!or_later)
@@ -36,7 +43,28 @@ impl Licensee {
     /// can contain at most 1 valid SDPX license with an optional exception
     /// joined by a WITH.
     ///
-    /// eg `<license-id>` | `<license-id> WITH <exception-id>`
+    /// ```
+    /// use spdx::Licensee;
+    ///
+    /// // Normal single license
+    /// Licensee::parse("MIT").unwrap();
+    ///
+    /// // SPDX allows license identifiers outside of the official license list
+    /// // via the LicenseRef- prefix
+    /// Licensee::parse("LicenseRef-My-Super-Extra-Special-License").unwrap();
+    ///
+    /// // License and exception
+    /// Licensee::parse("Apache-2.0 WITH LLVM-exception").unwrap();
+    ///
+    /// // `+` is only allowed to be used by license requirements from the license holder
+    /// Licensee::parse("Apache-2.0+").unwrap_err();
+    ///
+    /// Licensee::parse("GPL-2.0").unwrap();
+    ///
+    /// // GNU suffix license (GPL, AGPL, LGPL, GFDL) must not contain the suffix
+    /// Licensee::parse("GPL-3.0-or-later").unwrap_err();
+    ///
+    /// ```
     pub fn parse(original: &str) -> Result<Self, ParseError<'_>> {
         let mut lexer = Lexer::new(original);
 
@@ -48,10 +76,32 @@ impl Licensee {
             })??;
 
             match lt.token {
-                Token::SPDX(id) => LicenseItem::SPDX {
-                    id,
-                    or_later: false,
-                },
+                Token::SPDX(id) => {
+                    // If we have one of the GNU licenses which use the `-only` or `-or-later` suffixes
+                    // return an error rather than silently truncating, the `-only` and `-or-later`
+                    // suffixes are for the license holder(s) to specify what license(s) they can be
+                    // licensed under, not for the licensee, similarly to the `+`
+                    if id.is_gnu() {
+                        let is_only = original.ends_with("-only");
+                        let or_later = original.ends_with("-or-later");
+                        if is_only || or_later {
+                            return Err(ParseError {
+                                original,
+                                span: if is_only {
+                                    original.len() - 5..original.len()
+                                } else {
+                                    original.len() - 9..original.len()
+                                },
+                                reason: Reason::Unexpected(&["<bare-gnu-license>"]),
+                            });
+                        }
+                    }
+
+                    LicenseItem::SPDX {
+                        id,
+                        or_later: false,
+                    }
+                }
                 Token::LicenseRef { doc_ref, lic_ref } => LicenseItem::Other {
                     doc_ref: doc_ref.map(String::from),
                     lic_ref: lic_ref.to_owned(),
@@ -107,10 +157,22 @@ impl Licensee {
 
     /// Determines whether the specified license requirement is satisfied by
     /// this license (+exception)
+    ///
+    /// ```
+    /// let licensee = spdx::Licensee::parse("Apache-2.0 WITH LLVM-exception").unwrap();
+    ///
+    /// assert!(licensee.satisfies(&spdx::LicenseReq {
+    ///     license: spdx::LicenseItem::SPDX {
+    ///         id: spdx::license_id("Apache-2.0").unwrap(),
+    ///         // Means the license holder is fine with Apache-2.0 or higher
+    ///         or_later: true,
+    ///     },
+    ///     exception: spdx::exception_id("LLVM-exception"),
+    /// }));
+    /// ```
     pub fn satisfies(&self, req: &LicenseReq) -> bool {
         match (&self.inner.license, &req.license) {
             (LicenseItem::SPDX { id: a, .. }, LicenseItem::SPDX { id: b, or_later }) => {
-                // TODO: Handle GPL shenanigans :-/
                 if a.index != b.index {
                     if *or_later {
                         // Many of the SPDX identifiers end with `-<version number>`,

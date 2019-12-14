@@ -18,8 +18,8 @@ macro_rules! check {
             let expected = $logical_expr;
 
             match validated.evaluate_with_failures($is_allowed) {
-                Ok(_) => assert!(expected, stringify!($logical_expr)),
-                Err(f) => assert!(!expected, "{} {:?}", stringify!($logical_expr), f),
+                Ok(_) => assert!(expected, "{} => {}", stringify!($logical_expr), stringify!($is_allowed)),
+                Err(f) => assert!(!expected, "{} => {} {:?}", stringify!($logical_expr), stringify!($is_allowed), f),
             }
         )+
     };
@@ -56,12 +56,12 @@ fn or_and() {
 
 #[test]
 fn complex() {
-    check!("(MIT AND (LGPL-2.1+ OR BSD-3-Clause))" => [
+    check!("(MIT AND (LGPL-2.1-or-later OR BSD-3-Clause))" => [
         false && (false || true) => |req| exact!(req, "MIT"),
         false && (false || false) => |req| exact!(req, "Apache-2.0"),
         true && (false || false) => |req| exact!(req, "MIT"),
         true && (false || true) => |req| exact!(req, "MIT") || exact!(req, "BSD-3-Clause"),
-        true && (true || false) => |req| exact!(req, "MIT") || exact!(req, "LGPL-2.1"),
+        true && (true || false) => |req| exact!(req, "MIT") || exact!(req, "LGPL-3.0"),
     ]);
 }
 
@@ -141,4 +141,29 @@ fn or_later() {
         false => |req| exact!(req, "CC-BY-NC-SA-1.0"),
         false => |req| exact!(req, "CC-BY-NC-SA-4.0"),
     ]);
+}
+
+#[test]
+fn lgpl_only() {
+    check!("LGPL-2.1-only" => [
+        false => |req| exact!(req, "LGPL-2.0"),
+        true => |req| exact!(req, "LGPL-2.1"),
+        false => |req| exact!(req, "LGPL-3.0"),
+        //false => |req| exact!(req, "LGPL-4.0"),
+    ]);
+}
+
+#[test]
+fn gpl_or_later() {
+    check!("GPL-3.0-or-later" => [
+        false => |req| exact!(req, "GPL-1.0"),
+        false => |req| exact!(req, "GPL-2.0"),
+        true => |req| exact!(req, "GPL-3.0"),
+        //true => |req| exact!(req, "GPL-4.0"),
+    ]);
+}
+
+#[test]
+fn gpl_or_later_plus() {
+    spdx::Expression::parse("GPL-2.0+").unwrap_err();
 }

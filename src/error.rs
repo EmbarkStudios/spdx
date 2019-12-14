@@ -1,12 +1,19 @@
 use std::{error::Error, fmt};
 
+/// An error related to parsing of an SPDX license expression
+/// or identifier
 #[derive(Debug, PartialEq)]
 pub struct ParseError<'a> {
+    /// The string that was parsed
     pub original: &'a str,
+    /// The range of characters in the original string that result
+    /// in this error
     pub span: std::ops::Range<usize>,
+    /// The specific reason for the error
     pub reason: Reason,
 }
 
+/// The particular reason for a `ParseError`
 #[derive(Debug, PartialEq)]
 pub enum Reason {
     /// The specified license short-identifier was not
@@ -35,6 +42,9 @@ pub enum Reason {
     /// 3. Not a document/license ref
     /// 4. Not an AND, OR, or WITH
     UnknownTerm,
+    /// GNU suffix licenses don't allow `+` because they already have
+    /// the `-or-later` suffix to denote that
+    GnuNoPlus,
 }
 
 impl<'a> fmt::Display for ParseError<'a> {
@@ -87,16 +97,24 @@ impl fmt::Display for Reason {
             }
             Self::SeparatedPlus => f.write_str("`+` must not follow whitespace"),
             Self::UnknownTerm => f.write_str("unknown term"),
+            Self::GnuNoPlus => f.write_str("a GNU license was followed by a `+`"),
         }
     }
 }
 
 impl<'a> Error for ParseError<'a> {
     fn description(&self) -> &str {
-        match *self {
-            //ParseError::UnknownLicenseId(_) => "unknown license or other term",
-            //ParseError::InvalidStructure(_) => "invalid license expression",
-            _ => unimplemented!(),
+        match self.reason {
+            Reason::UnknownLicense => "unknown license id",
+            Reason::UnknownException => "unknown exception id",
+            Reason::InvalidCharacters => "invalid character(s)",
+            Reason::UnclosedParens => "unclosed parens",
+            Reason::UnopenedParens => "unopened parens",
+            Reason::Empty => "empty expression",
+            Reason::Unexpected(_) => "unexpected term",
+            Reason::SeparatedPlus => "`+` must not follow whitespace",
+            Reason::UnknownTerm => "unknown term",
+            Reason::GnuNoPlus => "a GNU license was followed by a `+`",
         }
     }
 }

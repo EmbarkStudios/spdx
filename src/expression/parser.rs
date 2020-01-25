@@ -3,6 +3,7 @@ use crate::{
     expression::{ExprNode, Expression, ExpressionReq, Operator},
     lexer::{Lexer, Token},
     LicenseItem, LicenseReq,
+    ParseMode,
 };
 use smallvec::SmallVec;
 
@@ -21,9 +22,14 @@ impl Expression {
     /// ```
     /// spdx::Expression::parse("MIT OR Apache-2.0 WITH LLVM-exception").unwrap();
     /// ```
-    pub fn parse(original: &str) -> Result<Self, ParseError> {
-        let lexer = Lexer::new(original);
+    pub fn parse(original: &str) -> Result<Self, ParseError<'_>> {
+        Self::parse_mode(original, ParseMode::Strict)
+    }
 
+    /// With `ParseMode::Lax` it permits non-SPDX syntax,
+    /// such as imprecise license names and "/" used instead of "OR" in exprssions.
+    pub fn parse_mode(original: &str, mode: ParseMode) -> Result<Self, ParseError<'_>> {
+        let lexer = Lexer::new_mode(original, mode);
         // Operator precedence in SPDX 2.1
         // +
         // WITH
@@ -118,7 +124,7 @@ impl Expression {
                             ..
                         }) => {
                             // Handle GNU licenses differently, as they should *NOT* be used with the `+`
-                            if id.is_gnu() {
+                            if mode == ParseMode::Strict && id.is_gnu() {
                                 return Err(ParseError {
                                     original,
                                     span: lt.span,

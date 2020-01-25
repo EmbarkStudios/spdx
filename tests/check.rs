@@ -10,7 +10,19 @@ macro_rules! exact {
 
 macro_rules! check {
     ($le:expr => [$($logical_expr:expr => $is_allowed:expr),+$(,)?]) => {
-        let validated = spdx::Expression::parse($le).unwrap();
+        check_mode!(spdx::ParseMode::Strict, $le => [$($logical_expr => $is_allowed),+])
+    };
+}
+
+macro_rules! check_lax {
+    ($le:expr => [$($logical_expr:expr => $is_allowed:expr),+$(,)?]) => {
+        check_mode!(spdx::ParseMode::Lax, $le => [$($logical_expr => $is_allowed),+])
+    };
+}
+
+macro_rules! check_mode {
+    ($mode:expr, $le:expr => [$($logical_expr:expr => $is_allowed:expr),+$(,)?]) => {
+        let validated = spdx::Expression::parse_mode($le, $mode).unwrap();
 
         $(
             // Evaluate the logical expression to determine if we are
@@ -28,6 +40,15 @@ macro_rules! check {
 #[test]
 fn single_or() {
     check!("Apache-2.0 OR MIT" => [
+        false || true => |req| exact!(req, "MIT"),
+        true || false => |req| exact!(req, "Apache-2.0"),
+        false || false => |req| exact!(req, "ISC"),
+    ]);
+}
+
+#[test]
+fn single_or_lax() {
+    check_lax!("Apache/ MIT" => [
         false || true => |req| exact!(req, "MIT"),
         true || false => |req| exact!(req, "Apache-2.0"),
         false || false => |req| exact!(req, "ISC"),
@@ -164,6 +185,11 @@ fn gpl_or_later() {
 }
 
 #[test]
-fn gpl_or_later_plus() {
+fn gpl_or_later_plus_strict() {
     spdx::Expression::parse("GPL-2.0+").unwrap_err();
+}
+
+#[test]
+fn gpl_or_later_plus_lax() {
+    spdx::Expression::parse_mode("GPL-2.0+", spdx::ParseMode::Lax).unwrap();
 }

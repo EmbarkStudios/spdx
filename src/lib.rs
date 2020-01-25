@@ -302,6 +302,15 @@ impl fmt::Display for LicenseItem {
     }
 }
 
+#[derive(Copy, Clone, PartialEq)]
+#[non_exhaustive]
+pub enum ParseMode {
+    /// Strict SPDX parsing
+    Strict,
+    /// Allow non-conforming syntax for crates-io compatibility
+    Lax,
+}
+
 /// Attempts to find a LicenseId for the string
 /// Note: any '+' at the end is trimmed
 ///
@@ -324,6 +333,24 @@ pub fn license_id(name: &str) -> Option<LicenseId> {
             }
         })
         .ok()
+}
+
+/// Find license partially matching the name, e.g. "apache" => "Apache-2.0"
+/// Returns length (in bytes) of the string matched. Garbage at the end is ignored.
+#[inline]
+pub(crate) fn imprecise_license_id(name: &str) -> Option<(LicenseId, usize)> {
+    for (prefix, correct_name) in identifiers::IMPRECISE_NAMES {
+        if let Some(name_prefix) = name.as_bytes().get(0..prefix.len()) {
+            if prefix.as_bytes().eq_ignore_ascii_case(name_prefix) {
+                let mut len = prefix.len();
+                if name.as_bytes().get(len).copied() == Some(b'+') {
+                    len += 1;
+                }
+                return license_id(correct_name).map(|lic| (lic, len))
+            }
+        }
+    }
+    None
 }
 
 /// Attempts to find an ExceptionId for the string

@@ -123,6 +123,18 @@ fn fails_with_slash() {
 }
 
 #[test]
+fn lax_takes_slash() {
+    let lexed: Vec<_> = Lexer::new_mode("MIT/Apache", spdx::ParseMode::Lax).map(|r| r.map(|lt| lt.token).unwrap()).collect();
+    assert_eq!(&lexed, &[lic_tok!("MIT"), Token::Or, lic_tok!("Apache-2.0")]);
+}
+
+#[test]
+fn fixes_license_names() {
+    let lexed: Vec<_> = Lexer::new_mode("gpl v2 / bsd 2-clause", spdx::ParseMode::Lax).map(|r| r.map(|lt| lt.token).unwrap()).collect();
+    assert_eq!(&lexed, &[lic_tok!("GPL-2.0"), Token::Or, lic_tok!("BSD-2-Clause")]);
+}
+
+#[test]
 fn lexes_complex() {
     let complex = "(Apache-2.0 WITH LLVM-exception) OR Apache-2.0 OR MIT";
 

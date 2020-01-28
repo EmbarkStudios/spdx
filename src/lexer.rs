@@ -1,6 +1,6 @@
 use crate::{
     error::{ParseError, Reason},
-    ExceptionId, LicenseId,
+    ExceptionId, LicenseId, ParseMode,
 };
 use lazy_static::lazy_static;
 
@@ -66,6 +66,7 @@ pub struct Lexer<'a> {
     inner: &'a str,
     original: &'a str,
     offset: usize,
+    lax: bool,
 }
 
 impl<'a> Lexer<'a> {
@@ -75,6 +76,20 @@ impl<'a> Lexer<'a> {
             inner: text,
             original: text,
             offset: 0,
+            lax: false,
+        }
+    }
+
+    /// Creates a Lexer over a license expression
+    ///
+    /// With `ParseMode::Lax` it allows non-conforming syntax
+    /// used in crates-io crates.
+    pub fn new_mode(text: &'a str, mode: ParseMode) -> Self {
+        Self {
+            inner: text,
+            original: text,
+            offset: 0,
+            lax: mode == ParseMode::Lax,
         }
     }
 }
@@ -110,21 +125,29 @@ impl<'a> Iterator for Lexer<'a> {
         self.inner = &self.inner[non_whitespace_index..];
         self.offset += non_whitespace_index;
 
+        fn ok_token<'a>(token: Token) -> Option<Result<(Token, usize), ParseError<'a>>> {
+            let len = token.len();
+            Some(Ok((token, len)))
+        }
+
         match self.inner.chars().next() {
             None => None,
             // From SPDX 2.1 spec
             // There MUST NOT be whitespace between a license-id and any following "+".
-            Some('+') => Some(if non_whitespace_index != 0 {
-                Err(ParseError {
-                    original: self.original,
-                    span: self.offset - non_whitespace_index..self.offset,
-                    reason: Reason::SeparatedPlus,
-                })
-            } else {
-                Ok(Token::Plus)
-            }),
-            Some('(') => Some(Ok(Token::OpenParen)),
-            Some(')') => Some(Ok(Token::CloseParen)),
+            Some('+') => {
+                if non_whitespace_index != 0 {
+                    Some(Err(ParseError {
+                        original: self.original,
+                        span: self.offset - non_whitespace_index..self.offset,
+                        reason: Reason::SeparatedPlus,
+                    }))
+                } else {
+                    ok_token(Token::Plus)
+                }
+            }
+            Some('(') => ok_token(Token::OpenParen),
+            Some(')') => ok_token(Token::CloseParen),
+            Some('/') if self.lax => Some(Ok((Token::Or, 1))),
             _ => match TEXTTOKEN.find(self.inner) {
                 None => Some(Err(ParseError {
                     original: self.original,
@@ -133,25 +156,35 @@ impl<'a> Iterator for Lexer<'a> {
                 })),
                 Some(m) => {
                     if m.as_str() == "WITH" {
-                        Some(Ok(Token::With))
+                        ok_token(Token::With)
                     } else if m.as_str() == "AND" {
-                        Some(Ok(Token::And))
+                        ok_token(Token::And)
                     } else if m.as_str() == "OR" {
-                        Some(Ok(Token::Or))
+                        ok_token(Token::Or)
+                    } else if self.lax && m.as_str() == "and" {
+                        ok_token(Token::And)
+                    } else if self.lax && m.as_str() == "or" {
+                        ok_token(Token::Or)
                     } else if let Some(lic_id) = crate::license_id(&m.as_str()) {
-                        Some(Ok(Token::SPDX(lic_id)))
+                        ok_token(Token::SPDX(lic_id))
                     } else if let Some(exc_id) = crate::exception_id(&m.as_str()) {
-                        Some(Ok(Token::Exception(exc_id)))
+                        ok_token(Token::Exception(exc_id))
                     } else if let Some(c) = DOCREFLICREF.captures(m.as_str()) {
-                        Some(Ok(Token::LicenseRef {
+                        ok_token(Token::LicenseRef {
                             doc_ref: Some(c.get(1).unwrap().as_str()),
                             lic_ref: c.get(2).unwrap().as_str(),
-                        }))
+                        })
                     } else if let Some(c) = LICREF.captures(m.as_str()) {
-                        Some(Ok(Token::LicenseRef {
+                        ok_token(Token::LicenseRef {
                             doc_ref: None,
                             lic_ref: c.get(1).unwrap().as_str(),
-                        }))
+                        })
+                    } else if let Some((lic_id, token_len)) = if self.lax {
+                        crate::imprecise_license_id(self.inner)
+                    } else {
+                        None
+                    } {
+                        Some(Ok((Token::SPDX(lic_id), token_len)))
                     } else {
                         Some(Err(ParseError {
                             original: self.original,
@@ -163,8 +196,7 @@ impl<'a> Iterator for Lexer<'a> {
             },
         }
         .map(|res| {
-            res.map(|tok| {
-                let len = tok.len();
+            res.map(|(tok, len)| {
                 let start = self.offset;
                 self.inner = &self.inner[len..];
                 self.offset += len;

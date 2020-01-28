@@ -2,8 +2,7 @@ use crate::{
     error::{ParseError, Reason},
     expression::{ExprNode, Expression, ExpressionReq, Operator},
     lexer::{Lexer, Token},
-    LicenseItem, LicenseReq,
-    ParseMode,
+    LicenseItem, LicenseReq, ParseMode,
 };
 use smallvec::SmallVec;
 

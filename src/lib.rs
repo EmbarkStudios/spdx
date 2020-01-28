@@ -346,7 +346,7 @@ pub(crate) fn imprecise_license_id(name: &str) -> Option<(LicenseId, usize)> {
                 if name.as_bytes().get(len).copied() == Some(b'+') {
                     len += 1;
                 }
-                return license_id(correct_name).map(|lic| (lic, len))
+                return license_id(correct_name).map(|lic| (lic, len));
             }
         }
     }

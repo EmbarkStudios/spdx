@@ -1,7 +1,6 @@
 use crate::{
     error::{ParseError, Reason},
-    ExceptionId, LicenseId,
-    ParseMode,
+    ExceptionId, LicenseId, ParseMode,
 };
 use lazy_static::lazy_static;
 
@@ -135,15 +134,17 @@ impl<'a> Iterator for Lexer<'a> {
             None => None,
             // From SPDX 2.1 spec
             // There MUST NOT be whitespace between a license-id and any following "+".
-            Some('+') => if non_whitespace_index != 0 {
-                Some(Err(ParseError {
-                    original: self.original,
-                    span: self.offset - non_whitespace_index..self.offset,
-                    reason: Reason::SeparatedPlus,
-                }))
-            } else {
-                ok_token(Token::Plus)
-            },
+            Some('+') => {
+                if non_whitespace_index != 0 {
+                    Some(Err(ParseError {
+                        original: self.original,
+                        span: self.offset - non_whitespace_index..self.offset,
+                        reason: Reason::SeparatedPlus,
+                    }))
+                } else {
+                    ok_token(Token::Plus)
+                }
+            }
             Some('(') => ok_token(Token::OpenParen),
             Some(')') => ok_token(Token::CloseParen),
             Some('/') if self.lax => Some(Ok((Token::Or, 1))),
@@ -178,7 +179,11 @@ impl<'a> Iterator for Lexer<'a> {
                             doc_ref: None,
                             lic_ref: c.get(1).unwrap().as_str(),
                         })
-                    } else if let Some((lic_id, token_len)) = if self.lax {crate::imprecise_license_id(self.inner)} else {None} {
+                    } else if let Some((lic_id, token_len)) = if self.lax {
+                        crate::imprecise_license_id(self.inner)
+                    } else {
+                        None
+                    } {
                         Some(Ok((Token::SPDX(lic_id), token_len)))
                     } else {
                         Some(Err(ParseError {

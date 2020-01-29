@@ -1268,8 +1268,9 @@ pub const LICENSES: &[(&str, &str, u8)] = &[
     ),
 ];
 
-/// These are matched as case-insensitive substrings. Order is important.
-pub(crate) const IMPRECISE_NAMES: &[(&str, &str)] = &[
+/// Pairs an invalid license identifier with its valide SPDX license identifier.
+/// These invalid identifiers are only allowed when using `Lax` parsing.
+pub const IMPRECISE_NAMES: &[(&str, &str)] = &[
     ("agplv3", "AGPL-3.0"),
     ("agpl", "AGPL-3.0"),
     ("apache 2.0", "Apache-2.0"),

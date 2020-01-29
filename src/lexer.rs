@@ -1,8 +1,28 @@
 use crate::{
     error::{ParseError, Reason},
-    ExceptionId, LicenseId, ParseMode,
+    ExceptionId, LicenseId,
 };
 use lazy_static::lazy_static;
+
+/// Available modes when parsing SPDX expressions
+#[derive(Copy, Clone, PartialEq)]
+pub enum ParseMode {
+    /// Strict SPDX parsing.
+    /// 1. Only license identifiers in the SPDX license list, or
+    /// Document/LicenseRef, are allowed. The license identifiers are also
+    /// case-sensitive.
+    /// 1. `WITH`, `AND`, and `OR` are the only valid operators
+    Strict,
+    /// Allow non-conforming syntax for crates-io compatibility
+    /// 1. Additional, invalid, identifiers are accepted and mapped to a correct
+    /// SPDX license identifier. See
+    /// [identifiers::IMPRECISE_NAMES](../identifiers/constant.IMPRECISE_NAMES.html)
+    /// for the list of additionally accepted identifiers and the license they
+    /// correspond to.
+    /// 1. `/` can by used as a synonym for `OR`, and doesn't need to be
+    /// separated by whitespace from the terms it combines
+    Lax,
+}
 
 /// A single token in an SPDX license expression
 #[derive(Clone, Debug, PartialEq, Eq)]

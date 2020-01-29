@@ -9,6 +9,7 @@ mod licensee;
 pub use error::ParseError;
 pub use expression::Expression;
 use identifiers::{IS_COPYLEFT, IS_DEPRECATED, IS_FSF_LIBRE, IS_GNU, IS_OSI_APPROVED};
+pub use lexer::ParseMode;
 pub use licensee::Licensee;
 use std::{cmp, fmt};
 
@@ -300,15 +301,6 @@ impl fmt::Display for LicenseItem {
             } => write!(f, "LicenseRef-{}", l),
         }
     }
-}
-
-#[derive(Copy, Clone, PartialEq)]
-#[non_exhaustive]
-pub enum ParseMode {
-    /// Strict SPDX parsing
-    Strict,
-    /// Allow non-conforming syntax for crates-io compatibility
-    Lax,
 }
 
 /// Attempts to find a LicenseId for the string

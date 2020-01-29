@@ -294,6 +294,12 @@ pub const IS_GNU: u8 = 0x10;
 
     drop(identifiers);
 
+    // Run rustfmt on the final file
+    std::process::Command::new("rustfmt")
+        .args(&["--edition", "2018", "src/identifiers.rs"])
+        .status()
+        .map_err(|e| failure::format_err!("failed to run rustfmt: {}", e))?;
+
     Ok(())
 }
 

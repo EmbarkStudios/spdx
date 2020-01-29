@@ -7,7 +7,8 @@ use crate::{
 use smallvec::SmallVec;
 
 impl Expression {
-    /// Given a license expression, attempts to parse and validate it as a valid SPDX expression
+    /// Given a license expression, attempts to parse and validate it as a valid
+    /// SPDX expression. Uses `ParseMode::Strict`.
     ///
     /// The validation can fail for many reasons:
     /// * The expression contains invalid characters
@@ -25,8 +26,16 @@ impl Expression {
         Self::parse_mode(original, ParseMode::Strict)
     }
 
-    /// With `ParseMode::Lax` it permits non-SPDX syntax,
-    /// such as imprecise license names and "/" used instead of "OR" in exprssions.
+    /// Parses an expression with the specified `ParseMode`. With
+    /// `ParseMode::Lax` it permits some non-SPDX syntax, such as imprecise
+    /// license names and "/" used instead of "OR" in exprssions.
+    ///
+    /// ```
+    /// spdx::Expression::parse_mode(
+    ///     "mit/Apache-2.0 WITH LLVM-exception",
+    ///     spdx::ParseMode::Lax
+    /// ).unwrap();
+    /// ```
     pub fn parse_mode(original: &str, mode: ParseMode) -> Result<Self, ParseError<'_>> {
         let lexer = Lexer::new_mode(original, mode);
         // Operator precedence in SPDX 2.1

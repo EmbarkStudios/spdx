@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.3.2] - 2020-01-29
 ### Changed
 - [PR#19](https://github.com/EmbarkStudios/spdx/pull/19) added the `#[non_exhaustive]` attribute to the new `ParseMode` enum, which bumped the minimum required Rust version to use this crate to 1.40. [PR#21](https://github.com/EmbarkStudios/spdx/pull/21) removed this attribute as that enum is primarily an input for this crate, and had little benefit.
 
@@ -63,7 +64,8 @@ a user provided callback
 - Initial add of spdx crate, based primarly on [`license-exprs`](https://github.com/rust-lang-nursery/license-exprs)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.3.1...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.3.2...HEAD
+[0.3.2]: https://github.com/EmbarkStudios/spdx/compare/0.3.1...0.3.2
 [0.3.1]: https://github.com/EmbarkStudios/spdx/compare/0.3.0...0.3.1
 [0.3.0]: https://github.com/EmbarkStudios/spdx/compare/0.2.4...0.3.0
 [0.2.4]: https://github.com/EmbarkStudios/spdx/compare/0.2.3...0.2.4

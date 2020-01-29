@@ -1,7 +1,8 @@
 /// Error types
 pub mod error;
 mod expression;
-mod identifiers;
+/// Auto-generated lists of license identifiers and exception identifiers
+pub mod identifiers;
 /// Contains types for lexing an SPDX license expression
 pub mod lexer;
 mod licensee;
@@ -328,9 +329,17 @@ pub fn license_id(name: &str) -> Option<LicenseId> {
 }
 
 /// Find license partially matching the name, e.g. "apache" => "Apache-2.0"
-/// Returns length (in bytes) of the string matched. Garbage at the end is ignored.
+/// Returns length (in bytes) of the string matched. Garbage at the end is
+/// ignored. See
+/// [identifiers::IMPRECISE_NAMES](identifiers/constant.IMPRECISE_NAMES.html)
+/// for the list of invalid names, and the valid license identifiers they are
+/// paired with.
+///
+/// ```
+/// assert!(spdx::imprecise_license_id("simplified bsd license").unwrap().0 == spdx::license_id("BSD-2-Clause").unwrap());
+/// ```
 #[inline]
-pub(crate) fn imprecise_license_id(name: &str) -> Option<(LicenseId, usize)> {
+pub fn imprecise_license_id(name: &str) -> Option<(LicenseId, usize)> {
     for (prefix, correct_name) in identifiers::IMPRECISE_NAMES {
         if let Some(name_prefix) = name.as_bytes().get(0..prefix.len()) {
             if prefix.as_bytes().eq_ignore_ascii_case(name_prefix) {

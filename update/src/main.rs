@@ -38,6 +38,8 @@ fn get<'a>(m: &'a Map, k: &str) -> Result<&'a Value> {
         .ok_or_else(|| failure::format_err!("Malformed JSON: {:?} lacks {}", m, k))
 }
 
+const IMPRECISE: &str = include_str!("imprecise.rs");
+
 fn is_copyleft(license: &str) -> bool {
     // Copyleft licenses are determined from
     // https://www.gnu.org/licenses/license-list.en.html
@@ -223,6 +225,10 @@ pub const IS_GNU: u8 = 0x10;
     )?;
 
     writeln!(identifiers)?;
+
+    // Add the contents or imprecise.rs, which maps invalid identifiers to
+    // valid ones
+    writeln!(identifiers, "{}", IMPRECISE)?;
 
     let exceptions_json_uri = format!(
         "https://raw.githubusercontent.com/spdx/license-list-data/{}/json/exceptions.json",

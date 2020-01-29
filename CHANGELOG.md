@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - [PR#19](https://github.com/EmbarkStudios/spdx/pull/19) added the `#[non_exhaustive]` attribute to the new `ParseMode` enum, which bumped the minimum required Rust version to use this crate to 1.40. [PR#21](https://github.com/EmbarkStudios/spdx/pull/21) removed this attribute as that enum is primarily an input for this crate, and had little benefit.
 
-## [0.3.1] - 2020-01-28
+## [0.3.1] - 2020-01-28 (yanked)
 ### Added
 - [PR#19](https://github.com/EmbarkStudios/spdx/pull/19) Added `ParseMode` enum, which has a `Lax` variant that allows certain invvalid license identifiers found in some crates on crates.io, as well as the invalid `/` expression separator. Thanks [@kornel](https://github.com/kornelski)!
 

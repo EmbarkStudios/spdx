@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Added
+- Added `Expression::iter()` which iterates over both the license requirements and the operators.
+
 ## [0.3.3] - 2020-02-29
 ### Changed
 - Updated to version 3.8 of the SPDX license list

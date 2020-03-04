@@ -26,7 +26,7 @@ pub enum Operator {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) enum ExprNode {
+pub enum ExprNode {
     Op(Operator),
     Req(ExpressionReq),
 }
@@ -89,6 +89,23 @@ impl Expression {
             ExprNode::Req(req) => Some(req),
             _ => None,
         })
+    }
+
+    /// Returns both the license requirements and the operators that join them
+    /// together. Note that the expression is returned in post fix order.
+    ///
+    /// ```
+    /// use spdx::expression::{ExprNode, Operator};
+    /// let expr = spdx::Expression::parse("Apache-2.0 OR MIT").unwrap();
+    ///
+    /// let mut ei = expr.iter();
+    ///
+    /// assert!(ei.next().is_some()); // Apache
+    /// assert!(ei.next().is_some()); // MIT
+    /// assert_eq!(*ei.next().unwrap(), ExprNode::Op(Operator::Or));
+    /// ```
+    pub fn iter(&self) -> impl Iterator<Item = &ExprNode> {
+        self.expr.iter()
     }
 
     /// Evaluates the expression, using the provided function to determine if the

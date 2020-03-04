@@ -1,6 +1,6 @@
 /// Error types
 pub mod error;
-mod expression;
+pub mod expression;
 /// Auto-generated lists of license identifiers and exception identifiers
 pub mod identifiers;
 /// Contains types for lexing an SPDX license expression

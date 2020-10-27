@@ -26,7 +26,7 @@ use std::{cmp, fmt};
 ///     && !bsd.is_copyleft()
 /// );
 /// ```
-#[derive(Copy, Clone, Eq, Ord)]
+#[derive(Copy, Clone, Eq)]
 pub struct LicenseId {
     /// The short identifier for the license
     pub name: &'static str,
@@ -38,15 +38,22 @@ pub struct LicenseId {
 
 impl PartialEq for LicenseId {
     #[inline]
-    fn eq(&self, o: &LicenseId) -> bool {
+    fn eq(&self, o: &Self) -> bool {
         self.index == o.index
+    }
+}
+
+impl Ord for LicenseId {
+    #[inline]
+    fn cmp(&self, o: &Self) -> cmp::Ordering {
+        self.index.cmp(&o.index)
     }
 }
 
 impl PartialOrd for LicenseId {
     #[inline]
-    fn partial_cmp(&self, o: &LicenseId) -> Option<cmp::Ordering> {
-        self.index.partial_cmp(&o.index)
+    fn partial_cmp(&self, o: &Self) -> Option<cmp::Ordering> {
+        Some(self.cmp(o))
     }
 }
 
@@ -115,7 +122,7 @@ impl fmt::Debug for LicenseId {
 /// let exception_id = spdx::exception_id("LLVM-exception").unwrap();
 /// assert!(!exception_id.is_deprecated());
 /// ```
-#[derive(Copy, Clone, Eq, Ord)]
+#[derive(Copy, Clone, Eq)]
 pub struct ExceptionId {
     /// The short identifier for the exception
     pub name: &'static str,
@@ -125,15 +132,22 @@ pub struct ExceptionId {
 
 impl PartialEq for ExceptionId {
     #[inline]
-    fn eq(&self, o: &ExceptionId) -> bool {
+    fn eq(&self, o: &Self) -> bool {
         self.index == o.index
+    }
+}
+
+impl Ord for ExceptionId {
+    #[inline]
+    fn cmp(&self, o: &Self) -> cmp::Ordering {
+        self.index.cmp(&o.index)
     }
 }
 
 impl PartialOrd for ExceptionId {
     #[inline]
-    fn partial_cmp(&self, o: &ExceptionId) -> Option<cmp::Ordering> {
-        self.index.partial_cmp(&o.index)
+    fn partial_cmp(&self, o: &Self) -> Option<cmp::Ordering> {
+        Some(self.cmp(o))
     }
 }
 
@@ -215,7 +229,7 @@ impl fmt::Display for LicenseReq {
 /// A single license term in a license expression, according to the SPDX spec.
 /// This can be either an SPDX license, which is mapped to a LicenseId from
 /// a valid SPDX short identifier, or else a document AND/OR license ref
-#[derive(Debug, Clone, Eq, Ord)]
+#[derive(Debug, Clone, Eq)]
 pub enum LicenseItem {
     /// A regular SPDX license id
     SPDX {
@@ -247,6 +261,41 @@ impl LicenseItem {
     }
 }
 
+impl Ord for LicenseItem {
+    fn cmp(&self, o: &Self) -> cmp::Ordering {
+        match (self, o) {
+            (
+                Self::SPDX {
+                    id: a,
+                    or_later: la,
+                },
+                Self::SPDX {
+                    id: b,
+                    or_later: lb,
+                },
+            ) => match a.cmp(b) {
+                cmp::Ordering::Equal => la.cmp(lb),
+                o => o,
+            },
+            (
+                Self::Other {
+                    doc_ref: ad,
+                    lic_ref: al,
+                },
+                Self::Other {
+                    doc_ref: bd,
+                    lic_ref: bl,
+                },
+            ) => match ad.cmp(bd) {
+                cmp::Ordering::Equal => al.cmp(bl),
+                o => o,
+            },
+            (Self::SPDX { .. }, Self::Other { .. }) => cmp::Ordering::Less,
+            (Self::Other { .. }, Self::SPDX { .. }) => cmp::Ordering::Greater,
+        }
+    }
+}
+
 impl PartialOrd for LicenseItem {
     fn partial_cmp(&self, o: &Self) -> Option<cmp::Ordering> {
         match (self, o) {
@@ -272,11 +321,7 @@ impl PartialOrd for LicenseItem {
 
 impl PartialEq for LicenseItem {
     fn eq(&self, o: &Self) -> bool {
-        if let Some(cmp::Ordering::Equal) = self.partial_cmp(o) {
-            true
-        } else {
-            false
-        }
+        matches!(self.partial_cmp(o), Some(cmp::Ordering::Equal))
     }
 }
 

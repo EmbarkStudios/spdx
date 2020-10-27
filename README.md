@@ -4,7 +4,7 @@
 [![Embark](https://img.shields.io/badge/discord-ark-%237289da.svg?logo=discord)](https://discord.gg/dAuKfZS)
 [![Crates.io](https://img.shields.io/crates/v/spdx.svg)](https://crates.io/crates/spdx)
 [![Docs](https://docs.rs/spdx/badge.svg)](https://docs.rs/spdx)
-![SPDX Version](https://img.shields.io/badge/SPDX%20Version-3.8-blue.svg)
+[![SPDX Version](https://img.shields.io/badge/SPDX%20Version-3.8-blue.svg)](https://spdx.org/licenses/)
 [![dependency status](https://deps.rs/repo/github/EmbarkStudios/spdx/status.svg)](https://deps.rs/repo/github/EmbarkStudios/spdx)
 [![Build Status](https://github.com/EmbarkStudios/spdx/workflows/CI/badge.svg)](https://github.com/EmbarkStudios/spdx/actions?workflow=CI)
 

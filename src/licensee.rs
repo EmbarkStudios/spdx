@@ -122,7 +122,7 @@ impl Licensee {
                 let lt = lt?;
                 match lt.token {
                     Token::With => {
-                        let lt = lexer.next().ok_or_else(|| ParseError {
+                        let lt = lexer.next().ok_or(ParseError {
                             original,
                             span: lt.span,
                             reason: Reason::Empty,

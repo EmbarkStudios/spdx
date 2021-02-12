@@ -247,6 +247,7 @@ mod test {
     use super::Expression;
 
     #[test]
+    #[allow(clippy::eq_op)]
     fn eq() {
         let normal = Expression::parse("MIT OR Apache-2.0").unwrap();
         let extra_parens = Expression::parse("(MIT OR (Apache-2.0))").unwrap();

@@ -145,6 +145,7 @@ impl<'a> Iterator for Lexer<'a> {
         self.inner = &self.inner[non_whitespace_index..];
         self.offset += non_whitespace_index;
 
+        #[allow(clippy::unnecessary_wraps)]
         fn ok_token<'a>(token: Token) -> Option<Result<(Token, usize), ParseError<'a>>> {
             let len = token.len();
             Some(Ok((token, len)))

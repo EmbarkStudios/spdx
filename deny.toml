@@ -4,6 +4,8 @@ vulnerability = "deny"
 unsound = "deny"
 yanked = "deny"
 ignore = [
+    # difference is unmaintained but it works and is only a dev dependency
+    "RUSTSEC-2020-0095",
 ]
 
 [bans]

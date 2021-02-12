@@ -4,7 +4,7 @@
 [![Embark](https://img.shields.io/badge/discord-ark-%237289da.svg?logo=discord)](https://discord.gg/dAuKfZS)
 [![Crates.io](https://img.shields.io/crates/v/spdx.svg)](https://crates.io/crates/spdx)
 [![Docs](https://docs.rs/spdx/badge.svg)](https://docs.rs/spdx)
-[![SPDX Version](https://img.shields.io/badge/SPDX%20Version-3.8-blue.svg)](https://spdx.org/licenses/)
+[![SPDX Version](https://img.shields.io/badge/SPDX%20Version-3.11-blue.svg)](https://spdx.org/licenses/)
 [![dependency status](https://deps.rs/repo/github/EmbarkStudios/spdx/status.svg)](https://deps.rs/repo/github/EmbarkStudios/spdx)
 [![Build Status](https://github.com/EmbarkStudios/spdx/workflows/CI/badge.svg)](https://github.com/EmbarkStudios/spdx/actions?workflow=CI)
 
@@ -48,7 +48,6 @@ fn main() {
 ## Updating SPDX list
 
 You can update the list of SPDX identifiers for licenses and exceptions by running the update program `cargo run --manifest-path=update/Cargo.toml -- v3.6` where `v3.6` is the tag in the [SPDX data repo](https://github.com/spdx/license-list-data).
-
 
 ## Contributing
 

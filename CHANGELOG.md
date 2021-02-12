@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Changed
+- Updated to version 3.11 of the SPDX license list
+
 ## [0.3.5] - 2021-02-12
 ### Fixed
 - Update smallvec to fix an [advisory](https://rustsec.org/advisories/RUSTSEC-2021-0003)

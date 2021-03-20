@@ -67,7 +67,7 @@ impl Expression {
             let op = match op.op {
                 Op::And => Operator::And,
                 Op::Or => Operator::Or,
-                _ => unreachable!(),
+                Op::Open => unreachable!(),
             };
 
             q.push(ExprNode::Op(op));
@@ -89,7 +89,7 @@ impl Expression {
             Err(ParseError {
                 original,
                 span,
-                reason: Reason::Unexpected(&expected),
+                reason: Reason::Unexpected(expected),
             })
         };
 
@@ -254,7 +254,7 @@ impl Expression {
                     reason: Reason::Empty,
                 });
             }
-            _ => return make_err_for_token(last_token, original.len()..original.len()),
+            Some(_) => return make_err_for_token(last_token, original.len()..original.len()),
         }
 
         while let Some(top) = op_stack.pop() {

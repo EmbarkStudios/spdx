@@ -48,7 +48,7 @@ pub enum Reason {
 }
 
 impl<'a> fmt::Display for ParseError<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.original)?;
         f.write_str("\n")?;
 
@@ -73,7 +73,7 @@ impl<'a> fmt::Display for ParseError<'a> {
 }
 
 impl fmt::Display for Reason {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::UnknownLicense => f.write_str("unknown license id"),
             Self::UnknownException => f.write_str("unknown exception id"),

@@ -1,3 +1,56 @@
+// BEGIN - Embark standard lints v0.3
+// do not change or add/remove here, but one can add exceptions after this section
+// for more info see: <https://github.com/EmbarkStudios/rust-ecosystem/issues/59>
+#![deny(unsafe_code)]
+#![warn(
+    clippy::all,
+    clippy::await_holding_lock,
+    clippy::dbg_macro,
+    clippy::debug_assert_with_mut_call,
+    clippy::doc_markdown,
+    clippy::empty_enum,
+    clippy::enum_glob_use,
+    clippy::exit,
+    clippy::explicit_into_iter_loop,
+    clippy::filter_map_next,
+    clippy::fn_params_excessive_bools,
+    clippy::if_let_mutex,
+    clippy::imprecise_flops,
+    clippy::inefficient_to_string,
+    clippy::large_types_passed_by_value,
+    clippy::let_unit_value,
+    clippy::linkedlist,
+    clippy::lossy_float_literal,
+    clippy::macro_use_imports,
+    clippy::map_err_ignore,
+    clippy::map_flatten,
+    clippy::map_unwrap_or,
+    clippy::match_on_vec_items,
+    clippy::match_same_arms,
+    clippy::match_wildcard_for_single_variants,
+    clippy::mem_forget,
+    clippy::mismatched_target_os,
+    clippy::needless_borrow,
+    clippy::needless_continue,
+    clippy::option_option,
+    clippy::pub_enum_variant_names,
+    clippy::ref_option_ref,
+    clippy::rest_pat_in_fully_bound_structs,
+    clippy::string_add_assign,
+    clippy::string_add,
+    clippy::string_to_string,
+    clippy::suboptimal_flops,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unnested_or_patterns,
+    clippy::unused_self,
+    clippy::verbose_file_reads,
+    future_incompatible,
+    nonstandard_style,
+    rust_2018_idioms
+)]
+// END - Embark standard lints v0.3
+
 /// Error types
 pub mod error;
 pub mod expression;
@@ -111,7 +164,7 @@ impl LicenseId {
 }
 
 impl fmt::Debug for LicenseId {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.name)
     }
 }
@@ -164,13 +217,13 @@ impl ExceptionId {
 }
 
 impl fmt::Debug for ExceptionId {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.name)
     }
 }
 
 /// Represents a single license requirement, which must include a valid
-/// LicenseItem, and may allow current and future versions of the license,
+/// [`LicenseItem`], and may allow current and future versions of the license,
 /// and may also allow for a specific exception
 ///
 /// While they can be constructed manually, most of the time these will
@@ -216,7 +269,7 @@ impl From<LicenseId> for LicenseReq {
 }
 
 impl fmt::Display for LicenseReq {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         self.license.fmt(f)?;
 
         if let Some(ref exe) = self.exception {
@@ -227,7 +280,7 @@ impl fmt::Display for LicenseReq {
 }
 
 /// A single license term in a license expression, according to the SPDX spec.
-/// This can be either an SPDX license, which is mapped to a LicenseId from
+/// This can be either an SPDX license, which is mapped to a [`LicenseId`] from
 /// a valid SPDX short identifier, or else a document AND/OR license ref
 #[derive(Debug, Clone, Eq)]
 pub enum LicenseItem {
@@ -326,7 +379,7 @@ impl PartialEq for LicenseItem {
 }
 
 impl fmt::Display for LicenseItem {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match self {
             LicenseItem::SPDX { id, or_later } => {
                 id.name.fmt(f)?;
@@ -349,7 +402,7 @@ impl fmt::Display for LicenseItem {
     }
 }
 
-/// Attempts to find a LicenseId for the string
+/// Attempts to find a [`LicenseId`] for the string
 /// Note: any '+' at the end is trimmed
 ///
 /// ```
@@ -376,7 +429,7 @@ pub fn license_id(name: &str) -> Option<LicenseId> {
 /// Find license partially matching the name, e.g. "apache" => "Apache-2.0"
 /// Returns length (in bytes) of the string matched. Garbage at the end is
 /// ignored. See
-/// [identifiers::IMPRECISE_NAMES](identifiers/constant.IMPRECISE_NAMES.html)
+/// [`identifiers::IMPRECISE_NAMES`](identifiers/constant.IMPRECISE_NAMES.html)
 /// for the list of invalid names, and the valid license identifiers they are
 /// paired with.
 ///
@@ -399,7 +452,7 @@ pub fn imprecise_license_id(name: &str) -> Option<(LicenseId, usize)> {
     None
 }
 
-/// Attempts to find an ExceptionId for the string
+/// Attempts to find an [`ExceptionId`] for the string
 ///
 /// ```
 /// assert!(spdx::exception_id("LLVM-exception").is_some());

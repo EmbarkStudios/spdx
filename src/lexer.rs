@@ -146,7 +146,7 @@ impl<'a> Iterator for Lexer<'a> {
         self.offset += non_whitespace_index;
 
         #[allow(clippy::unnecessary_wraps)]
-        fn ok_token<'a>(token: Token) -> Option<Result<(Token, usize), ParseError<'a>>> {
+        fn ok_token<'a>(token: Token<'_>) -> Option<Result<(Token<'_>, usize), ParseError<'a>>> {
             let len = token.len();
             Some(Ok((token, len)))
         }
@@ -169,7 +169,7 @@ impl<'a> Iterator for Lexer<'a> {
             Some('(') => ok_token(Token::OpenParen),
             Some(')') => ok_token(Token::CloseParen),
             Some('/') if self.lax => Some(Ok((Token::Or, 1))),
-            _ => match TEXTTOKEN.find(self.inner) {
+            Some(_) => match TEXTTOKEN.find(self.inner) {
                 None => Some(Err(ParseError {
                     original: self.original,
                     span: self.offset..self.offset + self.inner.len(),
@@ -186,9 +186,9 @@ impl<'a> Iterator for Lexer<'a> {
                         ok_token(Token::And)
                     } else if self.lax && m.as_str() == "or" {
                         ok_token(Token::Or)
-                    } else if let Some(lic_id) = crate::license_id(&m.as_str()) {
+                    } else if let Some(lic_id) = crate::license_id(m.as_str()) {
                         ok_token(Token::SPDX(lic_id))
-                    } else if let Some(exc_id) = crate::exception_id(&m.as_str()) {
+                    } else if let Some(exc_id) = crate::exception_id(m.as_str()) {
                         ok_token(Token::Exception(exc_id))
                     } else if let Some(c) = DOCREFLICREF.captures(m.as_str()) {
                         ok_token(Token::LicenseRef {

@@ -249,7 +249,7 @@ impl From<LicenseId> for LicenseReq {
             } else if id.name.ends_with("-only") {
                 &id.name[..id.name.len() - 5]
             } else {
-                &id.name[..]
+                id.name
             };
 
             // If the root, eg GPL-2.0 licenses, which are currently deprecated,
@@ -262,7 +262,7 @@ impl From<LicenseId> for LicenseReq {
         };
 
         Self {
-            license: LicenseItem::SPDX { id, or_later },
+            license: LicenseItem::Spdx { id, or_later },
             exception: None,
         }
     }
@@ -285,7 +285,7 @@ impl fmt::Display for LicenseReq {
 #[derive(Debug, Clone, Eq)]
 pub enum LicenseItem {
     /// A regular SPDX license id
-    SPDX {
+    Spdx {
         id: LicenseId,
         /// Indicates the license had a `+`, allowing the licensee to license
         /// the software under either the specific version, or any later versions
@@ -308,7 +308,7 @@ impl LicenseItem {
     /// a license referencer
     pub fn id(&self) -> Option<LicenseId> {
         match self {
-            Self::SPDX { id, .. } => Some(*id),
+            Self::Spdx { id, .. } => Some(*id),
             _ => None,
         }
     }
@@ -318,11 +318,11 @@ impl Ord for LicenseItem {
     fn cmp(&self, o: &Self) -> cmp::Ordering {
         match (self, o) {
             (
-                Self::SPDX {
+                Self::Spdx {
                     id: a,
                     or_later: la,
                 },
-                Self::SPDX {
+                Self::Spdx {
                     id: b,
                     or_later: lb,
                 },
@@ -343,8 +343,8 @@ impl Ord for LicenseItem {
                 cmp::Ordering::Equal => al.cmp(bl),
                 o => o,
             },
-            (Self::SPDX { .. }, Self::Other { .. }) => cmp::Ordering::Less,
-            (Self::Other { .. }, Self::SPDX { .. }) => cmp::Ordering::Greater,
+            (Self::Spdx { .. }, Self::Other { .. }) => cmp::Ordering::Less,
+            (Self::Other { .. }, Self::Spdx { .. }) => cmp::Ordering::Greater,
         }
     }
 }
@@ -352,7 +352,7 @@ impl Ord for LicenseItem {
 impl PartialOrd for LicenseItem {
     fn partial_cmp(&self, o: &Self) -> Option<cmp::Ordering> {
         match (self, o) {
-            (Self::SPDX { id: a, .. }, Self::SPDX { id: b, .. }) => a.partial_cmp(b),
+            (Self::Spdx { id: a, .. }, Self::Spdx { id: b, .. }) => a.partial_cmp(b),
             (
                 Self::Other {
                     doc_ref: ad,
@@ -366,8 +366,8 @@ impl PartialOrd for LicenseItem {
                 cmp::Ordering::Equal => al.partial_cmp(bl),
                 o => Some(o),
             },
-            (Self::SPDX { .. }, Self::Other { .. }) => Some(cmp::Ordering::Less),
-            (Self::Other { .. }, Self::SPDX { .. }) => Some(cmp::Ordering::Greater),
+            (Self::Spdx { .. }, Self::Other { .. }) => Some(cmp::Ordering::Less),
+            (Self::Other { .. }, Self::Spdx { .. }) => Some(cmp::Ordering::Greater),
         }
     }
 }
@@ -381,7 +381,7 @@ impl PartialEq for LicenseItem {
 impl fmt::Display for LicenseItem {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match self {
-            LicenseItem::SPDX { id, or_later } => {
+            LicenseItem::Spdx { id, or_later } => {
                 id.name.fmt(f)?;
 
                 if *or_later {

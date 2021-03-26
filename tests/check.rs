@@ -133,14 +133,14 @@ fn allow_osi_fsf() {
     // BitTorrent-1.1 is only FSF
     check!("Borceux OR MIT AND BitTorrent-1.1" => [
         false || true && true => |req| {
-            if let LicenseItem::SPDX { id, .. } = req.license {
+            if let LicenseItem::Spdx { id, .. } = req.license {
                 return id.is_osi_approved() || id.is_fsf_free_libre();
             }
 
             false
         },
         false || true && false => |req| {
-            if let LicenseItem::SPDX { id, .. } = req.license {
+            if let LicenseItem::Spdx { id, .. } = req.license {
                 return id.is_osi_approved() && id.is_fsf_free_libre();
             }
 

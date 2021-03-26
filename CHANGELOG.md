@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Changed
+- Renamed `LicenseItem::SPDX` => `LicenseItem::Spdx` and `Token::SPDX` => `Token::Spdx`.
+
 ## [0.3.6] - 2021-02-12
 ### Changed
 - Updated to version 3.11 of the SPDX license list

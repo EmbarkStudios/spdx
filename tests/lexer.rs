@@ -3,13 +3,9 @@ use spdx::lexer::{Lexer, Token};
 macro_rules! test_lex {
     ($text:expr, [$($token:expr),+$(,)?]) => {
         let lexed: Vec<_> = Lexer::new($text).map(|r| r.map(|lt| lt.token).unwrap()).collect();
-        let expected = {
-            let mut v = Vec::new();
-            $(
-                v.push($token);
-            )+
-            v
-        };
+        let expected = vec![$(
+            $token,
+        )+];
 
         assert_eq!(lexed, expected);
     }
@@ -17,7 +13,7 @@ macro_rules! test_lex {
 
 macro_rules! lic_tok {
     ($id:expr) => {
-        Token::SPDX(spdx::license_id($id).unwrap())
+        Token::Spdx(spdx::license_id($id).unwrap())
     };
 }
 

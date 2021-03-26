@@ -81,7 +81,7 @@ impl Expression {
                 }
                 Some(Token::CloseParen) => &["AND", "OR"],
                 Some(Token::Exception(_)) => &["AND", "OR", ")"],
-                Some(Token::SPDX(_)) => &["AND", "OR", "WITH", ")", "+"],
+                Some(Token::Spdx(_)) => &["AND", "OR", "WITH", ")", "+"],
                 Some(Token::LicenseRef { .. }) | Some(Token::Plus) => &["AND", "OR", "WITH", ")"],
                 Some(Token::With) => &["<exception>"],
             };
@@ -97,7 +97,7 @@ impl Expression {
         'outer: for tok in lexer {
             let lt = tok?;
             match &lt.token {
-                Token::SPDX(id) => match last_token {
+                Token::Spdx(id) => match last_token {
                     None | Some(Token::And) | Some(Token::Or) | Some(Token::OpenParen) => {
                         expr_queue.push(ExprNode::Req(ExpressionReq {
                             req: LicenseReq::from(*id),
@@ -122,11 +122,11 @@ impl Expression {
                     _ => return make_err_for_token(last_token, lt.span),
                 },
                 Token::Plus => match last_token {
-                    Some(Token::SPDX(_)) => match expr_queue.last_mut().unwrap() {
+                    Some(Token::Spdx(_)) => match expr_queue.last_mut().unwrap() {
                         ExprNode::Req(ExpressionReq {
                             req:
                                 LicenseReq {
-                                    license: LicenseItem::SPDX { or_later, id },
+                                    license: LicenseItem::Spdx { or_later, id },
                                     ..
                                 },
                             ..
@@ -147,11 +147,11 @@ impl Expression {
                     _ => return make_err_for_token(last_token, lt.span),
                 },
                 Token::With => match last_token {
-                    Some(Token::SPDX(_)) | Some(Token::LicenseRef { .. }) | Some(Token::Plus) => {}
+                    Some(Token::Spdx(_)) | Some(Token::LicenseRef { .. }) | Some(Token::Plus) => {}
                     _ => return make_err_for_token(last_token, lt.span),
                 },
                 Token::Or | Token::And => match last_token {
-                    Some(Token::SPDX(_))
+                    Some(Token::Spdx(_))
                     | Some(Token::LicenseRef { .. })
                     | Some(Token::CloseParen)
                     | Some(Token::Exception(_))
@@ -198,7 +198,7 @@ impl Expression {
                 },
                 Token::CloseParen => {
                     match last_token {
-                        Some(Token::SPDX(_))
+                        Some(Token::Spdx(_))
                         | Some(Token::LicenseRef { .. })
                         | Some(Token::Plus)
                         | Some(Token::Exception(_))
@@ -241,7 +241,7 @@ impl Expression {
 
         // Validate that the terminating token is valid
         match last_token {
-            Some(Token::SPDX(_))
+            Some(Token::Spdx(_))
             | Some(Token::LicenseRef { .. })
             | Some(Token::Exception(_))
             | Some(Token::CloseParen)

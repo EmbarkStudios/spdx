@@ -28,7 +28,7 @@ pub enum ParseMode {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Token<'a> {
     /// A recognized SPDX license id
-    SPDX(LicenseId),
+    Spdx(LicenseId),
     /// A `LicenseRef-` prefixed id, with an optional
     /// `DocRef-`
     LicenseRef {
@@ -60,7 +60,7 @@ impl<'a> std::fmt::Display for Token<'a> {
 impl<'a> Token<'a> {
     fn len(&self) -> usize {
         match self {
-            Token::SPDX(id) => id.name.len(),
+            Token::Spdx(id) => id.name.len(),
             Token::Exception(e) => e.name.len(),
             Token::With => 4,
             Token::And => 3,
@@ -187,7 +187,7 @@ impl<'a> Iterator for Lexer<'a> {
                     } else if self.lax && m.as_str() == "or" {
                         ok_token(Token::Or)
                     } else if let Some(lic_id) = crate::license_id(m.as_str()) {
-                        ok_token(Token::SPDX(lic_id))
+                        ok_token(Token::Spdx(lic_id))
                     } else if let Some(exc_id) = crate::exception_id(m.as_str()) {
                         ok_token(Token::Exception(exc_id))
                     } else if let Some(c) = DOCREFLICREF.captures(m.as_str()) {
@@ -205,7 +205,7 @@ impl<'a> Iterator for Lexer<'a> {
                     } else {
                         None
                     } {
-                        Some(Ok((Token::SPDX(lic_id), token_len)))
+                        Some(Ok((Token::Spdx(lic_id), token_len)))
                     } else {
                         Some(Err(ParseError {
                             original: self.original,

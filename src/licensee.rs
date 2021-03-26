@@ -30,7 +30,7 @@ impl Licensee {
     /// `or_later` is completely ignored for licensees as it only applies
     /// to the license holder(s) not the licensee
     pub fn new(license: LicenseItem, exception: Option<ExceptionId>) -> Self {
-        if let LicenseItem::SPDX { or_later, .. } = &license {
+        if let LicenseItem::Spdx { or_later, .. } = &license {
             debug_assert!(!or_later)
         }
 
@@ -76,7 +76,7 @@ impl Licensee {
             })??;
 
             match lt.token {
-                Token::SPDX(id) => {
+                Token::Spdx(id) => {
                     // If we have one of the GNU licenses which use the `-only` or `-or-later` suffixes
                     // return an error rather than silently truncating, the `-only` and `-or-later`
                     // suffixes are for the license holder(s) to specify what license(s) they can be
@@ -97,7 +97,7 @@ impl Licensee {
                         }
                     }
 
-                    LicenseItem::SPDX {
+                    LicenseItem::Spdx {
                         id,
                         or_later: false,
                     }
@@ -162,7 +162,7 @@ impl Licensee {
     /// let licensee = spdx::Licensee::parse("Apache-2.0 WITH LLVM-exception").unwrap();
     ///
     /// assert!(licensee.satisfies(&spdx::LicenseReq {
-    ///     license: spdx::LicenseItem::SPDX {
+    ///     license: spdx::LicenseItem::Spdx {
     ///         id: spdx::license_id("Apache-2.0").unwrap(),
     ///         // Means the license holder is fine with Apache-2.0 or higher
     ///         or_later: true,
@@ -172,7 +172,7 @@ impl Licensee {
     /// ```
     pub fn satisfies(&self, req: &LicenseReq) -> bool {
         match (&self.inner.license, &req.license) {
-            (LicenseItem::SPDX { id: a, .. }, LicenseItem::SPDX { id: b, or_later }) => {
+            (LicenseItem::Spdx { id: a, .. }, LicenseItem::Spdx { id: b, or_later }) => {
                 if a.index != b.index {
                     if *or_later {
                         // Many of the SPDX identifiers end with `-<version number>`,
@@ -255,7 +255,7 @@ mod test {
 
         let mpl_id = license_id("MPL-2.0").unwrap();
         let req = LicenseReq {
-            license: LicenseItem::SPDX {
+            license: LicenseItem::Spdx {
                 id: mpl_id,
                 or_later: true,
             },
@@ -271,7 +271,7 @@ mod test {
         .inner
         .license
         {
-            LicenseItem::SPDX { id, .. } => assert_eq!(*id, mpl_id),
+            LicenseItem::Spdx { id, .. } => assert_eq!(*id, mpl_id),
             o => panic!("unexepcted {:?}", o),
         }
     }
@@ -287,7 +287,7 @@ mod test {
         let apache_id = license_id("Apache-2.0").unwrap();
         let llvm_exc = exception_id("LLVM-exception").unwrap();
         let req = LicenseReq {
-            license: LicenseItem::SPDX {
+            license: LicenseItem::Spdx {
                 id: apache_id,
                 or_later: false,
             },
@@ -339,7 +339,7 @@ mod test {
         for id in &["BSD-2-Clause", "BSD-2-Clause-FreeBSD"] {
             let lic_id = license_id(id).unwrap();
             let req = LicenseReq {
-                license: LicenseItem::SPDX {
+                license: LicenseItem::Spdx {
                     id: lic_id,
                     or_later: true,
                 },
@@ -355,7 +355,7 @@ mod test {
             .inner
             .license
             {
-                LicenseItem::SPDX { id, .. } => assert_eq!(*id, lic_id),
+                LicenseItem::Spdx { id, .. } => assert_eq!(*id, lic_id),
                 o => panic!("unexepcted {:?}", o),
             }
         }

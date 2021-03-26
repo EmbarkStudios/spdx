@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.4.0] - 2021-03-26
 ### Changed
 - Renamed `LicenseItem::SPDX` => `LicenseItem::Spdx` and `Token::SPDX` => `Token::Spdx`.
 
@@ -83,7 +84,8 @@ a user provided callback
 - Initial add of spdx crate, based primarly on [`license-exprs`](https://github.com/rust-lang-nursery/license-exprs)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.3.6...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.4.0...HEAD
+[0.4.0]: https://github.com/EmbarkStudios/spdx/compare/0.3.6...0.4.0
 [0.3.6]: https://github.com/EmbarkStudios/spdx/compare/0.3.5...0.3.6
 [0.3.5]: https://github.com/EmbarkStudios/spdx/compare/0.3.4...0.3.5
 [0.3.4]: https://github.com/EmbarkStudios/spdx/compare/0.3.3...0.3.4

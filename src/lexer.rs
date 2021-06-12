@@ -2,7 +2,6 @@ use crate::{
     error::{ParseError, Reason},
     ExceptionId, LicenseId,
 };
-use lazy_static::lazy_static;
 
 /// Available modes when parsing SPDX expressions
 #[derive(Copy, Clone, PartialEq)]
@@ -112,6 +111,41 @@ impl<'a> Lexer<'a> {
             lax: mode == ParseMode::Lax,
         }
     }
+
+    fn is_ref_char(c: &char) -> bool {
+        c.is_ascii_alphanumeric() || *c == '-' || *c == '.'
+    }
+
+    /// Return a matching text token if found - equivalent to the regex `^[-a-zA-Z0-9.:]+`
+    fn find_text_token(text: &'a str) -> Option<&'a str> {
+        let is_token_char = |c: &char| Self::is_ref_char(c) || *c == ':';
+        match text.chars().take_while(is_token_char).count() {
+            index if index > 0 => Some(&text[..index]),
+            _ => None,
+        }
+    }
+
+    /// Extract the text after `prefix` if made up of valid ref characters
+    fn find_ref(prefix: &str, text: &'a str) -> Option<&'a str> {
+        text.strip_prefix(prefix).map(|value| {
+            let end = value.chars().take_while(Self::is_ref_char).count();
+            &text[prefix.len()..prefix.len() + end]
+        })
+    }
+
+    /// Return a license ref if found - equivalent to the regex `^LicenseRef-([-a-zA-Z0-9.]+)`
+    fn find_license_ref(text: &'a str) -> Option<&'a str> {
+        Self::find_ref("LicenseRef-", text)
+    }
+
+    /// Return a document ref and license ref if found,
+    /// equivalent to the regex `^DocumentRef-([-a-zA-Z0-9.]+):LicenseRef-([-a-zA-Z0-9.]+)`
+    fn find_document_and_license_ref(text: &'a str) -> Option<(&'a str, &'a str)> {
+        let split = text.split_once(':');
+        let doc_ref = split.and_then(|(doc, _)| Self::find_ref("DocumentRef-", doc));
+        let lic_ref = split.and_then(|(_, lic)| Self::find_license_ref(lic));
+        Option::zip(doc_ref, lic_ref)
+    }
 }
 
 /// A wrapper around a particular token that includes the span of the characters
@@ -128,15 +162,6 @@ impl<'a> Iterator for Lexer<'a> {
     type Item = Result<LexerToken<'a>, ParseError<'a>>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        lazy_static! {
-            static ref TEXTTOKEN: regex::Regex = regex::Regex::new(r"^[-a-zA-Z0-9.:]+").unwrap();
-            static ref DOCREFLICREF: regex::Regex =
-                regex::Regex::new(r"^DocumentRef-([-a-zA-Z0-9.]+):LicenseRef-([-a-zA-Z0-9.]+)")
-                    .unwrap();
-            static ref LICREF: regex::Regex =
-                regex::Regex::new(r"^LicenseRef-([-a-zA-Z0-9.]+)").unwrap();
-        }
-
         // Jump over any whitespace, updating `self.inner` and `self.offset` appropriately
         let non_whitespace_index = match self.inner.find(|c: char| !c.is_whitespace()) {
             Some(idx) => idx,
@@ -169,36 +194,37 @@ impl<'a> Iterator for Lexer<'a> {
             Some('(') => ok_token(Token::OpenParen),
             Some(')') => ok_token(Token::CloseParen),
             Some('/') if self.lax => Some(Ok((Token::Or, 1))),
-            Some(_) => match TEXTTOKEN.find(self.inner) {
+            Some(_) => match Lexer::find_text_token(self.inner) {
                 None => Some(Err(ParseError {
                     original: self.original,
                     span: self.offset..self.offset + self.inner.len(),
                     reason: Reason::InvalidCharacters,
                 })),
                 Some(m) => {
-                    if m.as_str() == "WITH" {
+                    if m == "WITH" {
                         ok_token(Token::With)
-                    } else if m.as_str() == "AND" {
+                    } else if m == "AND" {
                         ok_token(Token::And)
-                    } else if m.as_str() == "OR" {
+                    } else if m == "OR" {
                         ok_token(Token::Or)
-                    } else if self.lax && m.as_str() == "and" {
+                    } else if self.lax && m == "and" {
                         ok_token(Token::And)
-                    } else if self.lax && m.as_str() == "or" {
+                    } else if self.lax && m == "or" {
                         ok_token(Token::Or)
-                    } else if let Some(lic_id) = crate::license_id(m.as_str()) {
+                    } else if let Some(lic_id) = crate::license_id(m) {
                         ok_token(Token::Spdx(lic_id))
-                    } else if let Some(exc_id) = crate::exception_id(m.as_str()) {
+                    } else if let Some(exc_id) = crate::exception_id(m) {
                         ok_token(Token::Exception(exc_id))
-                    } else if let Some(c) = DOCREFLICREF.captures(m.as_str()) {
+                    } else if let Some((doc_ref, lic_ref)) = Lexer::find_document_and_license_ref(m)
+                    {
                         ok_token(Token::LicenseRef {
-                            doc_ref: Some(c.get(1).unwrap().as_str()),
-                            lic_ref: c.get(2).unwrap().as_str(),
+                            doc_ref: Some(doc_ref),
+                            lic_ref,
                         })
-                    } else if let Some(c) = LICREF.captures(m.as_str()) {
+                    } else if let Some(lic_ref) = Lexer::find_license_ref(m) {
                         ok_token(Token::LicenseRef {
                             doc_ref: None,
-                            lic_ref: c.get(1).unwrap().as_str(),
+                            lic_ref,
                         })
                     } else if let Some((lic_id, token_len)) = if self.lax {
                         crate::imprecise_license_id(self.inner)
@@ -209,7 +235,7 @@ impl<'a> Iterator for Lexer<'a> {
                     } else {
                         Some(Err(ParseError {
                             original: self.original,
-                            span: self.offset..self.offset + m.end(),
+                            span: self.offset..self.offset + m.len(),
                             reason: Reason::UnknownTerm,
                         }))
                     }

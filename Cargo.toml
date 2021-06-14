@@ -19,13 +19,8 @@ include = [
 ]
 
 [dependencies]
-lazy_static = "1.4"
 smallvec = "1.6"
 
-[dependencies.regex]
-version = "1.4"
-default-features = false
-features = ["std"]
 
 [dev-dependencies]
 difference = "2.0"

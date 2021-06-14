@@ -21,6 +21,5 @@ include = [
 [dependencies]
 smallvec = "1.6"
 
-
 [dev-dependencies]
 difference = "2.0"

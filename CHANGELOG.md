@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Changed
+- [PR#37](https://github.com/EmbarkStudios/spdx/pull/37) removed the dependencies on regex and lazy_static used for parsing some license expression parts, which gives a nice compile speed up with no behavior changes. Thanks [@Swagadon](https://github.com/Swagadon)!
+
 ## [0.4.0] - 2021-03-26
 ### Changed
 - Renamed `LicenseItem::SPDX` => `LicenseItem::Spdx` and `Token::SPDX` => `Token::Spdx`.

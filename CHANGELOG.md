@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.4.1] - 2021-06-14
 ### Changed
 - [PR#37](https://github.com/EmbarkStudios/spdx/pull/37) removed the dependencies on regex and lazy_static used for parsing some license expression parts, which gives a nice compile speed up with no behavior changes. Thanks [@Swagadon](https://github.com/Swagadon)!
 
@@ -87,7 +88,8 @@ a user provided callback
 - Initial add of spdx crate, based primarly on [`license-exprs`](https://github.com/rust-lang-nursery/license-exprs)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.4.0...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.4.1...HEAD
+[0.4.1]: https://github.com/EmbarkStudios/spdx/compare/0.4.0...0.4.1
 [0.4.0]: https://github.com/EmbarkStudios/spdx/compare/0.3.6...0.4.0
 [0.3.6]: https://github.com/EmbarkStudios/spdx/compare/0.3.5...0.3.6
 [0.3.5]: https://github.com/EmbarkStudios/spdx/compare/0.3.4...0.3.5

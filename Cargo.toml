@@ -19,7 +19,9 @@ include = [
 ]
 
 [dependencies]
+# In most cases expressions are quite small so we can avoid heap allocations
 smallvec = "1.6"
 
 [dev-dependencies]
-difference = "2.0"
+# Used to print colored diffs in case of test failures
+similar-asserts = "1.1"

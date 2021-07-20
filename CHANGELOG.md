@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Changed
+- [PR#38](https://github.com/EmbarkStudios/spdx/pull/38) fixed various clippy lints which also bumps the MSRV to [1.53.0](https://blog.rust-lang.org/2021/06/17/Rust-1.53.0.html). Previously, PR#37 had bumped the MSRV to 1.52 so now this crate will check the MSRV so changes are intentional.
+- [PR#38](https://github.com/EmbarkStudios/spdx/pull/38) replaced the unmaintained `difference` crate with `similar-asserts`.
+
 ## [0.4.1] - 2021-06-14
 ### Changed
 - [PR#37](https://github.com/EmbarkStudios/spdx/pull/37) removed the dependencies on regex and lazy_static used for parsing some license expression parts, which gives a nice compile speed up with no behavior changes. Thanks [@Swagadon](https://github.com/Swagadon)!
@@ -51,9 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The `GFDL*` licenses are now marked as copyleft
 
 ### Fixed
-- When creating a `LicenseReq` from a GNU license, the license identifier is converted into its base form,
-eg. `GPL-2.0-or-later` becomes `GPL-2.0+` so that the GNU style license identifiers can be used just the same
-as all of the other ones. See [this issue](https://github.com/EmbarkStudios/cargo-deny/issues/55)
+- When creating a `LicenseReq` from a GNU license, the license identifier is converted into its base form, eg. `GPL-2.0-or-later` becomes `GPL-2.0+` so that the GNU style license identifiers can be used just the same as all of the other ones. See [this issue](https://github.com/EmbarkStudios/cargo-deny/issues/55)
 
 ## [0.2.4] - 2019-11-25
 ### Added

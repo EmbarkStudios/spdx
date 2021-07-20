@@ -87,7 +87,7 @@ impl Expression {
     pub fn requirements(&self) -> impl Iterator<Item = &ExpressionReq> {
         self.expr.iter().filter_map(|item| match item {
             ExprNode::Req(req) => Some(req),
-            _ => None,
+            ExprNode::Op(_op) => None,
         })
     }
 

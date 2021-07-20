@@ -8,19 +8,10 @@ macro_rules! test_validate {
 
             $(
                 let actual = reqs.next().unwrap();
-                println!("{:?}", actual);
-
                 let actual_str = format!("{}", actual.1.req);
                 let expected_str = $expected;
 
-                if actual_str != expected_str {
-                    assert!(
-                        false,
-                        "failed @ index {} - {}",
-                        actual.0,
-                        difference::Changeset::new(expected_str, &actual_str, " ")
-                    );
-                }
+                similar_asserts::assert_eq!(actual_str, expected_str, "failed @ index {}", actual.0);
             )+
 
             if let Some((_, additional)) = reqs.next() {
@@ -40,15 +31,7 @@ macro_rules! err {
             reason: spdx::error::Reason::$reason,
         };
 
-        if act_err != expected {
-            let act_text = format!("{:?}", act_err);
-            let exp_text = format!("{:?}", expected);
-            assert!(
-                false,
-                "{}",
-                difference::Changeset::new(&exp_text, &act_text, "")
-            );
-        }
+        similar_asserts::assert_eq!(act_err, expected);
     };
 
     ($text:expr => $unexpected:expr; $range:expr) => {
@@ -60,15 +43,7 @@ macro_rules! err {
             reason: spdx::error::Reason::Unexpected($unexpected),
         };
 
-        if act_err != expected {
-            let act_text = format!("{:?}", act_err);
-            let exp_text = format!("{:?}", expected);
-            assert!(
-                false,
-                "{}",
-                difference::Changeset::new(&exp_text, &act_text, "")
-            );
-        }
+        similar_asserts::assert_eq!(act_err, expected);
     };
 }
 

@@ -4,6 +4,7 @@
 [![Embark](https://img.shields.io/badge/discord-ark-%237289da.svg?logo=discord)](https://discord.gg/dAuKfZS)
 [![Crates.io](https://img.shields.io/crates/v/spdx.svg)](https://crates.io/crates/spdx)
 [![Docs](https://docs.rs/spdx/badge.svg)](https://docs.rs/spdx)
+[![Minimum Stable Rust Version](https://img.shields.io/badge/Rust-1.53.0-blue?color=fc8d62&logo=rust)](https://blog.rust-lang.org/2021/06/17/Rust-1.53.0.html)
 [![SPDX Version](https://img.shields.io/badge/SPDX%20Version-3.11-blue.svg)](https://spdx.org/licenses/)
 [![dependency status](https://deps.rs/repo/github/EmbarkStudios/spdx/status.svg)](https://deps.rs/repo/github/EmbarkStudios/spdx)
 [![Build Status](https://github.com/EmbarkStudios/spdx/workflows/CI/badge.svg)](https://github.com/EmbarkStudios/spdx/actions?workflow=CI)

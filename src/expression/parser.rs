@@ -76,13 +76,11 @@ impl Expression {
 
         let make_err_for_token = |last_token: Option<Token<'_>>, span: std::ops::Range<usize>| {
             let expected: &[&str] = match last_token {
-                None | Some(Token::And) | Some(Token::Or) | Some(Token::OpenParen) => {
-                    &["<license>", "("]
-                }
+                None | Some(Token::And | Token::Or | Token::OpenParen) => &["<license>", "("],
                 Some(Token::CloseParen) => &["AND", "OR"],
                 Some(Token::Exception(_)) => &["AND", "OR", ")"],
                 Some(Token::Spdx(_)) => &["AND", "OR", "WITH", ")", "+"],
-                Some(Token::LicenseRef { .. }) | Some(Token::Plus) => &["AND", "OR", "WITH", ")"],
+                Some(Token::LicenseRef { .. } | Token::Plus) => &["AND", "OR", "WITH", ")"],
                 Some(Token::With) => &["<exception>"],
             };
 
@@ -98,7 +96,7 @@ impl Expression {
             let lt = tok?;
             match &lt.token {
                 Token::Spdx(id) => match last_token {
-                    None | Some(Token::And) | Some(Token::Or) | Some(Token::OpenParen) => {
+                    None | Some(Token::And | Token::Or | Token::OpenParen) => {
                         expr_queue.push(ExprNode::Req(ExpressionReq {
                             req: LicenseReq::from(*id),
                             span: lt.span.start as u32..lt.span.end as u32,
@@ -107,7 +105,7 @@ impl Expression {
                     _ => return make_err_for_token(last_token, lt.span),
                 },
                 Token::LicenseRef { doc_ref, lic_ref } => match last_token {
-                    None | Some(Token::And) | Some(Token::Or) | Some(Token::OpenParen) => {
+                    None | Some(Token::And | Token::Or | Token::OpenParen) => {
                         expr_queue.push(ExprNode::Req(ExpressionReq {
                             req: LicenseReq {
                                 license: LicenseItem::Other {
@@ -147,15 +145,17 @@ impl Expression {
                     _ => return make_err_for_token(last_token, lt.span),
                 },
                 Token::With => match last_token {
-                    Some(Token::Spdx(_)) | Some(Token::LicenseRef { .. }) | Some(Token::Plus) => {}
+                    Some(Token::Spdx(_) | Token::LicenseRef { .. } | Token::Plus) => {}
                     _ => return make_err_for_token(last_token, lt.span),
                 },
                 Token::Or | Token::And => match last_token {
-                    Some(Token::Spdx(_))
-                    | Some(Token::LicenseRef { .. })
-                    | Some(Token::CloseParen)
-                    | Some(Token::Exception(_))
-                    | Some(Token::Plus) => {
+                    Some(
+                        Token::Spdx(_)
+                        | Token::LicenseRef { .. }
+                        | Token::CloseParen
+                        | Token::Exception(_)
+                        | Token::Plus,
+                    ) => {
                         let new_op = match lt.token {
                             Token::Or => Op::Or,
                             Token::And => Op::And,
@@ -171,7 +171,7 @@ impl Expression {
 
                                         match top.op {
                                             Op::And | Op::Or => apply_op(top, &mut expr_queue)?,
-                                            _ => unreachable!(),
+                                            Op::Open => unreachable!(),
                                         }
                                     } else {
                                         break;
@@ -188,7 +188,7 @@ impl Expression {
                     _ => return make_err_for_token(last_token, lt.span),
                 },
                 Token::OpenParen => match last_token {
-                    None | Some(Token::And) | Some(Token::Or) | Some(Token::OpenParen) => {
+                    None | Some(Token::And | Token::Or | Token::OpenParen) => {
                         op_stack.push(OpAndSpan {
                             op: Op::Open,
                             span: lt.span,
@@ -198,11 +198,13 @@ impl Expression {
                 },
                 Token::CloseParen => {
                     match last_token {
-                        Some(Token::Spdx(_))
-                        | Some(Token::LicenseRef { .. })
-                        | Some(Token::Plus)
-                        | Some(Token::Exception(_))
-                        | Some(Token::CloseParen) => {
+                        Some(
+                            Token::Spdx(_)
+                            | Token::LicenseRef { .. }
+                            | Token::Plus
+                            | Token::Exception(_)
+                            | Token::CloseParen,
+                        ) => {
                             while let Some(top) = op_stack.pop() {
                                 match top.op {
                                     Op::And | Op::Or => apply_op(top, &mut expr_queue)?,
@@ -241,11 +243,13 @@ impl Expression {
 
         // Validate that the terminating token is valid
         match last_token {
-            Some(Token::Spdx(_))
-            | Some(Token::LicenseRef { .. })
-            | Some(Token::Exception(_))
-            | Some(Token::CloseParen)
-            | Some(Token::Plus) => {}
+            Some(
+                Token::Spdx(_)
+                | Token::LicenseRef { .. }
+                | Token::Exception(_)
+                | Token::CloseParen
+                | Token::Plus,
+            ) => {}
             // We have to have at least one valid license requirement
             None => {
                 return Err(ParseError {

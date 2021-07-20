@@ -112,6 +112,7 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    #[inline]
     fn is_ref_char(c: &char) -> bool {
         c.is_ascii_alphanumeric() || *c == '-' || *c == '.'
     }
@@ -134,6 +135,7 @@ impl<'a> Lexer<'a> {
     }
 
     /// Return a license ref if found - equivalent to the regex `^LicenseRef-([-a-zA-Z0-9.]+)`
+    #[inline]
     fn find_license_ref(text: &'a str) -> Option<&'a str> {
         Self::find_ref("LicenseRef-", text)
     }

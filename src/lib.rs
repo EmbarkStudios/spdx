@@ -309,7 +309,7 @@ impl LicenseItem {
     pub fn id(&self) -> Option<LicenseId> {
         match self {
             Self::Spdx { id, .. } => Some(*id),
-            _ => None,
+            Self::Other { .. } => None,
         }
     }
 }

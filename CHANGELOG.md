@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.5.0] - 2021-07-20
 ### Changed
 - [PR#38](https://github.com/EmbarkStudios/spdx/pull/38) fixed various clippy lints which also bumps the MSRV to [1.53.0](https://blog.rust-lang.org/2021/06/17/Rust-1.53.0.html). Previously, PR#37 had bumped the MSRV to 1.52 so now this crate will check the MSRV so changes are intentional.
 - [PR#38](https://github.com/EmbarkStudios/spdx/pull/38) replaced the unmaintained `difference` crate with `similar-asserts`.
@@ -90,7 +91,8 @@ a user provided callback
 - Initial add of spdx crate, based primarly on [`license-exprs`](https://github.com/rust-lang-nursery/license-exprs)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.4.1...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.5.0...HEAD
+[0.5.0]: https://github.com/EmbarkStudios/spdx/compare/0.4.1...0.5.0
 [0.4.1]: https://github.com/EmbarkStudios/spdx/compare/0.4.0...0.4.1
 [0.4.0]: https://github.com/EmbarkStudios/spdx/compare/0.3.6...0.4.0
 [0.3.6]: https://github.com/EmbarkStudios/spdx/compare/0.3.5...0.3.6

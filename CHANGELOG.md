@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Changed
+- [PR#38](https://github.com/EmbarkStudios/spdx/pull/38) fixed various clippy lints which also bumps the MSRV to [1.53.0](https://blog.rust-lang.org/2021/06/17/Rust-1.53.0.html). Previously, PR#37 had bumped the MSRV to 1.52 so now this crate will check the MSRV so changes are intentional.
+- [PR#38](https://github.com/EmbarkStudios/spdx/pull/38) replaced the unmaintained `difference` crate with `similar-asserts`.
+
 ## [0.4.1] - 2021-06-14
 ### Changed
 - [PR#37](https://github.com/EmbarkStudios/spdx/pull/37) removed the dependencies on regex and lazy_static used for parsing some license expression parts, which gives a nice compile speed up with no behavior changes. Thanks [@Swagadon](https://github.com/Swagadon)!

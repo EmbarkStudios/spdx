@@ -696,6 +696,11 @@ pub const LICENSES: &[(&str, &str, u8)] = &[
         IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
+        "GFDL-1.1-invariants",
+        r#"GNU Free Documentation License v1.1"#,
+        IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
+    ),
+    (
         "GFDL-1.1-invariants-only",
         r#"GNU Free Documentation License v1.1 only - invariants"#,
         IS_COPYLEFT | IS_GNU,
@@ -731,6 +736,11 @@ pub const LICENSES: &[(&str, &str, u8)] = &[
         IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),
     (
+        "GFDL-1.2-invariants",
+        r#"GNU Free Documentation License v1.2"#,
+        IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
+    ),
+    (
         "GFDL-1.2-invariants-only",
         r#"GNU Free Documentation License v1.2 only - invariants"#,
         IS_COPYLEFT | IS_GNU,
@@ -762,6 +772,11 @@ pub const LICENSES: &[(&str, &str, u8)] = &[
     ),
     (
         "GFDL-1.3",
+        r#"GNU Free Documentation License v1.3"#,
+        IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
+    ),
+    (
+        "GFDL-1.3-invariants",
         r#"GNU Free Documentation License v1.3"#,
         IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
     ),

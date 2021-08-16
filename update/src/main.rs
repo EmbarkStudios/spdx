@@ -152,36 +152,36 @@ pub const IS_GNU: u8 = 0x10;
                     bail!("Malformed JSON: {:?}", lic)
                 };
                 if debug {
-                    eprintln!("{:?},{:?}", get(&lic, "licenseId"), get(&lic, "name"));
+                    eprintln!("{:?},{:?}", get(lic, "licenseId"), get(lic, "name"));
                 }
 
-                let lic_id = get(&lic, "licenseId")?;
-                if let Value::String(ref s) = lic_id {
+                let lic_id = get(lic, "licenseId")?;
+                if let Value::String(id) = lic_id {
                     let mut flags = String::with_capacity(100);
 
-                    if let Ok(Value::Bool(val)) = get(&lic, "isDeprecatedLicenseId") {
+                    if let Ok(Value::Bool(val)) = get(lic, "isDeprecatedLicenseId") {
                         if *val {
                             flags.push_str("IS_DEPRECATED | ");
                         }
                     }
 
-                    if let Ok(Value::Bool(val)) = get(&lic, "isOsiApproved") {
+                    if let Ok(Value::Bool(val)) = get(lic, "isOsiApproved") {
                         if *val {
                             flags.push_str("IS_OSI_APPROVED | ");
                         }
                     }
 
-                    if let Ok(Value::Bool(val)) = get(&lic, "isFsfLibre") {
+                    if let Ok(Value::Bool(val)) = get(lic, "isFsfLibre") {
                         if *val {
                             flags.push_str("IS_FSF_LIBRE | ");
                         }
                     }
 
-                    if is_copyleft(s) {
+                    if is_copyleft(id) {
                         flags.push_str("IS_COPYLEFT | ");
                     }
 
-                    if is_gnu(s) {
+                    if is_gnu(id) {
                         flags.push_str("IS_GNU | ");
                     }
 
@@ -192,19 +192,25 @@ pub const IS_GNU: u8 = 0x10;
                         flags.truncate(flags.len() - 3);
                     }
 
-                    let name = if let Value::String(ref name) = get(&lic, "name")? {
+                    let full_name = if let Value::String(name) = get(lic, "name")? {
                         name
                     } else {
-                        s
+                        id
                     };
 
-                    v.push((s, name, flags));
+                    // Add `-invariants` versions of the root GFDL-<version>
+                    // licenses so that they work slightly nicer
+                    if id.starts_with("GFDL-") && id.len() < 9 {
+                        v.push((format!("{}-invariants", id), full_name, flags.clone()));
+                    }
+
+                    v.push((id.to_owned(), full_name, flags));
                 } else {
                     bail!("Malformed JSON: {:?}", lic_id);
                 }
             }
 
-            v.sort_by_key(|v| v.0);
+            v.sort_by(|a, b| a.0.cmp(&b.0));
 
             let lic_list_ver = get(&json, "licenseListVersion")?;
             if let Value::String(ref s) = lic_list_ver {
@@ -248,7 +254,7 @@ pub const IS_GNU: u8 = 0x10;
 
             let mut v = vec![];
             for exc in exceptions.iter() {
-                let exc = if let Value::Object(ref m) = *exc {
+                let exc = if let Value::Object(m) = exc {
                     m
                 } else {
                     bail!("Malformed JSON: {:?}", exc)
@@ -256,14 +262,14 @@ pub const IS_GNU: u8 = 0x10;
                 if debug {
                     eprintln!(
                         "{:?},{:?}",
-                        get(&exc, "licenseExceptionId"),
-                        get(&exc, "name")
+                        get(exc, "licenseExceptionId"),
+                        get(exc, "name")
                     );
                 }
 
-                let lic_exc_id = get(&exc, "licenseExceptionId")?;
-                if let Value::String(ref s) = lic_exc_id {
-                    let flags = match get(&exc, "isDeprecatedLicenseId") {
+                let lic_exc_id = get(exc, "licenseExceptionId")?;
+                if let Value::String(s) = lic_exc_id {
+                    let flags = match get(exc, "isDeprecatedLicenseId") {
                         Ok(Value::Bool(val)) => {
                             if *val {
                                 "IS_DEPRECATED"

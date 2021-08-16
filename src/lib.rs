@@ -1,27 +1,36 @@
-// BEGIN - Embark standard lints v0.3
+// BEGIN - Embark standard lints v0.4
 // do not change or add/remove here, but one can add exceptions after this section
 // for more info see: <https://github.com/EmbarkStudios/rust-ecosystem/issues/59>
 #![deny(unsafe_code)]
 #![warn(
     clippy::all,
     clippy::await_holding_lock,
+    clippy::char_lit_as_u8,
+    clippy::checked_conversions,
     clippy::dbg_macro,
     clippy::debug_assert_with_mut_call,
     clippy::doc_markdown,
     clippy::empty_enum,
     clippy::enum_glob_use,
     clippy::exit,
+    clippy::expl_impl_clone_on_copy,
+    clippy::explicit_deref_methods,
     clippy::explicit_into_iter_loop,
+    clippy::fallible_impl_from,
     clippy::filter_map_next,
+    clippy::float_cmp_const,
     clippy::fn_params_excessive_bools,
     clippy::if_let_mutex,
+    clippy::implicit_clone,
     clippy::imprecise_flops,
     clippy::inefficient_to_string,
+    clippy::invalid_upcast_comparisons,
     clippy::large_types_passed_by_value,
     clippy::let_unit_value,
     clippy::linkedlist,
     clippy::lossy_float_literal,
     clippy::macro_use_imports,
+    clippy::manual_ok_or,
     clippy::map_err_ignore,
     clippy::map_flatten,
     clippy::map_unwrap_or,
@@ -30,26 +39,34 @@
     clippy::match_wildcard_for_single_variants,
     clippy::mem_forget,
     clippy::mismatched_target_os,
+    clippy::mut_mut,
+    clippy::mutex_integer,
     clippy::needless_borrow,
     clippy::needless_continue,
     clippy::option_option,
-    clippy::pub_enum_variant_names,
+    clippy::path_buf_push_overwrite,
+    clippy::ptr_as_ptr,
     clippy::ref_option_ref,
     clippy::rest_pat_in_fully_bound_structs,
+    clippy::same_functions_in_if_condition,
+    clippy::semicolon_if_nothing_returned,
     clippy::string_add_assign,
     clippy::string_add,
+    clippy::string_lit_as_bytes,
     clippy::string_to_string,
-    clippy::suboptimal_flops,
     clippy::todo,
+    clippy::trait_duplication_in_bounds,
     clippy::unimplemented,
     clippy::unnested_or_patterns,
     clippy::unused_self,
+    clippy::useless_transmute,
     clippy::verbose_file_reads,
+    clippy::zero_sized_map_values,
     future_incompatible,
     nonstandard_style,
     rust_2018_idioms
 )]
-// END - Embark standard lints v0.3
+// END - Embark standard lints v0.4
 
 /// Error types
 pub mod error;
@@ -65,7 +82,10 @@ pub use expression::Expression;
 use identifiers::{IS_COPYLEFT, IS_DEPRECATED, IS_FSF_LIBRE, IS_GNU, IS_OSI_APPROVED};
 pub use lexer::ParseMode;
 pub use licensee::Licensee;
-use std::{cmp, fmt};
+use std::{
+    cmp::{self, Ordering},
+    fmt,
+};
 
 /// Unique identifier for a particular license
 ///
@@ -98,14 +118,14 @@ impl PartialEq for LicenseId {
 
 impl Ord for LicenseId {
     #[inline]
-    fn cmp(&self, o: &Self) -> cmp::Ordering {
+    fn cmp(&self, o: &Self) -> Ordering {
         self.index.cmp(&o.index)
     }
 }
 
 impl PartialOrd for LicenseId {
     #[inline]
-    fn partial_cmp(&self, o: &Self) -> Option<cmp::Ordering> {
+    fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
         Some(self.cmp(o))
     }
 }
@@ -192,14 +212,14 @@ impl PartialEq for ExceptionId {
 
 impl Ord for ExceptionId {
     #[inline]
-    fn cmp(&self, o: &Self) -> cmp::Ordering {
+    fn cmp(&self, o: &Self) -> Ordering {
         self.index.cmp(&o.index)
     }
 }
 
 impl PartialOrd for ExceptionId {
     #[inline]
-    fn partial_cmp(&self, o: &Self) -> Option<cmp::Ordering> {
+    fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
         Some(self.cmp(o))
     }
 }
@@ -239,26 +259,25 @@ pub struct LicenseReq {
 
 impl From<LicenseId> for LicenseReq {
     fn from(id: LicenseId) -> Self {
-        let mut or_later = false;
-
         // We need to special case GNU licenses because reasons
-        let id = if id.is_gnu() {
-            let root = if id.name.ends_with("-or-later") {
-                or_later = true;
-                &id.name[..id.name.len() - 9]
-            } else if id.name.ends_with("-only") {
-                &id.name[..id.name.len() - 5]
-            } else {
-                id.name
-            };
+        let (id, or_later) = if id.is_gnu() {
+            let (or_later, name) = id
+                .name
+                .strip_suffix("-or-later")
+                .map_or((false, id.name), |name| (true, name));
+
+            let root = name.strip_suffix("-only").unwrap_or(name);
 
             // If the root, eg GPL-2.0 licenses, which are currently deprecated,
             // are actually removed we will need to add them manually, but that
             // should only occur on a major revision of the SPDX license list,
             // so for now we should be fine with this
-            license_id(root).expect("Unable to find root GNU license")
+            (
+                license_id(root).expect("Unable to find root GNU license"),
+                or_later,
+            )
         } else {
-            id
+            (id, false)
         };
 
         Self {
@@ -275,6 +294,7 @@ impl fmt::Display for LicenseReq {
         if let Some(ref exe) = self.exception {
             write!(f, " WITH {}", exe.name)?;
         }
+
         Ok(())
     }
 }
@@ -315,7 +335,7 @@ impl LicenseItem {
 }
 
 impl Ord for LicenseItem {
-    fn cmp(&self, o: &Self) -> cmp::Ordering {
+    fn cmp(&self, o: &Self) -> Ordering {
         match (self, o) {
             (
                 Self::Spdx {
@@ -327,7 +347,7 @@ impl Ord for LicenseItem {
                     or_later: lb,
                 },
             ) => match a.cmp(b) {
-                cmp::Ordering::Equal => la.cmp(lb),
+                Ordering::Equal => la.cmp(lb),
                 o => o,
             },
             (
@@ -340,17 +360,17 @@ impl Ord for LicenseItem {
                     lic_ref: bl,
                 },
             ) => match ad.cmp(bd) {
-                cmp::Ordering::Equal => al.cmp(bl),
+                Ordering::Equal => al.cmp(bl),
                 o => o,
             },
-            (Self::Spdx { .. }, Self::Other { .. }) => cmp::Ordering::Less,
-            (Self::Other { .. }, Self::Spdx { .. }) => cmp::Ordering::Greater,
+            (Self::Spdx { .. }, Self::Other { .. }) => Ordering::Less,
+            (Self::Other { .. }, Self::Spdx { .. }) => Ordering::Greater,
         }
     }
 }
 
 impl PartialOrd for LicenseItem {
-    fn partial_cmp(&self, o: &Self) -> Option<cmp::Ordering> {
+    fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
         match (self, o) {
             (Self::Spdx { id: a, .. }, Self::Spdx { id: b, .. }) => a.partial_cmp(b),
             (
@@ -363,7 +383,7 @@ impl PartialOrd for LicenseItem {
                     lic_ref: bl,
                 },
             ) => match ad.cmp(bd) {
-                cmp::Ordering::Equal => al.partial_cmp(bl),
+                Ordering::Equal => al.partial_cmp(bl),
                 o => Some(o),
             },
             (Self::Spdx { .. }, Self::Other { .. }) => Some(cmp::Ordering::Less),
@@ -402,8 +422,8 @@ impl fmt::Display for LicenseItem {
     }
 }
 
-/// Attempts to find a [`LicenseId`] for the string
-/// Note: any '+' at the end is trimmed
+/// Attempts to find a [`LicenseId`] for the string. Note that any `+` at the
+/// end is trimmed when searching for a match.
 ///
 /// ```
 /// assert!(spdx::license_id("MIT").is_some());
@@ -472,7 +492,7 @@ pub fn exception_id(name: &str) -> Option<ExceptionId> {
 /// the license and exception identifiers are sourced from
 ///
 /// ```
-/// assert_eq!(spdx::license_version(), "3.11");
+/// assert_eq!(spdx::license_version(), "3.14");
 /// ```
 #[inline]
 pub fn license_version() -> &'static str {

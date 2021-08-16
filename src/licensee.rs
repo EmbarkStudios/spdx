@@ -28,10 +28,10 @@ impl fmt::Display for Licensee {
 impl Licensee {
     /// Creates a licensee from its component parts. Note that use of SPDX's
     /// `or_later` is completely ignored for licensees as it only applies
-    /// to the license holder(s) not the licensee
+    /// to the license holder(s), not the licensee
     pub fn new(license: LicenseItem, exception: Option<ExceptionId>) -> Self {
         if let LicenseItem::Spdx { or_later, .. } = &license {
-            debug_assert!(!or_later)
+            debug_assert!(!or_later);
         }
 
         Self {
@@ -64,6 +64,8 @@ impl Licensee {
     /// // GNU suffix license (GPL, AGPL, LGPL, GFDL) must not contain the suffix
     /// Licensee::parse("GPL-3.0-or-later").unwrap_err();
     ///
+    /// // GFDL licenses are only allowed to contain the `invariants` suffix
+    /// Licensee::parse("GFDL-1.3-invariants").unwrap();
     /// ```
     pub fn parse(original: &str) -> Result<Self, ParseError<'_>> {
         let mut lexer = Lexer::new(original);
@@ -84,6 +86,7 @@ impl Licensee {
                     if id.is_gnu() {
                         let is_only = original.ends_with("-only");
                         let or_later = original.ends_with("-or-later");
+
                         if is_only || or_later {
                             return Err(ParseError {
                                 original,
@@ -93,6 +96,20 @@ impl Licensee {
                                     original.len() - 9..original.len()
                                 },
                                 reason: Reason::Unexpected(&["<bare-gnu-license>"]),
+                            });
+                        }
+
+                        // GFDL has `no-invariants` and `invariants` variants, we
+                        // treat `no-invariants` as invalid, just the same as
+                        // only, it would be the same as a bare GFDL-<version>.
+                        // However, the `invariants`...variant we do allow since
+                        // it is a modifier on the license...and should therefore
+                        // by a WITH exception but GNU licenses are the worst
+                        if original.starts_with("GFDL") && original.contains("-no-invariants") {
+                            return Err(ParseError {
+                                original,
+                                span: 8..original.len(),
+                                reason: Reason::Unexpected(&["<bare-gfdl-license>"]),
                             });
                         }
                     }
@@ -175,14 +192,36 @@ impl Licensee {
             (LicenseItem::Spdx { id: a, .. }, LicenseItem::Spdx { id: b, or_later }) => {
                 if a.index != b.index {
                     if *or_later {
+                        let (a_name, agfdl_invariants) = if a.name.starts_with("GFDL") {
+                            a.name
+                                .strip_suffix("-invariants")
+                                .map_or((a.name, false), |name| (name, true))
+                        } else {
+                            (a.name, false)
+                        };
+
+                        let (b_name, bgfdl_invariants) = if b.name.starts_with("GFDL") {
+                            b.name
+                                .strip_suffix("-invariants")
+                                .map_or((b.name, false), |name| (name, true))
+                        } else {
+                            (b.name, false)
+                        };
+
+                        if agfdl_invariants != bgfdl_invariants {
+                            return false;
+                        }
+
                         // Many of the SPDX identifiers end with `-<version number>`,
                         // so chop that off and ensure the base strings match, and if so,
                         // just a do a lexical compare, if this "allowed license" is >,
                         // then we satisfed the license requirement
-                        let a_name = &a.name[..a.name.rfind('-').unwrap_or_else(|| a.name.len())];
-                        let b_name = &b.name[..b.name.rfind('-').unwrap_or_else(|| b.name.len())];
+                        let atest_name =
+                            &a_name[..a_name.rfind('-').unwrap_or_else(|| a_name.len())];
+                        let btest_name =
+                            &b_name[..b_name.rfind('-').unwrap_or_else(|| b_name.len())];
 
-                        if a_name != b_name || a.name < b.name {
+                        if atest_name != btest_name || a_name < b_name {
                             return false;
                         }
                     } else {

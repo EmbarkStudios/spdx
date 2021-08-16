@@ -193,3 +193,57 @@ fn gpl_or_later_plus_strict() {
 fn gpl_or_later_plus_lax() {
     spdx::Expression::parse_mode("GPL-2.0+", spdx::ParseMode::Lax).unwrap();
 }
+
+#[test]
+fn gfdl() {
+    check!("GFDL-1.1-or-later" => [
+        true => |req| exact!(req, "GFDL-1.1"),
+        true => |req| exact!(req, "GFDL-1.2"),
+        true => |req| exact!(req, "GFDL-1.3"),
+    ]);
+
+    check!("GFDL-1.2-invariants-or-later" => [
+        false => |req| exact!(req, "GFDL-1.1"),
+        false => |req| exact!(req, "GFDL-1.1-invariants"),
+        false => |req| exact!(req, "GFDL-1.2"),
+        true => |req| exact!(req, "GFDL-1.2-invariants"),
+        false => |req| exact!(req, "GFDL-1.3"),
+        true => |req| exact!(req, "GFDL-1.3-invariants"),
+    ]);
+
+    check_lax!("GFDL-1.1-invariants+" => [
+        false => |req| exact!(req, "GFDL-1.1"),
+        true => |req| exact!(req, "GFDL-1.1-invariants"),
+        false => |req| exact!(req, "GFDL-1.2"),
+        true => |req| exact!(req, "GFDL-1.2-invariants"),
+        false => |req| exact!(req, "GFDL-1.3"),
+        true => |req| exact!(req, "GFDL-1.3-invariants"),
+    ]);
+
+    check!("GFDL-1.2-invariants" => [
+        false => |req| exact!(req, "GFDL-1.1"),
+        false => |req| exact!(req, "GFDL-1.1-invariants"),
+        false => |req| exact!(req, "GFDL-1.2"),
+        true => |req| exact!(req, "GFDL-1.2-invariants"),
+        false => |req| exact!(req, "GFDL-1.3"),
+        false => |req| exact!(req, "GFDL-1.3-invariants"),
+    ]);
+
+    check!("GFDL-1.2-invariants-only" => [
+        false => |req| exact!(req, "GFDL-1.1"),
+        false => |req| exact!(req, "GFDL-1.1-invariants"),
+        false => |req| exact!(req, "GFDL-1.2"),
+        true => |req| exact!(req, "GFDL-1.2-invariants"),
+        false => |req| exact!(req, "GFDL-1.3"),
+        false => |req| exact!(req, "GFDL-1.3-invariants"),
+    ]);
+
+    check!("GFDL-1.3-only" => [
+        false => |req| exact!(req, "GFDL-1.1"),
+        false => |req| exact!(req, "GFDL-1.1-invariants"),
+        false => |req| exact!(req, "GFDL-1.2"),
+        false => |req| exact!(req, "GFDL-1.2-invariants"),
+        true => |req| exact!(req, "GFDL-1.3"),
+        false => |req| exact!(req, "GFDL-1.3-invariants"),
+    ]);
+}

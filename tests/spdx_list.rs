@@ -12,9 +12,9 @@ fn handles_deprecation() {
 
 #[test]
 fn handles_fsf() {
-    let zpl = license_id("ZPL-2.1").unwrap();
-    assert!(zpl.is_fsf_free_libre() && !zpl.is_osi_approved());
-    assert_eq!(zpl.full_name, "Zope Public License 2.1");
+    let x11 = license_id("X11").unwrap();
+    assert!(x11.is_fsf_free_libre() && !x11.is_osi_approved());
+    assert_eq!(x11.full_name, "X11 License");
 }
 
 #[test]

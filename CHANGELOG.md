@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Changed
+- [PR#40](https://github.com/EmbarkStudios/spdx/pull/40) updated the SPDX license list from `3.11` => `3.14`.
+
+### Fixed
+- [PR#40](https://github.com/EmbarkStudios/spdx/pull/40) resolved [#39](https://github.com/EmbarkStudios/spdx/issues/39) by taking the `GFDL` exceptional differences from all other licenses (include the other GNU ones) into account.
+
 ## [0.5.0] - 2021-07-20
 ### Changed
 - [PR#38](https://github.com/EmbarkStudios/spdx/pull/38) fixed various clippy lints which also bumps the MSRV to [1.53.0](https://blog.rust-lang.org/2021/06/17/Rust-1.53.0.html). Previously, PR#37 had bumped the MSRV to 1.52 so now this crate will check the MSRV so changes are intentional.

@@ -247,3 +247,11 @@ fn gfdl() {
         false => |req| exact!(req, "GFDL-1.3-invariants"),
     ]);
 }
+
+#[test]
+fn noassertion() {
+    check!("NOASSERTION AND OpenSSL" => [
+        true && false => |req| exact!(req, "NOASSERTION") || exact!(req, "MIT"),
+        true && true => |req| exact!(req, "NOASSERTION") || exact!(req, "OpenSSL"),
+    ]);
+}

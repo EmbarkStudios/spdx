@@ -210,6 +210,11 @@ pub const IS_GNU: u8 = 0x10;
                 }
             }
 
+            let name = "NOASSERTION".to_owned();
+            // Add NOASSERTION, which is not yet? part of the SPDX spec
+            // https://github.com/spdx/spdx-spec/issues/50
+            v.push(("NOASSERTION".to_owned(), &name, "0x0".to_owned()));
+
             v.sort_by(|a, b| a.0.cmp(&b.0));
 
             let lic_list_ver = get(&json, "licenseListVersion")?;

@@ -1165,6 +1165,7 @@ pub const LICENSES: &[(&str, &str, u8)] = &[
         0x0,
     ),
     ("NLPL", r#"No Limit Public License"#, 0x0),
+    ("NOASSERTION", r#"NOASSERTION"#, 0x0),
     ("NOSL", r#"Netizen Open Source License"#, IS_FSF_LIBRE),
     (
         "NPL-1.0",

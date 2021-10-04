@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.6.1] - 2021-10-04
 ### Added
 - [PR#41](https://github.com/EmbarkStudios/spdx/pull/41) added a `NOASSERTION` license. Hopefully this will become part of [spec](https://github.com/spdx/spdx-spec/issues/50) in the future.
 
@@ -101,7 +102,8 @@ a user provided callback
 - Initial add of spdx crate, based primarly on [`license-exprs`](https://github.com/rust-lang-nursery/license-exprs)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.6.0...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.6.1...HEAD
+[0.6.1]: https://github.com/EmbarkStudios/spdx/compare/0.6.0...0.6.1
 [0.6.0]: https://github.com/EmbarkStudios/spdx/compare/0.5.0...0.6.0
 [0.5.0]: https://github.com/EmbarkStudios/spdx/compare/0.4.1...0.5.0
 [0.4.1]: https://github.com/EmbarkStudios/spdx/compare/0.4.0...0.4.1

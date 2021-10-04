@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Added
+- [PR#41](https://github.com/EmbarkStudios/spdx/pull/41) added a `NOASSERTION` license. Hopefully this will become part of [spec](https://github.com/spdx/spdx-spec/issues/50) in the future.
+
 ## [0.6.0] - 2021-08-16
 ### Changed
 - [PR#40](https://github.com/EmbarkStudios/spdx/pull/40) updated the SPDX license list from `3.11` => `3.14`.

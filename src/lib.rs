@@ -405,7 +405,11 @@ impl fmt::Display for LicenseItem {
                 id.name.fmt(f)?;
 
                 if *or_later {
-                    f.write_str("+")?;
+                    if id.is_gnu() && id.is_deprecated() {
+                        f.write_str("-or-later")?;
+                    } else if !id.is_gnu() {
+                        f.write_str("+")?;
+                    }
                 }
 
                 Ok(())
@@ -497,4 +501,36 @@ pub fn exception_id(name: &str) -> Option<ExceptionId> {
 #[inline]
 pub fn license_version() -> &'static str {
     identifiers::VERSION
+}
+
+#[cfg(test)]
+mod test {
+    use super::LicenseItem;
+
+    use crate::{license_id, Expression};
+
+    #[test]
+    fn gnu_or_later_display() {
+        let gpl_or_later = LicenseItem::Spdx {
+            id: license_id("GPL-3.0").unwrap(),
+            or_later: true,
+        };
+
+        let gpl_or_later_in_id = LicenseItem::Spdx {
+            id: license_id("GPL-3.0-or-later").unwrap(),
+            or_later: true,
+        };
+
+        let gpl_or_later_parsed = Expression::parse("GPL-3.0-or-later").unwrap();
+
+        let non_gnu_or_later = LicenseItem::Spdx {
+            id: license_id("Apache-2.0").unwrap(),
+            or_later: true,
+        };
+
+        assert_eq!(gpl_or_later.to_string(), "GPL-3.0-or-later");
+        assert_eq!(gpl_or_later_parsed.to_string(), "GPL-3.0-or-later");
+        assert_eq!(gpl_or_later_in_id.to_string(), "GPL-3.0-or-later");
+        assert_eq!(non_gnu_or_later.to_string(), "Apache-2.0+");
+    }
 }

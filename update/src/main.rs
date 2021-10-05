@@ -1,4 +1,4 @@
-use failure::bail;
+use anyhow::{bail, Context as _, Result};
 use serde_json::{map, Value};
 use std::{
     env,
@@ -8,34 +8,10 @@ use std::{
 
 type Map = map::Map<String, Value>;
 
-type Result<T> = std::result::Result<T, failure::Error>;
-
-fn download<F>(uri: &str, mut action: F, debug: bool) -> Result<()>
-where
-    F: FnMut(Map) -> Result<()>,
-{
-    let json: Value = reqwest::blocking::get(uri)?.json()?;
-    let json = if let Value::Object(m) = json {
-        m
-    } else {
-        bail!("Malformed JSON: {:?}", json)
-    };
-
-    if debug {
-        writeln!(io::stderr(), "#json == {}", json.len())?;
-        writeln!(
-            io::stderr(),
-            "License list version {}",
-            get(&json, "licenseListVersion")?
-        )?;
-    }
-
-    action(json)
-}
-
+#[inline]
 fn get<'a>(m: &'a Map, k: &str) -> Result<&'a Value> {
     m.get(k)
-        .ok_or_else(|| failure::format_err!("Malformed JSON: {:?} lacks {}", m, k))
+        .with_context(|| format!("Malformed JSON: {:?} lacks {}", m, k))
 }
 
 const IMPRECISE: &str = include_str!("imprecise.rs");
@@ -105,6 +81,33 @@ fn real_main() -> Result<()> {
         }
     };
 
+    if !std::path::Path::new("spdx-data").exists() {
+        println!("cloning...");
+        assert!(std::process::Command::new("git")
+            .args(&[
+                "clone",
+                "https://github.com/spdx/license-list-data.git",
+                "spdx-data"
+            ])
+            .status()
+            .unwrap()
+            .success());
+    } else {
+        println!("fetching...");
+        assert!(std::process::Command::new("git")
+            .args(&["-C", "spdx-data", "fetch"])
+            .status()
+            .unwrap()
+            .success());
+    }
+
+    println!("checking out...");
+    assert!(std::process::Command::new("git")
+        .args(&["-C", "spdx-data", "checkout", &upstream_tag])
+        .status()
+        .unwrap()
+        .success());
+
     let mut identifiers = std::fs::File::create("src/identifiers.rs")?;
 
     writeln!(
@@ -128,180 +131,165 @@ pub const IS_GNU: u8 = 0x10;
         upstream_tag
     )?;
 
-    let licenses_json_uri = format!(
-        "https://raw.githubusercontent.com/spdx/license-list-data/{}/json/licenses.json",
-        upstream_tag
-    );
+    let json: Map = serde_json::from_str(
+        &std::fs::read_to_string("spdx-data/json/licenses.json")
+            .context("unable to open licenses.json")?,
+    )
+    .context("failed to deserialize licenses.json")?;
 
-    download(
-        &licenses_json_uri,
-        |json| {
-            let licenses = get(&json, "licenses")?;
-            let licenses = if let Value::Array(ref v) = licenses {
-                v
+    let licenses = get(&json, "licenses")?;
+    let licenses = if let Value::Array(v) = licenses {
+        v
+    } else {
+        bail!("Malformed JSON: {:?}", licenses)
+    };
+    eprintln!("#licenses == {}", licenses.len());
+
+    let mut v = vec![];
+    for lic in licenses.iter() {
+        let lic = if let Value::Object(ref m) = *lic {
+            m
+        } else {
+            bail!("Malformed JSON: {:?}", lic)
+        };
+        if debug {
+            eprintln!("{:?},{:?}", get(lic, "licenseId"), get(lic, "name"));
+        }
+
+        let lic_id = get(lic, "licenseId")?;
+        if let Value::String(id) = lic_id {
+            let mut flags = String::with_capacity(100);
+
+            if let Ok(Value::Bool(val)) = get(lic, "isDeprecatedLicenseId") {
+                if *val {
+                    flags.push_str("IS_DEPRECATED | ");
+                }
+            }
+
+            if let Ok(Value::Bool(val)) = get(lic, "isOsiApproved") {
+                if *val {
+                    flags.push_str("IS_OSI_APPROVED | ");
+                }
+            }
+
+            if let Ok(Value::Bool(val)) = get(lic, "isFsfLibre") {
+                if *val {
+                    flags.push_str("IS_FSF_LIBRE | ");
+                }
+            }
+
+            if is_copyleft(id) {
+                flags.push_str("IS_COPYLEFT | ");
+            }
+
+            if is_gnu(id) {
+                flags.push_str("IS_GNU | ");
+            }
+
+            if flags.is_empty() {
+                flags.push_str("0x0");
             } else {
-                bail!("Malformed JSON: {:?}", licenses)
+                // Strip the trailing ` | `
+                flags.truncate(flags.len() - 3);
+            }
+
+            let full_name = if let Value::String(name) = get(lic, "name")? {
+                name
+            } else {
+                id
             };
-            eprintln!("#licenses == {}", licenses.len());
 
-            let mut v = vec![];
-            for lic in licenses.iter() {
-                let lic = if let Value::Object(ref m) = *lic {
-                    m
-                } else {
-                    bail!("Malformed JSON: {:?}", lic)
-                };
-                if debug {
-                    eprintln!("{:?},{:?}", get(lic, "licenseId"), get(lic, "name"));
-                }
-
-                let lic_id = get(lic, "licenseId")?;
-                if let Value::String(id) = lic_id {
-                    let mut flags = String::with_capacity(100);
-
-                    if let Ok(Value::Bool(val)) = get(lic, "isDeprecatedLicenseId") {
-                        if *val {
-                            flags.push_str("IS_DEPRECATED | ");
-                        }
-                    }
-
-                    if let Ok(Value::Bool(val)) = get(lic, "isOsiApproved") {
-                        if *val {
-                            flags.push_str("IS_OSI_APPROVED | ");
-                        }
-                    }
-
-                    if let Ok(Value::Bool(val)) = get(lic, "isFsfLibre") {
-                        if *val {
-                            flags.push_str("IS_FSF_LIBRE | ");
-                        }
-                    }
-
-                    if is_copyleft(id) {
-                        flags.push_str("IS_COPYLEFT | ");
-                    }
-
-                    if is_gnu(id) {
-                        flags.push_str("IS_GNU | ");
-                    }
-
-                    if flags.is_empty() {
-                        flags.push_str("0x0");
-                    } else {
-                        // Strip the trailing ` | `
-                        flags.truncate(flags.len() - 3);
-                    }
-
-                    let full_name = if let Value::String(name) = get(lic, "name")? {
-                        name
-                    } else {
-                        id
-                    };
-
-                    // Add `-invariants` versions of the root GFDL-<version>
-                    // licenses so that they work slightly nicer
-                    if id.starts_with("GFDL-") && id.len() < 9 {
-                        v.push((format!("{}-invariants", id), full_name, flags.clone()));
-                    }
-
-                    v.push((id.to_owned(), full_name, flags));
-                } else {
-                    bail!("Malformed JSON: {:?}", lic_id);
-                }
+            // Add `-invariants` versions of the root GFDL-<version>
+            // licenses so that they work slightly nicer
+            if id.starts_with("GFDL-") && id.len() < 9 {
+                v.push((format!("{}-invariants", id), full_name, flags.clone()));
             }
 
-            let name = "NOASSERTION".to_owned();
-            // Add NOASSERTION, which is not yet? part of the SPDX spec
-            // https://github.com/spdx/spdx-spec/issues/50
-            v.push(("NOASSERTION".to_owned(), &name, "0x0".to_owned()));
+            v.push((id.to_owned(), full_name, flags));
+        } else {
+            bail!("Malformed JSON: {:?}", lic_id);
+        }
+    }
 
-            v.sort_by(|a, b| a.0.cmp(&b.0));
+    let name = "NOASSERTION".to_owned();
+    // Add NOASSERTION, which is not yet? part of the SPDX spec
+    // https://github.com/spdx/spdx-spec/issues/50
+    v.push(("NOASSERTION".to_owned(), &name, "0x0".to_owned()));
 
-            let lic_list_ver = get(&json, "licenseListVersion")?;
-            if let Value::String(ref s) = lic_list_ver {
-                writeln!(identifiers, "pub const VERSION: &str = {:?};", s)?;
-            } else {
-                bail!("Malformed JSON: {:?}", lic_list_ver)
-            }
-            writeln!(identifiers)?;
-            writeln!(identifiers, "pub const LICENSES: &[(&str, &str, u8)] = &[")?;
-            for (id, name, flags) in v.iter() {
-                writeln!(identifiers, "    (\"{}\", r#\"{}\"#, {}),", id, name, flags)?;
-            }
-            writeln!(identifiers, "];")?;
+    v.sort_by(|a, b| a.0.cmp(&b.0));
 
-            Ok(())
-        },
-        debug,
-    )?;
-
+    let lic_list_ver = get(&json, "licenseListVersion")?;
+    if let Value::String(s) = lic_list_ver {
+        writeln!(identifiers, "pub const VERSION: &str = {:?};", s)?;
+    } else {
+        bail!("Malformed JSON: {:?}", lic_list_ver)
+    }
+    writeln!(identifiers)?;
+    writeln!(identifiers, "pub const LICENSES: &[(&str, &str, u8)] = &[")?;
+    for (id, name, flags) in v.iter() {
+        writeln!(identifiers, "    (\"{}\", r#\"{}\"#, {}),", id, name, flags)?;
+    }
+    writeln!(identifiers, "];")?;
     writeln!(identifiers)?;
 
     // Add the contents or imprecise.rs, which maps invalid identifiers to
     // valid ones
     writeln!(identifiers, "{}", IMPRECISE)?;
 
-    let exceptions_json_uri = format!(
-        "https://raw.githubusercontent.com/spdx/license-list-data/{}/json/exceptions.json",
-        upstream_tag
-    );
+    let json: Map = serde_json::from_str(
+        &std::fs::read_to_string("spdx-data/json/exceptions.json")
+            .context("unable to open exceptions.json")?,
+    )
+    .context("failed to deserialize exceptions.json")?;
 
-    download(
-        &exceptions_json_uri,
-        |json| {
-            let exceptions = get(&json, "exceptions")?;
-            let exceptions = if let Value::Array(ref v) = exceptions {
-                v
-            } else {
-                bail!("Malformed JSON: {:?}", exceptions)
-            };
-            eprintln!("#exceptions == {}", exceptions.len());
+    let exceptions = get(&json, "exceptions")?;
+    let exceptions = if let Value::Array(ref v) = exceptions {
+        v
+    } else {
+        bail!("Malformed JSON: {:?}", exceptions)
+    };
+    eprintln!("#exceptions == {}", exceptions.len());
 
-            let mut v = vec![];
-            for exc in exceptions.iter() {
-                let exc = if let Value::Object(m) = exc {
-                    m
-                } else {
-                    bail!("Malformed JSON: {:?}", exc)
-                };
-                if debug {
-                    eprintln!(
-                        "{:?},{:?}",
-                        get(exc, "licenseExceptionId"),
-                        get(exc, "name")
-                    );
+    let mut v = vec![];
+    for exc in exceptions.iter() {
+        let exc = if let Value::Object(m) = exc {
+            m
+        } else {
+            bail!("Malformed JSON: {:?}", exc)
+        };
+        if debug {
+            eprintln!(
+                "{:?},{:?}",
+                get(exc, "licenseExceptionId"),
+                get(exc, "name")
+            );
+        }
+
+        let lic_exc_id = get(exc, "licenseExceptionId")?;
+        if let Value::String(s) = lic_exc_id {
+            let flags = match get(exc, "isDeprecatedLicenseId") {
+                Ok(Value::Bool(val)) => {
+                    if *val {
+                        "IS_DEPRECATED"
+                    } else {
+                        "0"
+                    }
                 }
+                _ => "0",
+            };
 
-                let lic_exc_id = get(exc, "licenseExceptionId")?;
-                if let Value::String(s) = lic_exc_id {
-                    let flags = match get(exc, "isDeprecatedLicenseId") {
-                        Ok(Value::Bool(val)) => {
-                            if *val {
-                                "IS_DEPRECATED"
-                            } else {
-                                "0"
-                            }
-                        }
-                        _ => "0",
-                    };
+            v.push((s, flags));
+        } else {
+            bail!("Malformed JSON: {:?}", lic_exc_id)
+        };
+    }
 
-                    v.push((s, flags));
-                } else {
-                    bail!("Malformed JSON: {:?}", lic_exc_id)
-                };
-            }
-
-            writeln!(identifiers, "pub const EXCEPTIONS: &[(&str, u8)] = &[")?;
-            v.sort_by_key(|v| v.0);
-            for (exc, flags) in v.iter() {
-                writeln!(identifiers, "    (\"{}\", {}),", exc, flags)?;
-            }
-            writeln!(identifiers, "];")?;
-
-            Ok(())
-        },
-        debug,
-    )?;
+    writeln!(identifiers, "pub const EXCEPTIONS: &[(&str, u8)] = &[")?;
+    v.sort_by_key(|v| v.0);
+    for (exc, flags) in v.iter() {
+        writeln!(identifiers, "    (\"{}\", {}),", exc, flags)?;
+    }
+    writeln!(identifiers, "];")?;
 
     drop(identifiers);
 
@@ -309,7 +297,7 @@ pub const IS_GNU: u8 = 0x10;
     std::process::Command::new("rustfmt")
         .args(&["--edition", "2018", "src/identifiers.rs"])
         .status()
-        .map_err(|e| failure::format_err!("failed to run rustfmt: {}", e))?;
+        .with_context(|| format!("failed to run rustfmt"))?;
 
     Ok(())
 }

@@ -15,9 +15,9 @@ impl Expression {
     /// * An unknown/invalid license or exception identifier was found. Only
     /// [SPDX short identifiers](https://spdx.org/ids) are allowed
     /// * The expression contained unbalanced parentheses
-    /// * A license or exception immediately follows another license or exception, without
-    /// a valid AND, OR, or WITH operator separating them
-    /// * An AND, OR, or WITH doesn't have a license or `)` preceding it
+    /// * A license or exception immediately follows another license or exception,
+    /// without a valid `AND`, `OR`, or `WITH` operator separating them
+    /// * An `AND`, `OR`, or `WITH` doesn't have a license or `)` preceding it
     ///
     /// ```
     /// spdx::Expression::parse("MIT OR Apache-2.0 WITH LLVM-exception").unwrap();
@@ -26,11 +26,13 @@ impl Expression {
         Self::parse_mode(original, ParseMode::Strict)
     }
 
-    /// Parses an expression with the specified `ParseMode`. With
-    /// `ParseMode::Lax` it permits some non-SPDX syntax, such as imprecise
-    /// license names and "/" used instead of "OR" in exprssions.
+    /// Parses an expression with the specified [`ParseMode`]. With
+    /// [`ParseMode::Lax`] it permits some non-SPDX syntax, such as imprecise
+    /// license names and `/` used in place of `OR`.
     ///
     /// ```
+    /// // `mit` is an invalid form of `MIT`, `/` is used when it should be
+    /// // ` OR `
     /// spdx::Expression::parse_mode(
     ///     "mit/Apache-2.0 WITH LLVM-exception",
     ///     spdx::ParseMode::Lax
@@ -281,10 +283,7 @@ impl Expression {
         let simplified = if expr_queue.len() <= 3 {
             expr_queue
         } else {
-            println!("BEFORE {:#?}", expr_queue);
-            let after = Self::simplify(expr_queue);
-            println!("AFTER {:#?}", after);
-            after
+            Self::simplify(expr_queue)
         };
 
         Ok(Expression {
@@ -329,26 +328,33 @@ impl Expression {
         }
 
         let root = bool_stack.pop().unwrap();
-        println!("BEFORE: {:#?}", root);
         let mut simpled = root.simplify();
-
-        println!("AFTER: {:#?}", simpled);
 
         let mut simplified = SmallVec::<[ExprNode; 5]>::new();
 
         fn reform(boo: Bool, terms: &[&ExpressionReq], simplified: &mut SmallVec<[ExprNode; 5]>) {
             match boo {
-                Bool::Term(pos) => simplified.push(ExprNode::Req(terms[pos as usize].clone())),
+                Bool::Term(pos) => {
+                    simplified.push(ExprNode::Req(terms[pos as usize].clone()));
+                }
                 Bool::And(and) => {
-                    for sub in and {
+                    for (i, sub) in and.into_iter().enumerate() {
                         reform(sub, terms, simplified);
+
+                        if i > 0 && i % 2 == 0 {
+                            simplified.push(ExprNode::Op(Operator::And));
+                        }
                     }
 
                     simplified.push(ExprNode::Op(Operator::And));
                 }
-                Bool::Or(and) => {
-                    for sub in and {
+                Bool::Or(or) => {
+                    for (i, sub) in or.into_iter().enumerate() {
                         reform(sub, terms, simplified);
+
+                        if i > 0 && i % 2 == 0 {
+                            simplified.push(ExprNode::Op(Operator::Or));
+                        }
                     }
 
                     simplified.push(ExprNode::Op(Operator::Or));
@@ -357,6 +363,7 @@ impl Expression {
             }
         }
 
+        // This will only ever be one item, but still
         while let Some(boo) = simpled.pop() {
             reform(boo, &terms, &mut simplified);
         }

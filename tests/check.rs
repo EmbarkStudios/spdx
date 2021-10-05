@@ -30,8 +30,8 @@ macro_rules! check_mode {
             let expected = $logical_expr;
 
             match validated.evaluate_with_failures($is_allowed) {
-                Ok(_) => assert!(expected, "{} => {}", stringify!($logical_expr), stringify!($is_allowed)),
-                Err(f) => assert!(!expected, "{} => {} {:?}", stringify!($logical_expr), stringify!($is_allowed), f),
+                Ok(_) => assert!(expected, "{:?} {} => {}", validated, stringify!($logical_expr), stringify!($is_allowed)),
+                Err(f) => assert!(!expected, "{:?} {} => {} {:?}", validated, stringify!($logical_expr), stringify!($is_allowed), f),
             }
         )+
     };

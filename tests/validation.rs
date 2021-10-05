@@ -1,22 +1,18 @@
 use spdx::ParseError;
+use std::fmt::Write;
 
 macro_rules! test_validate {
     (ok [$($text:expr => [$($expected:expr),+$(,)?]),+$(,)?]) => {
         $(
             let val_expr = spdx::Expression::parse($text).unwrap();
-            let mut reqs = val_expr.requirements().enumerate();
 
+            let mut expected_str = String::new();
             $(
-                let actual = reqs.next().unwrap();
-                let actual_str = format!("{}", actual.1.req);
-                let expected_str = $expected;
-
-                similar_asserts::assert_eq!(actual_str, expected_str, "failed @ index {}", actual.0);
+                write!(&mut expected_str, "{} ", $expected).unwrap();
             )+
+            expected_str.pop();
 
-            if let Some((_, additional)) = reqs.next() {
-                assert!(false, "found additional requirement {}", additional.req);
-            }
+            similar_asserts::assert_str_eq!(format!("{:?}", val_expr), expected_str);
         )+
     };
 }
@@ -128,8 +124,8 @@ fn validates_canonical() {
     let canonical_w_parens = "(Apache-2.0 OR MIT)";
 
     test_validate!(ok [
-        canonical => ["Apache-2.0", "MIT"],
-        canonical_w_parens => ["Apache-2.0", "MIT"],
+        canonical => ["Apache-2.0", "MIT", "OR"],
+        canonical_w_parens => ["Apache-2.0", "MIT", "OR"],
     ]);
 }
 
@@ -146,11 +142,16 @@ fn validates_single_with_exception() {
 fn validates_complex() {
     let complex = "(Apache-2.0 WITH LLVM-exception OR Apache-2.0) AND MIT";
 
+    // This gets simplified to a && c || b && c
     test_validate!(ok [
         complex => [
-            "Apache-2.0 WITH LLVM-exception",
             "Apache-2.0",
             "MIT",
+            "AND",
+            "Apache-2.0 WITH LLVM-exception",
+            "MIT",
+            "AND",
+            "OR",
         ]
     ]);
 }
@@ -162,8 +163,12 @@ fn validates_parens_plus() {
     test_validate!(ok [
         expression => [
             "MIT",
-            "BitTorrent-1.1+",
             "BSD-3-Clause",
+            "AND",
+            "MIT",
+            "BitTorrent-1.1+",
+            "AND",
+            "OR",
         ]
     ]);
 }
@@ -174,10 +179,15 @@ fn validates_leading_parens() {
 
     test_validate!(ok [
         leading_parens => [
-            "Apache-2.0 WITH LLVM-exception",
             "Apache-2.0",
             "OpenSSL",
+            "AND",
+            "Apache-2.0 WITH LLVM-exception",
+            "OpenSSL",
+            "AND",
             "MIT",
+            "OR",
+            "OR",
         ]
     ]);
 }
@@ -188,10 +198,15 @@ fn validates_trailing_parens() {
 
     test_validate!(ok [
         trailing_parens => [
-            "Apache-2.0 WITH LLVM-exception",
+            "Apache-2.0",
+            "MIT",
+            "AND",
             "Apache-2.0",
             "OpenSSL",
-            "MIT",
+            "AND",
+            "Apache-2.0 WITH LLVM-exception",
+            "OR",
+            "OR",
         ]
     ]);
 }
@@ -202,10 +217,13 @@ fn validates_middle_parens() {
 
     test_validate!(ok [
         middle_parens => [
-            "Apache-2.0 WITH LLVM-exception",
             "Apache-2.0",
             "OpenSSL",
+            "AND",
             "MIT",
+            "Apache-2.0 WITH LLVM-exception",
+            "OR",
+            "OR",
         ]
     ]);
 }
@@ -217,10 +235,15 @@ fn validates_excessive_parens() {
 
     test_validate!(ok [
         excessive_parens=> [
-            "Apache-2.0 WITH LLVM-exception",
             "Apache-2.0",
             "OpenSSL",
+            "AND",
+            "Apache-2.0 WITH LLVM-exception",
+            "OpenSSL",
+            "AND",
             "MIT",
+            "OR",
+            "OR",
         ]
     ]);
 }

@@ -697,8 +697,8 @@ pub const LICENSES: &[(&str, &str, u8)] = &[
     ),
     (
         "GFDL-1.1-invariants",
-        r#"GNU Free Documentation License v1.1"#,
-        IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
+        r#"GNU Free Documentation License v1.1 only - invariants"#,
+        IS_COPYLEFT | IS_GNU,
     ),
     (
         "GFDL-1.1-invariants-only",
@@ -708,6 +708,11 @@ pub const LICENSES: &[(&str, &str, u8)] = &[
     (
         "GFDL-1.1-invariants-or-later",
         r#"GNU Free Documentation License v1.1 or later - invariants"#,
+        IS_COPYLEFT | IS_GNU,
+    ),
+    (
+        "GFDL-1.1-no-invariants",
+        r#"GNU Free Documentation License v1.1 only - no invariants"#,
         IS_COPYLEFT | IS_GNU,
     ),
     (
@@ -737,8 +742,8 @@ pub const LICENSES: &[(&str, &str, u8)] = &[
     ),
     (
         "GFDL-1.2-invariants",
-        r#"GNU Free Documentation License v1.2"#,
-        IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
+        r#"GNU Free Documentation License v1.2 only - invariants"#,
+        IS_COPYLEFT | IS_GNU,
     ),
     (
         "GFDL-1.2-invariants-only",
@@ -748,6 +753,11 @@ pub const LICENSES: &[(&str, &str, u8)] = &[
     (
         "GFDL-1.2-invariants-or-later",
         r#"GNU Free Documentation License v1.2 or later - invariants"#,
+        IS_COPYLEFT | IS_GNU,
+    ),
+    (
+        "GFDL-1.2-no-invariants",
+        r#"GNU Free Documentation License v1.2 only - no invariants"#,
         IS_COPYLEFT | IS_GNU,
     ),
     (
@@ -777,8 +787,8 @@ pub const LICENSES: &[(&str, &str, u8)] = &[
     ),
     (
         "GFDL-1.3-invariants",
-        r#"GNU Free Documentation License v1.3"#,
-        IS_DEPRECATED | IS_FSF_LIBRE | IS_COPYLEFT | IS_GNU,
+        r#"GNU Free Documentation License v1.3 only - invariants"#,
+        IS_COPYLEFT | IS_GNU,
     ),
     (
         "GFDL-1.3-invariants-only",
@@ -788,6 +798,11 @@ pub const LICENSES: &[(&str, &str, u8)] = &[
     (
         "GFDL-1.3-invariants-or-later",
         r#"GNU Free Documentation License v1.3 or later - invariants"#,
+        IS_COPYLEFT | IS_GNU,
+    ),
+    (
+        "GFDL-1.3-no-invariants",
+        r#"GNU Free Documentation License v1.3 only - no invariants"#,
         IS_COPYLEFT | IS_GNU,
     ),
     (

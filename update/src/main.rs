@@ -199,10 +199,12 @@ pub const IS_GNU: u8 = 0x10;
                 id
             };
 
-            // Add `-invariants` versions of the root GFDL-<version>
+            // Add `-invariants` versions of the root GFDL-<version>-invariants-only
             // licenses so that they work slightly nicer
-            if id.starts_with("GFDL-") && id.len() < 9 {
-                v.push((format!("{}-invariants", id), full_name, flags.clone()));
+            if id.starts_with("GFDL-") {
+                if let Some(id) = id.strip_suffix("-invariants-only") {
+                    v.push((format!("{}-invariants", id), full_name, flags.clone()));
+                }
             }
 
             v.push((id.to_owned(), full_name, flags));
@@ -226,11 +228,65 @@ pub const IS_GNU: u8 = 0x10;
     }
     writeln!(identifiers)?;
     writeln!(identifiers, "pub const LICENSES: &[(&str, &str, u8)] = &[")?;
-    for (id, name, flags) in v.iter() {
+    for (id, name, flags) in &v {
         writeln!(identifiers, "    (\"{}\", r#\"{}\"#, {}),", id, name, flags)?;
     }
-    writeln!(identifiers, "];")?;
-    writeln!(identifiers)?;
+    writeln!(identifiers, "];\n")?;
+
+    std::fs::remove_dir_all("src/text").context("failed to nuke directory")?;
+    std::fs::create_dir_all("src/text").context("failed to create text dir")?;
+
+    let mut texts = std::fs::File::create("src/text.rs")?;
+
+    // Splat the license text into their own file and accumulate
+    writeln!(texts, "pub const LICENSE_TEXTS: &[(&str, &str)] = &[")?;
+
+    for (license, _, _) in &v {
+        if license == "NOASSERTION" {
+            writeln!(texts, "    (\"{0}\", \"\"),", license)?;
+            continue;
+        }
+
+        use std::borrow::Cow;
+        let license_name = if license.starts_with("GFDL-") {
+            if let Some(root) = license.strip_suffix("-invariants") {
+                Cow::Owned(format!("{}-invariants-only", root))
+            } else {
+                Cow::Borrowed(license)
+            }
+        } else {
+            Cow::Borrowed(license)
+        };
+
+        let text_path = format!("src/text/{}", license_name);
+        if !std::path::Path::new(&text_path).exists() {
+            let json: Map = serde_json::from_str(
+                &std::fs::read_to_string(format!("spdx-data/json/details/{}.json", license_name))
+                    .with_context(|| format!("unable to open details/{}.json", license_name))?,
+            )
+            .with_context(|| format!("unable to deserialize details/{}.json", license_name))?;
+
+            let text = get(&json, "licenseText")
+                .with_context(|| format!("failed to get license text for {}", license_name))?;
+
+            std::fs::write(
+                text_path,
+                format!(
+                    "r#\"{}\"#",
+                    text.as_str().context("licenseText is not a string")?
+                ),
+            )
+            .with_context(|| format!("failed to write license text for {}", license_name))?;
+        }
+
+        writeln!(
+            texts,
+            "    (\"{}\", include!(\"text/{}\")),",
+            license, license_name
+        )?;
+    }
+
+    writeln!(texts, "];\n")?;
 
     // Add the contents or imprecise.rs, which maps invalid identifiers to
     // valid ones
@@ -293,9 +349,14 @@ pub const IS_GNU: u8 = 0x10;
 
     drop(identifiers);
 
-    // Run rustfmt on the final file
+    // Run rustfmt on the final files
     std::process::Command::new("rustfmt")
         .args(&["--edition", "2018", "src/identifiers.rs"])
+        .status()
+        .with_context(|| format!("failed to run rustfmt"))?;
+
+    std::process::Command::new("rustfmt")
+        .args(&["--edition", "2018", "src/text.rs"])
         .status()
         .with_context(|| format!("failed to run rustfmt"))?;
 

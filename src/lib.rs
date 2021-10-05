@@ -76,6 +76,9 @@ pub mod identifiers;
 /// Contains types for lexing an SPDX license expression
 pub mod lexer;
 mod licensee;
+/// Auto-generated full canonical text of each license
+#[cfg(features = "text")]
+pub mod text;
 
 pub use error::ParseError;
 pub use expression::Expression;
@@ -180,6 +183,20 @@ impl LicenseId {
     #[inline]
     pub fn is_gnu(self) -> bool {
         self.flags & IS_GNU != 0
+    }
+
+    /// Attempts to retrieve the license text for the specified license
+    ///
+    /// ```
+    /// license_id("Apache-2.0").unwrap().text();
+    /// ```
+    #[cfg(features = "text")]
+    #[inline]
+    pub fn text(self) -> &'static str {
+        text::LICENSE_TEXTS
+            .binary_search_by(|(lid, _)| lid.cmp(&self.name))
+            .map(|index| text::LICENSE_TEXTS[index].1)
+            .expect("failed to retrieve license text")
     }
 }
 

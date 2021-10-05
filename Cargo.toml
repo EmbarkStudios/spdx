@@ -17,6 +17,8 @@ repository = "https://github.com/EmbarkStudios/spdx"
 include = ["Cargo.toml", "LICENSE-APACHE", "LICENSE-MIT", "src/**/*"]
 
 [dependencies]
+# Expression simplification
+quine-mc_cluskey = "0.2"
 # In most cases expressions are quite small so we can avoid heap allocations
 smallvec = "1.7"
 

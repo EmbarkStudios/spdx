@@ -274,12 +274,93 @@ impl Expression {
             }
         }
 
-        // TODO: Investigate using https://github.com/oli-obk/quine-mc_cluskey to simplify
-        // expressions, but not really critical. Just cool.
+        // Simplify the expression if possible. There is a limit of 32 unique
+        // terms in the simplification algorithm, but if that is hit, someone
+        // will need to file a bug, but that would be a pathological case that
+        // should never be encountered if there is any hope left in this world
+        let simplified = if expr_queue.len() <= 3 {
+            expr_queue
+        } else {
+            println!("BEFORE {:#?}", expr_queue);
+            let after = Self::simplify(expr_queue);
+            println!("AFTER {:#?}", after);
+            after
+        };
 
         Ok(Expression {
             original: original.to_owned(),
-            expr: expr_queue,
+            expr: simplified,
         })
+    }
+
+    fn simplify(expr: SmallVec<[ExprNode; 5]>) -> SmallVec<[ExprNode; 5]> {
+        use quine_mc_cluskey::Bool;
+
+        // We need to keep track of each unique license requirement as a 'term'
+        let mut terms = SmallVec::<[&ExpressionReq; 4]>::new();
+        let mut bool_stack = Vec::new();
+
+        for node in expr.iter() {
+            match node {
+                ExprNode::Req(req) => {
+                    let term = match terms.iter().position(|r| *r == req) {
+                        Some(pos) => pos,
+                        None => {
+                            terms.push(req);
+                            terms.len() - 1
+                        }
+                    };
+
+                    bool_stack.push(Bool::Term(term as u8));
+                }
+                ExprNode::Op(Operator::Or) => {
+                    let a = bool_stack.pop().unwrap();
+                    let b = bool_stack.pop().unwrap();
+
+                    bool_stack.push(Bool::Or(vec![a, b]));
+                }
+                ExprNode::Op(Operator::And) => {
+                    let a = bool_stack.pop().unwrap();
+                    let b = bool_stack.pop().unwrap();
+
+                    bool_stack.push(Bool::And(vec![a, b]));
+                }
+            }
+        }
+
+        let root = bool_stack.pop().unwrap();
+        println!("BEFORE: {:#?}", root);
+        let mut simpled = root.simplify();
+
+        println!("AFTER: {:#?}", simpled);
+
+        let mut simplified = SmallVec::<[ExprNode; 5]>::new();
+
+        fn reform(boo: Bool, terms: &[&ExpressionReq], simplified: &mut SmallVec<[ExprNode; 5]>) {
+            match boo {
+                Bool::Term(pos) => simplified.push(ExprNode::Req(terms[pos as usize].clone())),
+                Bool::And(and) => {
+                    for sub in and {
+                        reform(sub, terms, simplified);
+                    }
+
+                    simplified.push(ExprNode::Op(Operator::And));
+                }
+                Bool::Or(and) => {
+                    for sub in and {
+                        reform(sub, terms, simplified);
+                    }
+
+                    simplified.push(ExprNode::Op(Operator::Or));
+                }
+                Bool::True | Bool::False | Bool::Not(_) => unreachable!(),
+            }
+        }
+
+        while let Some(boo) = simpled.pop() {
+            reform(boo, &terms, &mut simplified);
+        }
+
+        simplified
     }
 }

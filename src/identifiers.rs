@@ -5,7 +5,7 @@
  * DO NOT MODIFY
  *
  * cargo run --manifest-path update/Cargo.toml -- v<version> > src/identifiers.rs
- */
+*/
 
 pub const IS_FSF_LIBRE: u8 = 0x1;
 pub const IS_OSI_APPROVED: u8 = 0x2;

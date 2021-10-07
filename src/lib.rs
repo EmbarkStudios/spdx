@@ -77,7 +77,7 @@ pub mod identifiers;
 pub mod lexer;
 mod licensee;
 /// Auto-generated full canonical text of each license
-#[cfg(features = "text")]
+#[cfg(feature = "text")]
 pub mod text;
 
 pub use error::ParseError;
@@ -185,18 +185,15 @@ impl LicenseId {
         self.flags & IS_GNU != 0
     }
 
-    /// Attempts to retrieve the license text for the specified license
+    /// Attempts to retrieve the license text
     ///
     /// ```
-    /// license_id("Apache-2.0").unwrap().text();
+    /// assert!(spdx::license_id("GFDL-1.3-invariants").unwrap().text().contains("Invariant Sections"))
     /// ```
-    #[cfg(features = "text")]
+    #[cfg(feature = "text")]
     #[inline]
     pub fn text(self) -> &'static str {
-        text::LICENSE_TEXTS
-            .binary_search_by(|(lid, _)| lid.cmp(&self.name))
-            .map(|index| text::LICENSE_TEXTS[index].1)
-            .expect("failed to retrieve license text")
+        text::LICENSE_TEXTS[self.index].1
     }
 }
 
@@ -250,6 +247,17 @@ impl ExceptionId {
     #[inline]
     pub fn is_deprecated(self) -> bool {
         self.flags & IS_DEPRECATED != 0
+    }
+
+    /// Attempts to retrieve the license exception text
+    ///
+    /// ```
+    /// assert!(spdx::exception_id("LLVM-exception").unwrap().text().contains("LLVM Exceptions to the Apache 2.0 License"));
+    /// ```
+    #[cfg(feature = "text")]
+    #[inline]
+    pub fn text(self) -> &'static str {
+        text::EXCEPTION_TEXTS[self.index].1
     }
 }
 

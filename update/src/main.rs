@@ -16,6 +16,101 @@ fn get<'a>(m: &'a Map, k: &str) -> Result<&'a Value> {
 
 const IMPRECISE: &str = include_str!("imprecise.rs");
 
+fn write_exception_texts(
+    texts: &mut impl Write,
+    exceptions: impl Iterator<Item = impl AsRef<str>>,
+) -> Result<()> {
+    // Splat the license text into their own file and accumulate
+    writeln!(texts, "\npub const EXCEPTION_TEXTS: &[(&str, &str)] = &[")?;
+
+    for exc in exceptions {
+        let exc = exc.as_ref();
+        let text_path = format!("src/text/exceptions/{}", exc);
+        if !std::path::Path::new(&text_path).exists() {
+            let json: Map = serde_json::from_str(
+                &std::fs::read_to_string(format!("spdx-data/json/exceptions/{}.json", exc))
+                    .with_context(|| format!("unable to open exceptions/{}.json", exc))?,
+            )
+            .with_context(|| format!("unable to deserialize exceptions/{}.json", exc))?;
+
+            let text = get(&json, "licenseExceptionText")
+                .with_context(|| format!("failed to get license exception text for {}", exc))?;
+
+            std::fs::write(
+                text_path,
+                format!(
+                    "r#\"{}\"#",
+                    text.as_str()
+                        .context("licenseExceptionText is not a string")?
+                ),
+            )
+            .with_context(|| format!("failed to write license exception text for {}", exc))?;
+        }
+
+        writeln!(
+            texts,
+            "    (\"{0}\", include!(\"text/exceptions/{0}\")),",
+            exc
+        )?;
+    }
+
+    writeln!(texts, "];\n")?;
+
+    Ok(())
+}
+
+fn write_exceptions(identifiers: &mut impl Write, texts: &mut impl Write) -> Result<()> {
+    let json: Map = serde_json::from_str(
+        &std::fs::read_to_string("spdx-data/json/exceptions.json")
+            .context("unable to open exceptions.json")?,
+    )
+    .context("failed to deserialize exceptions.json")?;
+
+    let exceptions = get(&json, "exceptions")?;
+    let exceptions = if let Value::Array(ref v) = exceptions {
+        v
+    } else {
+        bail!("Malformed JSON: {:?}", exceptions)
+    };
+    eprintln!("#exceptions == {}", exceptions.len());
+
+    let mut v = vec![];
+    for exc in exceptions.iter() {
+        let exc = if let Value::Object(m) = exc {
+            m
+        } else {
+            bail!("Malformed JSON: {:?}", exc)
+        };
+
+        let lic_exc_id = get(exc, "licenseExceptionId")?;
+        if let Value::String(s) = lic_exc_id {
+            let flags = match get(exc, "isDeprecatedLicenseId") {
+                Ok(Value::Bool(val)) => {
+                    if *val {
+                        "IS_DEPRECATED"
+                    } else {
+                        "0"
+                    }
+                }
+                _ => "0",
+            };
+
+            v.push((s, flags));
+        } else {
+            bail!("Malformed JSON: {:?}", lic_exc_id)
+        };
+    }
+
+    writeln!(identifiers, "pub const EXCEPTIONS: &[(&str, u8)] = &[")?;
+    v.sort_by_key(|v| v.0);
+    for (exc, flags) in v.iter() {
+        writeln!(identifiers, "    (\"{}\", {}),", exc, flags)?;
+    }
+    writeln!(identifiers, "];")?;
+
+    write_exception_texts(texts, v.into_iter().map(|(exc, _)| exc))
+}
+
 fn is_copyleft(license: &str) -> bool {
     // Copyleft licenses are determined from
     // https://www.gnu.org/licenses/license-list.en.html
@@ -51,84 +146,74 @@ fn is_gnu(license: &str) -> bool {
         || license.starts_with("LGPL-")
 }
 
-fn real_main() -> Result<()> {
-    let mut upstream_tag = None;
-    let mut debug = false;
-    for e in env::args().skip(1) {
-        match e.as_str() {
-            "-d" => {
-                debug = true;
-            }
-            s if s.starts_with('v') => upstream_tag = Some(s.to_owned()),
-            _ => bail!("Unknown option {:?}", e),
+fn write_license_texts<'lic>(
+    texts: &mut impl Write,
+    licenses: impl Iterator<Item = impl AsRef<str>>,
+) -> Result<()> {
+    // Splat the license text into their own file and accumulate
+    writeln!(texts, "pub const LICENSE_TEXTS: &[(&str, &str)] = &[")?;
+
+    for license in licenses {
+        let license = license.as_ref();
+        if license == "NOASSERTION" {
+            writeln!(texts, "    (\"{0}\", \"\"),", license)?;
+            continue;
         }
+
+        use std::borrow::Cow;
+        let license_name = if license.starts_with("GFDL-") {
+            if let Some(root) = license.strip_suffix("-invariants") {
+                Cow::Owned(format!("{}-invariants-only", root))
+            } else {
+                Cow::Borrowed(license)
+            }
+        } else {
+            Cow::Borrowed(license)
+        };
+
+        let text_path = format!("src/text/licenses/{}", license_name);
+        if !std::path::Path::new(&text_path).exists() {
+            let json: Map = serde_json::from_str(
+                &std::fs::read_to_string(format!("spdx-data/json/details/{}.json", license_name))
+                    .with_context(|| format!("unable to open details/{}.json", license_name))?,
+            )
+            .with_context(|| format!("unable to deserialize details/{}.json", license_name))?;
+
+            let text = get(&json, "licenseText")
+                .with_context(|| format!("failed to get license text for {}", license_name))?;
+
+            std::fs::write(
+                text_path,
+                format!(
+                    "r#\"{}\"#",
+                    text.as_str().context("licenseText is not a string")?
+                ),
+            )
+            .with_context(|| format!("failed to write license text for {}", license_name))?;
+        }
+
+        writeln!(
+            texts,
+            "    (\"{}\", include!(\"text/licenses/{}\")),",
+            license, license_name
+        )?;
     }
 
-    let upstream_tag = match upstream_tag {
-        None => {
-            eprintln!(
-                "WARN: fetching data from the master branch of spdx/license-list-data; \
-                 consider specifying a tag (e.g. v3.0)"
-            );
+    writeln!(texts, "];\n")?;
 
-            "master".to_owned()
-        }
-        Some(ut) => {
-            if debug {
-                eprintln!("Using tag {:?}", ut);
-            }
-            ut
-        }
-    };
+    Ok(())
+}
 
-    if !std::path::Path::new("spdx-data").exists() {
-        println!("cloning...");
-        assert!(std::process::Command::new("git")
-            .args(&[
-                "clone",
-                "https://github.com/spdx/license-list-data.git",
-                "spdx-data"
-            ])
-            .status()
-            .unwrap()
-            .success());
-    } else {
-        println!("fetching...");
-        assert!(std::process::Command::new("git")
-            .args(&["-C", "spdx-data", "fetch"])
-            .status()
-            .unwrap()
-            .success());
-    }
-
-    println!("checking out...");
-    assert!(std::process::Command::new("git")
-        .args(&["-C", "spdx-data", "checkout", &upstream_tag])
-        .status()
-        .unwrap()
-        .success());
-
-    let mut identifiers = std::fs::File::create("src/identifiers.rs")?;
-
+fn write_licenses(identifiers: &mut impl Write, texts: &mut impl Write) -> Result<()> {
     writeln!(
         identifiers,
-        "\
-/*
- * list fetched from https://github.com/spdx/license-list-data @ {}
- *
- * AUTO-GENERATED BY ./update
- * DO NOT MODIFY
- *
- * cargo run --manifest-path update/Cargo.toml -- v<version> > src/identifiers.rs
- */
-
+        "
 pub const IS_FSF_LIBRE: u8 = 0x1;
 pub const IS_OSI_APPROVED: u8 = 0x2;
 pub const IS_DEPRECATED: u8 = 0x4;
 pub const IS_COPYLEFT: u8 = 0x8;
 pub const IS_GNU: u8 = 0x10;
-",
-        upstream_tag
+"
     )?;
 
     let json: Map = serde_json::from_str(
@@ -152,9 +237,6 @@ pub const IS_GNU: u8 = 0x10;
         } else {
             bail!("Malformed JSON: {:?}", lic)
         };
-        if debug {
-            eprintln!("{:?},{:?}", get(lic, "licenseId"), get(lic, "name"));
-        }
 
         let lic_id = get(lic, "licenseId")?;
         if let Value::String(id) = lic_id {
@@ -233,121 +315,99 @@ pub const IS_GNU: u8 = 0x10;
     }
     writeln!(identifiers, "];\n")?;
 
-    std::fs::remove_dir_all("src/text").context("failed to nuke directory")?;
-    std::fs::create_dir_all("src/text").context("failed to create text dir")?;
+    write_license_texts(texts, v.into_iter().map(|(name, _, _)| name))
+}
 
-    let mut texts = std::fs::File::create("src/text.rs")?;
-
-    // Splat the license text into their own file and accumulate
-    writeln!(texts, "pub const LICENSE_TEXTS: &[(&str, &str)] = &[")?;
-
-    for (license, _, _) in &v {
-        if license == "NOASSERTION" {
-            writeln!(texts, "    (\"{0}\", \"\"),", license)?;
-            continue;
-        }
-
-        use std::borrow::Cow;
-        let license_name = if license.starts_with("GFDL-") {
-            if let Some(root) = license.strip_suffix("-invariants") {
-                Cow::Owned(format!("{}-invariants-only", root))
-            } else {
-                Cow::Borrowed(license)
+fn real_main() -> Result<()> {
+    let mut upstream_tag = None;
+    let mut debug = false;
+    for e in env::args().skip(1) {
+        match e.as_str() {
+            "-d" => {
+                debug = true;
             }
-        } else {
-            Cow::Borrowed(license)
-        };
-
-        let text_path = format!("src/text/{}", license_name);
-        if !std::path::Path::new(&text_path).exists() {
-            let json: Map = serde_json::from_str(
-                &std::fs::read_to_string(format!("spdx-data/json/details/{}.json", license_name))
-                    .with_context(|| format!("unable to open details/{}.json", license_name))?,
-            )
-            .with_context(|| format!("unable to deserialize details/{}.json", license_name))?;
-
-            let text = get(&json, "licenseText")
-                .with_context(|| format!("failed to get license text for {}", license_name))?;
-
-            std::fs::write(
-                text_path,
-                format!(
-                    "r#\"{}\"#",
-                    text.as_str().context("licenseText is not a string")?
-                ),
-            )
-            .with_context(|| format!("failed to write license text for {}", license_name))?;
+            s if s.starts_with('v') => upstream_tag = Some(s.to_owned()),
+            _ => bail!("Unknown option {:?}", e),
         }
+    }
+
+    let upstream_tag = match upstream_tag {
+        None => {
+            eprintln!(
+                "WARN: fetching data from the master branch of spdx/license-list-data; \
+                 consider specifying a tag (e.g. v3.0)"
+            );
+
+            "master".to_owned()
+        }
+        Some(ut) => {
+            if debug {
+                eprintln!("Using tag {:?}", ut);
+            }
+            ut
+        }
+    };
+
+    if !std::path::Path::new("spdx-data").exists() {
+        println!("cloning...");
+        assert!(std::process::Command::new("git")
+            .args(&[
+                "clone",
+                "https://github.com/spdx/license-list-data.git",
+                "spdx-data"
+            ])
+            .status()
+            .unwrap()
+            .success());
+    } else {
+        println!("fetching...");
+        assert!(std::process::Command::new("git")
+            .args(&["-C", "spdx-data", "fetch"])
+            .status()
+            .unwrap()
+            .success());
+    }
+
+    println!("checking out...");
+    assert!(std::process::Command::new("git")
+        .args(&["-C", "spdx-data", "checkout", &upstream_tag])
+        .status()
+        .unwrap()
+        .success());
+
+    {
+        let mut identifiers = io::BufWriter::new(std::fs::File::create("src/identifiers.rs")?);
 
         writeln!(
-            texts,
-            "    (\"{}\", include!(\"text/{}\")),",
-            license, license_name
-        )?;
+            identifiers,
+            "\
+/*
+ * list fetched from https://github.com/spdx/license-list-data @ {}
+ *
+ * AUTO-GENERATED BY ./update
+ * DO NOT MODIFY
+ *
+ * cargo run --manifest-path update/Cargo.toml -- v<version> > src/identifiers.rs
+*/",
+            upstream_tag
+        );
+
+        std::fs::remove_dir_all("src/text").context("failed to nuke directory")?;
+
+        let mut texts = io::BufWriter::new(std::fs::File::create("src/text.rs")?);
+
+        std::fs::create_dir_all("src/text/licenses")
+            .context("failed to create licenses text dir")?;
+        write_licenses(&mut identifiers, &mut texts)?;
+
+        // Add the contents or imprecise.rs, which maps invalid identifiers to
+        // valid ones
+        writeln!(identifiers, "{}", IMPRECISE)?;
+
+        std::fs::create_dir_all("src/text/exceptions")
+            .context("failed to create exceptions text dir")?;
+        write_exceptions(&mut identifiers, &mut texts)?;
     }
-
-    writeln!(texts, "];\n")?;
-
-    // Add the contents or imprecise.rs, which maps invalid identifiers to
-    // valid ones
-    writeln!(identifiers, "{}", IMPRECISE)?;
-
-    let json: Map = serde_json::from_str(
-        &std::fs::read_to_string("spdx-data/json/exceptions.json")
-            .context("unable to open exceptions.json")?,
-    )
-    .context("failed to deserialize exceptions.json")?;
-
-    let exceptions = get(&json, "exceptions")?;
-    let exceptions = if let Value::Array(ref v) = exceptions {
-        v
-    } else {
-        bail!("Malformed JSON: {:?}", exceptions)
-    };
-    eprintln!("#exceptions == {}", exceptions.len());
-
-    let mut v = vec![];
-    for exc in exceptions.iter() {
-        let exc = if let Value::Object(m) = exc {
-            m
-        } else {
-            bail!("Malformed JSON: {:?}", exc)
-        };
-        if debug {
-            eprintln!(
-                "{:?},{:?}",
-                get(exc, "licenseExceptionId"),
-                get(exc, "name")
-            );
-        }
-
-        let lic_exc_id = get(exc, "licenseExceptionId")?;
-        if let Value::String(s) = lic_exc_id {
-            let flags = match get(exc, "isDeprecatedLicenseId") {
-                Ok(Value::Bool(val)) => {
-                    if *val {
-                        "IS_DEPRECATED"
-                    } else {
-                        "0"
-                    }
-                }
-                _ => "0",
-            };
-
-            v.push((s, flags));
-        } else {
-            bail!("Malformed JSON: {:?}", lic_exc_id)
-        };
-    }
-
-    writeln!(identifiers, "pub const EXCEPTIONS: &[(&str, u8)] = &[")?;
-    v.sort_by_key(|v| v.0);
-    for (exc, flags) in v.iter() {
-        writeln!(identifiers, "    (\"{}\", {}),", exc, flags)?;
-    }
-    writeln!(identifiers, "];")?;
-
-    drop(identifiers);
 
     // Run rustfmt on the final files
     std::process::Command::new("rustfmt")

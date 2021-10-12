@@ -1,6 +1,8 @@
+mod minimize;
 mod parser;
 
 use crate::LicenseReq;
+pub use minimize::MinimizeError;
 use smallvec::SmallVec;
 use std::fmt;
 

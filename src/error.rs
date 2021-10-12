@@ -4,7 +4,7 @@ use std::{error::Error, fmt};
 /// or identifier
 #[derive(Debug, PartialEq)]
 pub struct ParseError<'a> {
-    /// The string that was parsed
+    /// The string that was attempting to be parsed
     pub original: &'a str,
     /// The range of characters in the original string that result
     /// in this error

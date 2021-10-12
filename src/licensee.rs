@@ -14,7 +14,7 @@ use std::fmt;
 ///
 /// assert!(licensee.satisfies(&spdx::LicenseReq::from(spdx::license_id("GPL-2.0-only").unwrap())));
 /// ```
-#[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone)]
 pub struct Licensee {
     inner: LicenseReq,
 }
@@ -250,17 +250,30 @@ impl Licensee {
 
         req.exception == self.inner.exception
     }
+
+    pub fn into_req(self) -> LicenseReq {
+        self.inner
+    }
 }
 
 impl PartialOrd<LicenseReq> for Licensee {
+    #[inline]
     fn partial_cmp(&self, o: &LicenseReq) -> Option<std::cmp::Ordering> {
         self.inner.partial_cmp(o)
     }
 }
 
 impl PartialEq<LicenseReq> for Licensee {
+    #[inline]
     fn eq(&self, o: &LicenseReq) -> bool {
         self.inner.eq(o)
+    }
+}
+
+impl AsRef<LicenseReq> for Licensee {
+    #[inline]
+    fn as_ref(&self) -> &LicenseReq {
+        &self.inner
     }
 }
 

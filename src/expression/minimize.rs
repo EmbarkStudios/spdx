@@ -1,9 +1,12 @@
 use crate::{LicenseReq, Licensee};
 use std::fmt;
 
+/// Errors that can occur when trying to minimize the requirements for an [`Expression`]
 #[derive(Debug, PartialEq)]
 pub enum MinimizeError {
+    /// More than `64` unique licensees satisfied a requirement in the [`Expression`]
     TooManyRequirements(usize),
+    /// The list of licensees did not fully satisfy the requirements in the [`Expression`]
     RequirementsUnmet,
 }
 
@@ -34,6 +37,32 @@ impl std::error::Error for MinimizeError {
 }
 
 impl super::Expression {
+    /// Given a set of [`Licensee`]s, attempts to find the minimum number that
+    /// satisfy this [`Expression`]. The list of licensees should be given in
+    /// priority order, eg, if you wish to accept the `Apache-2.0` license if
+    /// it is available and the `MIT` if not, putting `Apache-2.0` before `MIT`
+    /// will cause the ubiquitous `Apache-2.0 OR MIT` expression to minimize to
+    /// just `Apache-2.0` as only only 1 of the licenses is required, and the
+    /// `Apache-2.0` has priority.
+    ///
+    /// # Errors
+    ///
+    /// This method will fail if more than 64 unique licensees are satisfied by
+    /// this expression, but such a case is unlikely to say the least in a real
+    /// world scenario. The list of licensees must also actually satisfy this
+    /// expression, otherwise it can't be minimized.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let expr = spdx::Expression::parse("Apache-2.0 OR MIT").unwrap();
+    ///
+    /// let apache_licensee = spdx::Licensee::parse("Apache-2.0").unwrap();
+    /// assert_eq!(
+    ///     expr.minimized_requirements([&apache_licensee, &spdx::Licensee::parse("MIT").unwrap()]).unwrap(),
+    ///     vec![apache_licensee.into_req()],
+    /// );
+    /// ```
     pub fn minimized_requirements<'lic>(
         &self,
         accepted: impl IntoIterator<Item = &'lic Licensee>,

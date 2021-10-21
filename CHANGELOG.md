@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.6.2] - 2021-10-21
 ### Fixed
 - [PR#44](https://github.com/EmbarkStudios/spdx/pull/44) fixed the `Display` for various GNU licenses, since they are "special" and diverge from the SPDX spec for reasons. Thanks [@mmurto](https://github.com/mmurto)!
 
@@ -109,7 +110,8 @@ a user provided callback
 - Initial add of spdx crate, based primarly on [`license-exprs`](https://github.com/rust-lang-nursery/license-exprs)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.6.1...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.6.2...HEAD
+[0.6.2]: https://github.com/EmbarkStudios/spdx/compare/0.6.1...0.6.2
 [0.6.1]: https://github.com/EmbarkStudios/spdx/compare/0.6.0...0.6.1
 [0.6.0]: https://github.com/EmbarkStudios/spdx/compare/0.5.0...0.6.0
 [0.5.0]: https://github.com/EmbarkStudios/spdx/compare/0.4.1...0.5.0

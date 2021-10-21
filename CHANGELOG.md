@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Fixed
+- [PR#44](https://github.com/EmbarkStudios/spdx/pull/44) fixed the `Display` for various GNU licenses, since they are "special" and diverge from the SPDX spec for reasons. Thanks [@mmurto](https://github.com/mmurto)!
+
+### Added
+- [PR#43](https://github.com/EmbarkStudios/spdx/pull/43) added the `text` feature flag, which includes the full license and exception texts. They can be retrieved via `LicenseId::text` and `ExceptionId::text` respectively.
+- [PR#43](https://github.com/EmbarkStudios/spdx/pull/43) added the `Expression::minimized_requirements` method which allows a set of potential licensees be reduced down to the minimum possible requirements for an expression.
+
 ## [0.6.1] - 2021-10-04
 ### Added
 - [PR#41](https://github.com/EmbarkStudios/spdx/pull/41) added a `NOASSERTION` license. Hopefully this will become part of [spec](https://github.com/spdx/spdx-spec/issues/50) in the future.

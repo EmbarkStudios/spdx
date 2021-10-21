@@ -25,7 +25,7 @@ jobs:
       - run: rustup component add clippy
       - run: cargo fetch
       - name: cargo clippy
-        run: cargo clippy --all-targets -- -D warnings
+        run: cargo clippy --all-targets --all-features -- -D warnings
 
   deny-check:
     name: cargo-deny check
@@ -45,7 +45,7 @@ jobs:
           override: true
       - run: cargo fetch
       - name: cargo check
-        run: cargo check --all-targets
+        run: cargo check --all-targets --all-features
 
   test:
     name: Test
@@ -61,5 +61,5 @@ jobs:
           override: true
       - run: cargo fetch
       - name: cargo build
-        run: cargo build --tests
-      - run: cargo test
+        run: cargo build --tests --all-features
+      - run: cargo test --all-features

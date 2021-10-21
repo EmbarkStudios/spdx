@@ -5,16 +5,16 @@ use crate::{
 };
 use std::fmt;
 
-/// A convenience wrapper for a license and optional exception
-/// that can be checked against a license requirement to see
-/// if it satisfies the requirement placed by a license holder
+/// A convenience wrapper for a license and optional exception that can be
+/// checked against a license requirement to see if it satisfies the requirement
+/// placed by a license holder
 ///
 /// ```
 /// let licensee = spdx::Licensee::parse("GPL-2.0").unwrap();
 ///
 /// assert!(licensee.satisfies(&spdx::LicenseReq::from(spdx::license_id("GPL-2.0-only").unwrap())));
 /// ```
-#[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone)]
 pub struct Licensee {
     inner: LicenseReq,
 }
@@ -39,9 +39,9 @@ impl Licensee {
         }
     }
 
-    /// Parses an simplified version of an SPDX license expression that
-    /// can contain at most 1 valid SDPX license with an optional exception
-    /// joined by a WITH.
+    /// Parses an simplified version of an SPDX license expression that can
+    /// contain at most 1 valid SDPX license with an optional exception joined
+    /// by a `WITH`.
     ///
     /// ```
     /// use spdx::Licensee;
@@ -79,10 +79,12 @@ impl Licensee {
 
             match lt.token {
                 Token::Spdx(id) => {
-                    // If we have one of the GNU licenses which use the `-only` or `-or-later` suffixes
-                    // return an error rather than silently truncating, the `-only` and `-or-later`
-                    // suffixes are for the license holder(s) to specify what license(s) they can be
-                    // licensed under, not for the licensee, similarly to the `+`
+                    // If we have one of the GNU licenses which use the `-only`
+                    // or `-or-later` suffixes return an error rather than
+                    // silently truncating, the `-only` and `-or-later` suffixes
+                    // are for the license holder(s) to specify what license(s)
+                    // they can be licensed under, not for the licensee,
+                    // similarly to the `+`
                     if id.is_gnu() {
                         let is_only = original.ends_with("-only");
                         let or_later = original.ends_with("-or-later");
@@ -248,17 +250,30 @@ impl Licensee {
 
         req.exception == self.inner.exception
     }
+
+    pub fn into_req(self) -> LicenseReq {
+        self.inner
+    }
 }
 
 impl PartialOrd<LicenseReq> for Licensee {
+    #[inline]
     fn partial_cmp(&self, o: &LicenseReq) -> Option<std::cmp::Ordering> {
         self.inner.partial_cmp(o)
     }
 }
 
 impl PartialEq<LicenseReq> for Licensee {
+    #[inline]
     fn eq(&self, o: &LicenseReq) -> bool {
         self.inner.eq(o)
+    }
+}
+
+impl AsRef<LicenseReq> for Licensee {
+    #[inline]
+    fn as_ref(&self) -> &LicenseReq {
+        &self.inner
     }
 }
 

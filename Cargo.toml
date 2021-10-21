@@ -13,8 +13,11 @@ readme = "README.md"
 keywords = ["spdx", "license"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/EmbarkStudios/spdx"
-
 include = ["Cargo.toml", "LICENSE-APACHE", "LICENSE-MIT", "src/**/*"]
+
+[features]
+# Includes the full canonical text of each license
+text = []
 
 [dependencies]
 # In most cases expressions are quite small so we can avoid heap allocations

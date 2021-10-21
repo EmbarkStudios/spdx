@@ -255,3 +255,200 @@ fn noassertion() {
         true && true => |req| exact!(req, "NOASSERTION") || exact!(req, "OpenSSL"),
     ]);
 }
+
+#[test]
+fn many_ands() {
+    check!("ISC AND OpenSSL AND MIT" => [
+        false && true && true => |req| exact!(req, "OpenSSL") || exact!(req, "MIT"),
+        true && false && true => |req| exact!(req, "ISC") || exact!(req, "MIT"),
+        true && true && false => |req| exact!(req, "ISC") || exact!(req, "OpenSSL"),
+        true && true && true => |req| exact!(req, "ISC") || exact!(req, "OpenSSL") || exact!(req, "MIT"),
+    ]);
+}
+
+#[test]
+fn minimizes_vanilla() {
+    let expr = spdx::Expression::parse("Apache-2.0 OR MIT").unwrap();
+
+    let accepted = [
+        &spdx::Licensee::parse("Apache-2.0").unwrap(),
+        &spdx::Licensee::parse("MIT").unwrap(),
+    ];
+
+    // We accept both Apache-2.0 and MIT, but since we only need one of them and
+    // Apache-2.0 is higher priority, it gets chosen
+    assert_eq!(
+        expr.minimized_requirements(accepted).unwrap(),
+        vec![spdx::LicenseReq {
+            license: LicenseItem::Spdx {
+                id: spdx::license_id("Apache-2.0").unwrap(),
+                or_later: false,
+            },
+            exception: None,
+        }]
+    );
+
+    let accepted = [
+        &spdx::Licensee::parse("MIT").unwrap(),
+        &spdx::Licensee::parse("Apache-2.0").unwrap(),
+    ];
+
+    assert_eq!(
+        expr.minimized_requirements(accepted).unwrap(),
+        vec![spdx::LicenseReq {
+            license: LicenseItem::Spdx {
+                id: spdx::license_id("MIT").unwrap(),
+                or_later: false,
+            },
+            exception: None,
+        }]
+    );
+}
+
+#[test]
+fn handles_unminimizable() {
+    let expr = spdx::Expression::parse("ISC AND OpenSSL AND MIT").unwrap();
+    let accepted = [
+        &spdx::Licensee::parse("Apache-2.0").unwrap(),
+        &spdx::Licensee::parse("ISC").unwrap(),
+        &spdx::Licensee::parse("OpenSSL").unwrap(),
+        &spdx::Licensee::parse("MIT").unwrap(),
+    ];
+
+    assert_eq!(
+        expr.minimized_requirements(accepted).unwrap(),
+        vec![
+            spdx::LicenseReq {
+                license: LicenseItem::Spdx {
+                    id: spdx::license_id("ISC").unwrap(),
+                    or_later: false,
+                },
+                exception: None,
+            },
+            spdx::LicenseReq {
+                license: LicenseItem::Spdx {
+                    id: spdx::license_id("OpenSSL").unwrap(),
+                    or_later: false,
+                },
+                exception: None,
+            },
+            spdx::LicenseReq {
+                license: LicenseItem::Spdx {
+                    id: spdx::license_id("MIT").unwrap(),
+                    or_later: false,
+                },
+                exception: None,
+            }
+        ]
+    );
+}
+
+#[test]
+fn handles_complicated() {
+    let expr = spdx::Expression::parse("ISC AND OpenSSL AND (MIT OR Apache-2.0)").unwrap();
+    let accepted = [
+        &spdx::Licensee::parse("Apache-2.0").unwrap(),
+        &spdx::Licensee::parse("ISC").unwrap(),
+        &spdx::Licensee::parse("OpenSSL").unwrap(),
+        &spdx::Licensee::parse("MIT").unwrap(),
+    ];
+
+    assert_eq!(
+        expr.minimized_requirements(accepted).unwrap(),
+        vec![
+            spdx::LicenseReq {
+                license: LicenseItem::Spdx {
+                    id: spdx::license_id("Apache-2.0").unwrap(),
+                    or_later: false,
+                },
+                exception: None,
+            },
+            spdx::LicenseReq {
+                license: LicenseItem::Spdx {
+                    id: spdx::license_id("ISC").unwrap(),
+                    or_later: false,
+                },
+                exception: None,
+            },
+            spdx::LicenseReq {
+                license: LicenseItem::Spdx {
+                    id: spdx::license_id("OpenSSL").unwrap(),
+                    or_later: false,
+                },
+                exception: None,
+            },
+        ]
+    );
+
+    let accepted = [
+        &spdx::Licensee::parse("MIT").unwrap(),
+        &spdx::Licensee::parse("Apache-2.0").unwrap(),
+        &spdx::Licensee::parse("ISC").unwrap(),
+        &spdx::Licensee::parse("OpenSSL").unwrap(),
+    ];
+
+    assert_eq!(
+        expr.minimized_requirements(accepted).unwrap(),
+        vec![
+            spdx::LicenseReq {
+                license: LicenseItem::Spdx {
+                    id: spdx::license_id("MIT").unwrap(),
+                    or_later: false,
+                },
+                exception: None,
+            },
+            spdx::LicenseReq {
+                license: LicenseItem::Spdx {
+                    id: spdx::license_id("ISC").unwrap(),
+                    or_later: false,
+                },
+                exception: None,
+            },
+            spdx::LicenseReq {
+                license: LicenseItem::Spdx {
+                    id: spdx::license_id("OpenSSL").unwrap(),
+                    or_later: false,
+                },
+                exception: None,
+            },
+        ]
+    );
+}
+
+#[test]
+fn unsatisfied_minimize() {
+    let unsatisfied = spdx::Expression::parse("Apache-2.0 OR MIT").unwrap();
+    let accepted = [&spdx::Licensee::parse("BSD-3-Clause").unwrap()];
+
+    assert_eq!(
+        unsatisfied.minimized_requirements(accepted).unwrap_err(),
+        spdx::expression::MinimizeError::RequirementsUnmet,
+    );
+}
+
+#[test]
+fn too_many_to_minimize() {
+    let mut ridiculous = String::new();
+    let mut ohno = Vec::new();
+    for (lic, _, flags) in spdx::identifiers::LICENSES {
+        if (flags & spdx::identifiers::IS_GNU) == 0 {
+            ridiculous.push_str(lic);
+            ridiculous.push_str(" AND ");
+
+            ohno.push(spdx::Licensee::parse(lic).unwrap());
+        }
+
+        if ohno.len() >= 65 {
+            break;
+        }
+    }
+
+    ridiculous.truncate(ridiculous.len() - 5);
+
+    let ridiculous = spdx::Expression::parse(&ridiculous).unwrap();
+
+    assert_eq!(
+        ridiculous.minimized_requirements(ohno.iter()).unwrap_err(),
+        spdx::expression::MinimizeError::TooManyRequirements(65)
+    );
+}

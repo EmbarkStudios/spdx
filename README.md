@@ -20,7 +20,7 @@ fn main() {
     let this_is_fine = Expression::parse("MIT OR Apache-2.0").unwrap();
 
     assert!(this_is_fine.evaluate(|req| {
-        if let spdx::LicenseItem::SPDX { id, .. } = req.license {
+        if let spdx::LicenseItem::Spdx { id, .. } = req.license {
             // Both MIT and Apache-2.0 are OSI approved, so this expression
             // evaluates to true
             return id.is_osi_approved();
@@ -30,7 +30,7 @@ fn main() {
     }));
 
     assert!(!this_is_fine.evaluate(|req| {
-        if let spdx::LicenseItem::SPDX { id, .. } = req.license {
+        if let spdx::LicenseItem::Spdx { id, .. } = req.license {
             // This is saying we don't accept any licenses that are OSI approved
             // so the expression will evaluate to false as both sides of the OR
             // are now rejected

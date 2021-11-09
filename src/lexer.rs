@@ -163,11 +163,11 @@ pub struct LexerToken<'a> {
 }
 
 impl<'a> Iterator for Lexer<'a> {
-    type Item = Result<LexerToken<'a>, ParseError<'a>>;
+    type Item = Result<LexerToken<'a>, ParseError>;
 
     fn next(&mut self) -> Option<Self::Item> {
         #[allow(clippy::unnecessary_wraps)]
-        fn ok_token<'a>(token: Token<'_>) -> Option<Result<(Token<'_>, usize), ParseError<'a>>> {
+        fn ok_token(token: Token<'_>) -> Option<Result<(Token<'_>, usize), ParseError>> {
             let len = token.len();
             Some(Ok((token, len)))
         }
@@ -189,7 +189,7 @@ impl<'a> Iterator for Lexer<'a> {
                     ok_token(Token::Plus)
                 } else {
                     Some(Err(ParseError {
-                        original: self.original,
+                        original: self.original.to_owned(),
                         span: self.offset - non_whitespace_index..self.offset,
                         reason: Reason::SeparatedPlus,
                     }))
@@ -200,7 +200,7 @@ impl<'a> Iterator for Lexer<'a> {
             Some('/') if self.lax => Some(Ok((Token::Or, 1))),
             Some(_) => match Lexer::find_text_token(self.inner) {
                 None => Some(Err(ParseError {
-                    original: self.original,
+                    original: self.original.to_owned(),
                     span: self.offset..self.offset + self.inner.len(),
                     reason: Reason::InvalidCharacters,
                 })),
@@ -238,7 +238,7 @@ impl<'a> Iterator for Lexer<'a> {
                         Some(Ok((Token::Spdx(lic_id), token_len)))
                     } else {
                         Some(Err(ParseError {
-                            original: self.original,
+                            original: self.original.to_owned(),
                             span: self.offset..self.offset + m.len(),
                             reason: Reason::UnknownTerm,
                         }))

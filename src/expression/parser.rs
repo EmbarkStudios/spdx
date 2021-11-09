@@ -22,7 +22,7 @@ impl Expression {
     /// ```
     /// spdx::Expression::parse("MIT OR Apache-2.0 WITH LLVM-exception").unwrap();
     /// ```
-    pub fn parse(original: &str) -> Result<Self, ParseError<'_>> {
+    pub fn parse(original: &str) -> Result<Self, ParseError> {
         Self::parse_mode(original, ParseMode::Strict)
     }
 
@@ -36,7 +36,7 @@ impl Expression {
     ///     spdx::ParseMode::Lax
     /// ).unwrap();
     /// ```
-    pub fn parse_mode(original: &str, mode: ParseMode) -> Result<Self, ParseError<'_>> {
+    pub fn parse_mode(original: &str, mode: ParseMode) -> Result<Self, ParseError> {
         // Operator precedence in SPDX 2.1
         // +
         // WITH
@@ -85,7 +85,7 @@ impl Expression {
             };
 
             Err(ParseError {
-                original,
+                original: original.to_owned(),
                 span,
                 reason: Reason::Unexpected(expected),
             })
@@ -132,7 +132,7 @@ impl Expression {
                             // Handle GNU licenses differently, as they should *NOT* be used with the `+`
                             if mode == ParseMode::Strict && id.is_gnu() {
                                 return Err(ParseError {
-                                    original,
+                                    original: original.to_owned(),
                                     span: lt.span,
                                     reason: Reason::GnuNoPlus,
                                 });
@@ -219,7 +219,7 @@ impl Expression {
 
                             // We didn't have an opening parentheses if we get here
                             return Err(ParseError {
-                                original,
+                                original: original.to_owned(),
                                 span: lt.span,
                                 reason: Reason::UnopenedParens,
                             });
@@ -253,7 +253,7 @@ impl Expression {
             // We have to have at least one valid license requirement
             None => {
                 return Err(ParseError {
-                    original,
+                    original: original.to_owned(),
                     span: 0..original.len(),
                     reason: Reason::Empty,
                 });
@@ -266,7 +266,7 @@ impl Expression {
                 Op::And | Op::Or => apply_op(top, &mut expr_queue)?,
                 Op::Open => {
                     return Err(ParseError {
-                        original,
+                        original: original.to_owned(),
                         span: top.span,
                         reason: Reason::UnclosedParens,
                     });

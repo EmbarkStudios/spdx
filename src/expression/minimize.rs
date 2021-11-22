@@ -109,10 +109,10 @@ impl super::Expression {
                     .into_iter()
                     .enumerate()
                     .filter_map(|(ind, lic)| {
-                        if mask & (1 << ind) != 0 {
-                            Some(lic.into_req())
-                        } else {
+                        if mask & (1 << ind) == 0 {
                             None
+                        } else {
+                            Some(lic.into_req())
                         }
                     })
                     .collect());
@@ -120,6 +120,6 @@ impl super::Expression {
         }
 
         // This should be impossible, but would rather not panic
-        Ok(found_set.into_iter().map(|lic| lic.into_req()).collect())
+        Ok(found_set.into_iter().map(Licensee::into_req).collect())
     }
 }

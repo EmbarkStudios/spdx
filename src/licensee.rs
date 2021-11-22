@@ -29,6 +29,7 @@ impl Licensee {
     /// Creates a licensee from its component parts. Note that use of SPDX's
     /// `or_later` is completely ignored for licensees as it only applies
     /// to the license holder(s), not the licensee
+    #[must_use]
     pub fn new(license: LicenseItem, exception: Option<ExceptionId>) -> Self {
         if let LicenseItem::Spdx { or_later, .. } = &license {
             debug_assert!(!or_later);
@@ -189,12 +190,13 @@ impl Licensee {
     ///     exception: spdx::exception_id("LLVM-exception"),
     /// }));
     /// ```
+    #[must_use]
     pub fn satisfies(&self, req: &LicenseReq) -> bool {
         match (&self.inner.license, &req.license) {
             (LicenseItem::Spdx { id: a, .. }, LicenseItem::Spdx { id: b, or_later }) => {
                 if a.index != b.index {
                     if *or_later {
-                        let (a_name, agfdl_invariants) = if a.name.starts_with("GFDL") {
+                        let (a_name, a_gfdl_invariants) = if a.name.starts_with("GFDL") {
                             a.name
                                 .strip_suffix("-invariants")
                                 .map_or((a.name, false), |name| (name, true))
@@ -202,7 +204,7 @@ impl Licensee {
                             (a.name, false)
                         };
 
-                        let (b_name, bgfdl_invariants) = if b.name.starts_with("GFDL") {
+                        let (b_name, b_gfdl_invariants) = if b.name.starts_with("GFDL") {
                             b.name
                                 .strip_suffix("-invariants")
                                 .map_or((b.name, false), |name| (name, true))
@@ -210,7 +212,7 @@ impl Licensee {
                             (b.name, false)
                         };
 
-                        if agfdl_invariants != bgfdl_invariants {
+                        if a_gfdl_invariants != b_gfdl_invariants {
                             return false;
                         }
 
@@ -218,12 +220,12 @@ impl Licensee {
                         // so chop that off and ensure the base strings match, and if so,
                         // just a do a lexical compare, if this "allowed license" is >,
                         // then we satisfed the license requirement
-                        let atest_name =
+                        let a_test_name =
                             &a_name[..a_name.rfind('-').unwrap_or_else(|| a_name.len())];
-                        let btest_name =
+                        let b_test_name =
                             &b_name[..b_name.rfind('-').unwrap_or_else(|| b_name.len())];
 
-                        if atest_name != btest_name || a_name < b_name {
+                        if a_test_name != b_test_name || a_name < b_name {
                             return false;
                         }
                     } else {
@@ -233,15 +235,15 @@ impl Licensee {
             }
             (
                 LicenseItem::Other {
-                    doc_ref: doca,
-                    lic_ref: lica,
+                    doc_ref: doc_a,
+                    lic_ref: lic_a,
                 },
                 LicenseItem::Other {
-                    doc_ref: docb,
-                    lic_ref: licb,
+                    doc_ref: doc_b,
+                    lic_ref: lic_b,
                 },
             ) => {
-                if doca != docb || lica != licb {
+                if doc_a != doc_b || lic_a != lic_b {
                     return false;
                 }
             }
@@ -251,6 +253,7 @@ impl Licensee {
         req.exception == self.inner.exception
     }
 
+    #[must_use]
     pub fn into_req(self) -> LicenseReq {
         self.inner
     }

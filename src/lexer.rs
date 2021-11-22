@@ -90,6 +90,7 @@ pub struct Lexer<'a> {
 
 impl<'a> Lexer<'a> {
     /// Creates a Lexer over a license expression
+    #[must_use]
     pub fn new(text: &'a str) -> Self {
         Self {
             inner: text,
@@ -103,6 +104,7 @@ impl<'a> Lexer<'a> {
     ///
     /// With `ParseMode::Lax` it allows non-conforming syntax
     /// used in crates-io crates.
+    #[must_use]
     pub fn new_mode(text: &'a str, mode: ParseMode) -> Self {
         Self {
             inner: text,
@@ -164,6 +166,12 @@ impl<'a> Iterator for Lexer<'a> {
     type Item = Result<LexerToken<'a>, ParseError<'a>>;
 
     fn next(&mut self) -> Option<Self::Item> {
+        #[allow(clippy::unnecessary_wraps)]
+        fn ok_token<'a>(token: Token<'_>) -> Option<Result<(Token<'_>, usize), ParseError<'a>>> {
+            let len = token.len();
+            Some(Ok((token, len)))
+        }
+
         // Jump over any whitespace, updating `self.inner` and `self.offset` appropriately
         let non_whitespace_index = match self.inner.find(|c: char| !c.is_whitespace()) {
             Some(idx) => idx,
@@ -172,25 +180,19 @@ impl<'a> Iterator for Lexer<'a> {
         self.inner = &self.inner[non_whitespace_index..];
         self.offset += non_whitespace_index;
 
-        #[allow(clippy::unnecessary_wraps)]
-        fn ok_token<'a>(token: Token<'_>) -> Option<Result<(Token<'_>, usize), ParseError<'a>>> {
-            let len = token.len();
-            Some(Ok((token, len)))
-        }
-
         match self.inner.chars().next() {
             None => None,
             // From SPDX 2.1 spec
             // There MUST NOT be whitespace between a license-id and any following "+".
             Some('+') => {
-                if non_whitespace_index != 0 {
+                if non_whitespace_index == 0 {
+                    ok_token(Token::Plus)
+                } else {
                     Some(Err(ParseError {
                         original: self.original,
                         span: self.offset - non_whitespace_index..self.offset,
                         reason: Reason::SeparatedPlus,
                     }))
-                } else {
-                    ok_token(Token::Plus)
                 }
             }
             Some('(') => ok_token(Token::OpenParen),

@@ -183,14 +183,14 @@ impl<'a> Iterator for Lexer<'a> {
             // From SPDX 2.1 spec
             // There MUST NOT be whitespace between a license-id and any following "+".
             Some('+') => {
-                if non_whitespace_index != 0 {
+                if non_whitespace_index == 0 {
+                    ok_token(Token::Plus)
+                } else {
                     Some(Err(ParseError {
                         original: self.original,
                         span: self.offset - non_whitespace_index..self.offset,
                         reason: Reason::SeparatedPlus,
                     }))
-                } else {
-                    ok_token(Token::Plus)
                 }
             }
             Some('(') => ok_token(Token::OpenParen),

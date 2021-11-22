@@ -89,10 +89,10 @@ impl fmt::Display for Reason {
                         f.write_fmt(format_args!("{}`{}`", if i > 0 { ", " } else { "" }, exp))?;
                     }
                     f.write_str(" here")
-                } else if !expected.is_empty() {
-                    f.write_fmt(format_args!("expected a `{}` here", expected[0]))
-                } else {
+                } else if expected.is_empty() {
                     f.write_str("the term was not expected here")
+                } else {
+                    f.write_fmt(format_args!("expected a `{}` here", expected[0]))
                 }
             }
             Self::SeparatedPlus => f.write_str("`+` must not follow whitespace"),

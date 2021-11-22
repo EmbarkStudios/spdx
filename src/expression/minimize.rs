@@ -109,10 +109,10 @@ impl super::Expression {
                     .into_iter()
                     .enumerate()
                     .filter_map(|(ind, lic)| {
-                        if mask & (1 << ind) != 0 {
-                            Some(lic.into_req())
-                        } else {
+                        if mask & (1 << ind) == 0 {
                             None
+                        } else {
+                            Some(lic.into_req())
                         }
                     })
                     .collect());

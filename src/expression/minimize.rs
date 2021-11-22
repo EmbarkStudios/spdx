@@ -120,6 +120,6 @@ impl super::Expression {
         }
 
         // This should be impossible, but would rather not panic
-        Ok(found_set.into_iter().map(|lic| lic.into_req()).collect())
+        Ok(found_set.into_iter().map(Licensee::into_req).collect())
     }
 }

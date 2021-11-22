@@ -90,6 +90,7 @@ pub struct Lexer<'a> {
 
 impl<'a> Lexer<'a> {
     /// Creates a Lexer over a license expression
+    #[must_use]
     pub fn new(text: &'a str) -> Self {
         Self {
             inner: text,
@@ -103,6 +104,7 @@ impl<'a> Lexer<'a> {
     ///
     /// With `ParseMode::Lax` it allows non-conforming syntax
     /// used in crates-io crates.
+    #[must_use]
     pub fn new_mode(text: &'a str, mode: ParseMode) -> Self {
         Self {
             inner: text,

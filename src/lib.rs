@@ -140,6 +140,7 @@ impl LicenseId {
     /// assert!(spdx::license_id("GPL-2.0-only").unwrap().is_fsf_free_libre());
     /// ```
     #[inline]
+    #[must_use]
     pub fn is_fsf_free_libre(self) -> bool {
         self.flags & IS_FSF_LIBRE != 0
     }
@@ -150,6 +151,7 @@ impl LicenseId {
     /// assert!(spdx::license_id("MIT").unwrap().is_osi_approved());
     /// ```
     #[inline]
+    #[must_use]
     pub fn is_osi_approved(self) -> bool {
         self.flags & IS_OSI_APPROVED != 0
     }
@@ -160,6 +162,7 @@ impl LicenseId {
     /// assert!(spdx::license_id("wxWindows").unwrap().is_deprecated());
     /// ```
     #[inline]
+    #[must_use]
     pub fn is_deprecated(self) -> bool {
         self.flags & IS_DEPRECATED != 0
     }
@@ -170,6 +173,7 @@ impl LicenseId {
     /// assert!(spdx::license_id("LGPL-3.0-or-later").unwrap().is_copyleft());
     /// ```
     #[inline]
+    #[must_use]
     pub fn is_copyleft(self) -> bool {
         self.flags & IS_COPYLEFT != 0
     }
@@ -181,6 +185,7 @@ impl LicenseId {
     /// assert!(spdx::license_id("AGPL-3.0-only").unwrap().is_gnu());
     /// ```
     #[inline]
+    #[must_use]
     pub fn is_gnu(self) -> bool {
         self.flags & IS_GNU != 0
     }
@@ -245,6 +250,7 @@ impl ExceptionId {
     /// assert!(spdx::exception_id("Nokia-Qt-exception-1.1").unwrap().is_deprecated());
     /// ```
     #[inline]
+    #[must_use]
     pub fn is_deprecated(self) -> bool {
         self.flags & IS_DEPRECATED != 0
     }
@@ -351,6 +357,7 @@ pub enum LicenseItem {
 impl LicenseItem {
     /// Returns the license identifier, if it is a recognized SPDX license and not
     /// a license referencer
+    #[must_use]
     pub fn id(&self) -> Option<LicenseId> {
         match self {
             Self::Spdx { id, .. } => Some(*id),
@@ -423,6 +430,7 @@ impl PartialEq for LicenseItem {
     }
 }
 
+#[must_use]
 impl fmt::Display for LicenseItem {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match self {
@@ -459,6 +467,7 @@ impl fmt::Display for LicenseItem {
 /// assert!(spdx::license_id("BitTorrent-1.1+").is_some());
 /// ```
 #[inline]
+#[must_use]
 pub fn license_id(name: &str) -> Option<LicenseId> {
     let name = name.trim_end_matches('+');
     identifiers::LICENSES
@@ -486,6 +495,7 @@ pub fn license_id(name: &str) -> Option<LicenseId> {
 /// assert!(spdx::imprecise_license_id("simplified bsd license").unwrap().0 == spdx::license_id("BSD-2-Clause").unwrap());
 /// ```
 #[inline]
+#[must_use]
 pub fn imprecise_license_id(name: &str) -> Option<(LicenseId, usize)> {
     for (prefix, correct_name) in identifiers::IMPRECISE_NAMES {
         if let Some(name_prefix) = name.as_bytes().get(0..prefix.len()) {
@@ -507,6 +517,7 @@ pub fn imprecise_license_id(name: &str) -> Option<(LicenseId, usize)> {
 /// assert!(spdx::exception_id("LLVM-exception").is_some());
 /// ```
 #[inline]
+#[must_use]
 pub fn exception_id(name: &str) -> Option<ExceptionId> {
     identifiers::EXCEPTIONS
         .binary_search_by(|exc| exc.0.cmp(name))
@@ -524,6 +535,7 @@ pub fn exception_id(name: &str) -> Option<ExceptionId> {
 /// assert_eq!(spdx::license_version(), "3.14");
 /// ```
 #[inline]
+#[must_use]
 pub fn license_version() -> &'static str {
     identifiers::VERSION
 }

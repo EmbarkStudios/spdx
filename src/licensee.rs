@@ -29,6 +29,7 @@ impl Licensee {
     /// Creates a licensee from its component parts. Note that use of SPDX's
     /// `or_later` is completely ignored for licensees as it only applies
     /// to the license holder(s), not the licensee
+    #[must_use]
     pub fn new(license: LicenseItem, exception: Option<ExceptionId>) -> Self {
         if let LicenseItem::Spdx { or_later, .. } = &license {
             debug_assert!(!or_later);
@@ -189,6 +190,7 @@ impl Licensee {
     ///     exception: spdx::exception_id("LLVM-exception"),
     /// }));
     /// ```
+    #[must_use]
     pub fn satisfies(&self, req: &LicenseReq) -> bool {
         match (&self.inner.license, &req.license) {
             (LicenseItem::Spdx { id: a, .. }, LicenseItem::Spdx { id: b, or_later }) => {
@@ -251,6 +253,7 @@ impl Licensee {
         req.exception == self.inner.exception
     }
 
+    #[must_use]
     pub fn into_req(self) -> LicenseReq {
         self.inner
     }

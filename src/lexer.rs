@@ -166,6 +166,12 @@ impl<'a> Iterator for Lexer<'a> {
     type Item = Result<LexerToken<'a>, ParseError<'a>>;
 
     fn next(&mut self) -> Option<Self::Item> {
+        #[allow(clippy::unnecessary_wraps)]
+        fn ok_token<'a>(token: Token<'_>) -> Option<Result<(Token<'_>, usize), ParseError<'a>>> {
+            let len = token.len();
+            Some(Ok((token, len)))
+        }
+
         // Jump over any whitespace, updating `self.inner` and `self.offset` appropriately
         let non_whitespace_index = match self.inner.find(|c: char| !c.is_whitespace()) {
             Some(idx) => idx,
@@ -173,12 +179,6 @@ impl<'a> Iterator for Lexer<'a> {
         };
         self.inner = &self.inner[non_whitespace_index..];
         self.offset += non_whitespace_index;
-
-        #[allow(clippy::unnecessary_wraps)]
-        fn ok_token<'a>(token: Token<'_>) -> Option<Result<(Token<'_>, usize), ParseError<'a>>> {
-            let len = token.len();
-            Some(Ok((token, len)))
-        }
 
         match self.inner.chars().next() {
             None => None,

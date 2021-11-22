@@ -37,7 +37,6 @@ impl Expression {
     /// ).unwrap();
     /// ```
     pub fn parse_mode(original: &str, mode: ParseMode) -> Result<Self, ParseError<'_>> {
-        let lexer = Lexer::new_mode(original, mode);
         // Operator precedence in SPDX 2.1
         // +
         // WITH
@@ -57,6 +56,7 @@ impl Expression {
             span: std::ops::Range<usize>,
         }
 
+        let lexer = Lexer::new_mode(original, mode);
         let mut op_stack = SmallVec::<[OpAndSpan; 3]>::new();
         let mut expr_queue = SmallVec::<[ExprNode; 5]>::new();
 

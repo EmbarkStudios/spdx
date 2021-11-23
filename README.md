@@ -1,4 +1,8 @@
-# 🆔 spdx
+<div align="center">
+
+# `🆔 spdx`
+
+**Helper crate for [SPDX](https://spdx.org/about) [license expressions](https://spdx.org/spdx-specification-21-web-version#h.jxpfx0ykyb60)**
 
 [![Embark](https://img.shields.io/badge/embark-open%20source-blueviolet.svg)](https://embark.dev)
 [![Embark](https://img.shields.io/badge/discord-ark-%237289da.svg?logo=discord)](https://discord.gg/dAuKfZS)
@@ -9,7 +13,7 @@
 [![dependency status](https://deps.rs/repo/github/EmbarkStudios/spdx/status.svg)](https://deps.rs/repo/github/EmbarkStudios/spdx)
 [![Build Status](https://github.com/EmbarkStudios/spdx/workflows/CI/badge.svg)](https://github.com/EmbarkStudios/spdx/actions?workflow=CI)
 
-Helper crate for [SPDX](https://spdx.org/about) [license expressions](https://spdx.org/spdx-specification-21-web-version#h.jxpfx0ykyb60).
+</div>
 
 ## Usage
 

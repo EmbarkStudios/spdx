@@ -111,7 +111,7 @@ fn fails_with_slash() {
     assert_eq!(
         lexer.next().unwrap().unwrap_err(),
         spdx::ParseError {
-            original: "MIT/Apache-2.0",
+            original: "MIT/Apache-2.0".to_owned(),
             span: 3..14,
             reason: spdx::error::Reason::InvalidCharacters,
         }

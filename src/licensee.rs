@@ -68,12 +68,12 @@ impl Licensee {
     /// // GFDL licenses are only allowed to contain the `invariants` suffix
     /// Licensee::parse("GFDL-1.3-invariants").unwrap();
     /// ```
-    pub fn parse(original: &str) -> Result<Self, ParseError<'_>> {
+    pub fn parse(original: &str) -> Result<Self, ParseError> {
         let mut lexer = Lexer::new(original);
 
         let license = {
             let lt = lexer.next().ok_or_else(|| ParseError {
-                original,
+                original: original.to_owned(),
                 span: 0..original.len(),
                 reason: Reason::Empty,
             })??;
@@ -92,7 +92,7 @@ impl Licensee {
 
                         if is_only || or_later {
                             return Err(ParseError {
-                                original,
+                                original: original.to_owned(),
                                 span: if is_only {
                                     original.len() - 5..original.len()
                                 } else {
@@ -110,7 +110,7 @@ impl Licensee {
                         // by a WITH exception but GNU licenses are the worst
                         if original.starts_with("GFDL") && original.contains("-no-invariants") {
                             return Err(ParseError {
-                                original,
+                                original: original.to_owned(),
                                 span: 8..original.len(),
                                 reason: Reason::Unexpected(&["<bare-gfdl-license>"]),
                             });
@@ -128,7 +128,7 @@ impl Licensee {
                 },
                 _ => {
                     return Err(ParseError {
-                        original,
+                        original: original.to_owned(),
                         span: lt.span,
                         reason: Reason::Unexpected(&["<license>"]),
                     })
@@ -143,7 +143,7 @@ impl Licensee {
                 match lt.token {
                     Token::With => {
                         let lt = lexer.next().ok_or(ParseError {
-                            original,
+                            original: original.to_owned(),
                             span: lt.span,
                             reason: Reason::Empty,
                         })??;
@@ -152,7 +152,7 @@ impl Licensee {
                             Token::Exception(exc) => Some(exc),
                             _ => {
                                 return Err(ParseError {
-                                    original,
+                                    original: original.to_owned(),
                                     span: lt.span,
                                     reason: Reason::Unexpected(&["<exception>"]),
                                 })
@@ -161,7 +161,7 @@ impl Licensee {
                     }
                     _ => {
                         return Err(ParseError {
-                            original,
+                            original: original.to_owned(),
                             span: lt.span,
                             reason: Reason::Unexpected(&["WITH"]),
                         })

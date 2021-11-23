@@ -26,7 +26,7 @@ macro_rules! err {
         let act_err = spdx::Expression::parse($text).unwrap_err();
 
         let expected = ParseError {
-            original: $text,
+            original: $text.to_owned(),
             span: $range,
             reason: spdx::error::Reason::$reason,
         };
@@ -38,7 +38,7 @@ macro_rules! err {
         let act_err = spdx::Expression::parse($text).unwrap_err();
 
         let expected = ParseError {
-            original: $text,
+            original: $text.to_owned(),
             span: $range,
             reason: spdx::error::Reason::Unexpected($unexpected),
         };

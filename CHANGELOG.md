@@ -1,3 +1,5 @@
+<!-- markdownlint-disable blanks-around-headings blanks-around-lists no-duplicate-heading -->
+
 # Changelog
 All notable changes to this project will be documented in this file.
 
@@ -6,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Changed
+- [PR#48](https://github.com/EmbarkStudios/spdx/pull/48) resolved [#45](https://github.com/EmbarkStudios/spdx/issues/45) by making the original error string owned in the case of a parse error, simplifying the handling of errors. Thanks [@hoijui](https://github.com/hoijui)!
+
 ## [0.6.2] - 2021-10-21
 ### Fixed
 - [PR#44](https://github.com/EmbarkStudios/spdx/pull/44) fixed the `Display` for various GNU licenses, since they are "special" and diverge from the SPDX spec for reasons. Thanks [@mmurto](https://github.com/mmurto)!
@@ -60,7 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.1] - 2020-01-28 (yanked)
 ### Added
-- [PR#19](https://github.com/EmbarkStudios/spdx/pull/19) Added `ParseMode` enum, which has a `Lax` variant that allows certain invvalid license identifiers found in some crates on crates.io, as well as the invalid `/` expression separator. Thanks [@kornel](https://github.com/kornelski)!
+- [PR#19](https://github.com/EmbarkStudios/spdx/pull/19) Added `ParseMode` enum, which has a `Lax` variant that allows certain invalid license identifiers found in some crates on crates.io, as well as the invalid `/` expression separator. Thanks [@kornel](https://github.com/kornelski)!
 
 ## [0.3.0] - 2019-12-14
 ### Added
@@ -98,16 +103,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a `Expression` which can parse and validate an SPDX license expression is
 both syntactically and semantically correct, as well as evaluate the expression via
 a user provided callback
-- Added an update exe for pulling new SDPX information, copied from https://github.com/rust-lang-nursery/license-exprs
+- Added an update exe for pulling new SPDX information, copied from <https://github.com/rust-lang-nursery/license-exprs>
 - Added support for some of the metadata available from the SPDX format, namely "IsDeprecated", "IsFSFLibre", and "IsOSIApproved"
 
 ### Changed
 - Uhm...everything. I hope no one was using 0.1.0.
-- Use a better lexer, mostly copied from https://github.com/rust-lang-nursery/license-exprs/pull/29
+- Use a better lexer, mostly copied from <https://github.com/rust-lang-nursery/license-exprs/pull/29>
 
 ## [0.1.0] - 2019-09-02
 ### Added
-- Initial add of spdx crate, based primarly on [`license-exprs`](https://github.com/rust-lang-nursery/license-exprs)
+- Initial add of spdx crate, based primarily on [`license-exprs`](https://github.com/rust-lang-nursery/license-exprs)
 
 <!-- next-url -->
 [Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.6.2...HEAD

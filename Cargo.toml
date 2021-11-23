@@ -6,7 +6,8 @@ authors = [
     "Jake Shadle <jake.shadle@embark-studios.com>",
 ]
 description = "Helper crate for SDPX expressions"
-edition = "2018"
+edition = "2021"
+rust-version = "1.56.1"
 homepage = "https://github.com/EmbarkStudios/spdx"
 documentation = "https://docs.rs/spdx"
 readme = "README.md"

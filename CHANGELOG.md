@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - ReleaseDate
 ### Changed
 - [PR#48](https://github.com/EmbarkStudios/spdx/pull/48) resolved [#45](https://github.com/EmbarkStudios/spdx/issues/45) by making the original error string owned in the case of a parse error, simplifying the handling of errors. Thanks [@hoijui](https://github.com/hoijui)!
+- [PR#49](https://github.com/EmbarkStudios/spdx/pull/49) bumped the MSRV to 1.56.1, as well as moving to the 2021 edition and setting the `rust-version` there.
 
 ## [0.6.2] - 2021-10-21
 ### Fixed

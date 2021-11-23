@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.7.0] - 2021-11-23
 ### Changed
 - [PR#48](https://github.com/EmbarkStudios/spdx/pull/48) resolved [#45](https://github.com/EmbarkStudios/spdx/issues/45) by making the original error string owned in the case of a parse error, simplifying the handling of errors. Thanks [@hoijui](https://github.com/hoijui)!
 - [PR#49](https://github.com/EmbarkStudios/spdx/pull/49) bumped the MSRV to 1.56.1, as well as moving to the 2021 edition and setting the `rust-version` there.
@@ -116,7 +117,8 @@ a user provided callback
 - Initial add of spdx crate, based primarily on [`license-exprs`](https://github.com/rust-lang-nursery/license-exprs)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.6.2...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.7.0...HEAD
+[0.7.0]: https://github.com/EmbarkStudios/spdx/compare/0.6.2...0.7.0
 [0.6.2]: https://github.com/EmbarkStudios/spdx/compare/0.6.1...0.6.2
 [0.6.1]: https://github.com/EmbarkStudios/spdx/compare/0.6.0...0.6.1
 [0.6.0]: https://github.com/EmbarkStudios/spdx/compare/0.5.0...0.6.0

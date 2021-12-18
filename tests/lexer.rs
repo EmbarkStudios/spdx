@@ -120,7 +120,7 @@ fn fails_with_slash() {
 
 #[test]
 fn lax_takes_slash() {
-    let lexed: Vec<_> = Lexer::new_mode("MIT/Apache", spdx::ParseMode::Lax)
+    let lexed: Vec<_> = Lexer::new_mode("MIT/Apache", spdx::ParseMode::LAX)
         .map(|r| r.map(|lt| lt.token).unwrap())
         .collect();
     assert_eq!(
@@ -131,7 +131,7 @@ fn lax_takes_slash() {
 
 #[test]
 fn fixes_license_names() {
-    let lexed: Vec<_> = Lexer::new_mode("gpl v2 / bsd 2-clause", spdx::ParseMode::Lax)
+    let lexed: Vec<_> = Lexer::new_mode("gpl v2 / bsd 2-clause", spdx::ParseMode::LAX)
         .map(|r| r.map(|lt| lt.token).unwrap())
         .collect();
     assert_eq!(

@@ -4,14 +4,27 @@ use crate::{
 };
 
 /// Available modes when parsing SPDX expressions
-#[derive(Copy, Clone, PartialEq)]
-pub enum ParseMode {
+#[derive(Default, Copy, Clone)]
+pub struct ParseMode {
+    pub allow_lower_case_operators: bool,
+    pub allow_slash_as_or_operator: bool,
+    pub allow_imprecise_license_names: bool,
+    pub allow_postfix_plus_on_gpl: bool,
+}
+
+impl ParseMode {
     /// Strict SPDX parsing.
     /// 1. Only license identifiers in the SPDX license list, or
     /// Document/LicenseRef, are allowed. The license identifiers are also
     /// case-sensitive.
     /// 1. `WITH`, `AND`, and `OR` are the only valid operators
-    Strict,
+    pub const STRICT: Self = Self {
+        allow_lower_case_operators: false,
+        allow_slash_as_or_operator: false,
+        allow_imprecise_license_names: false,
+        allow_postfix_plus_on_gpl: false,
+    };
+
     /// Allow non-conforming syntax for crates-io compatibility
     /// 1. Additional, invalid, identifiers are accepted and mapped to a correct
     /// SPDX license identifier. See
@@ -20,7 +33,12 @@ pub enum ParseMode {
     /// correspond to.
     /// 1. `/` can by used as a synonym for `OR`, and doesn't need to be
     /// separated by whitespace from the terms it combines
-    Lax,
+    pub const LAX: Self = Self {
+        allow_lower_case_operators: true,
+        allow_slash_as_or_operator: true,
+        allow_imprecise_license_names: true,
+        allow_postfix_plus_on_gpl: true,
+    };
 }
 
 /// A single token in an SPDX license expression
@@ -85,7 +103,7 @@ pub struct Lexer<'a> {
     inner: &'a str,
     original: &'a str,
     offset: usize,
-    lax: bool,
+    mode: ParseMode,
 }
 
 impl<'a> Lexer<'a> {
@@ -96,7 +114,7 @@ impl<'a> Lexer<'a> {
             inner: text,
             original: text,
             offset: 0,
-            lax: false,
+            mode: ParseMode::STRICT,
         }
     }
 
@@ -110,7 +128,7 @@ impl<'a> Lexer<'a> {
             inner: text,
             original: text,
             offset: 0,
-            lax: mode == ParseMode::Lax,
+            mode,
         }
     }
 
@@ -197,7 +215,7 @@ impl<'a> Iterator for Lexer<'a> {
             }
             Some('(') => ok_token(Token::OpenParen),
             Some(')') => ok_token(Token::CloseParen),
-            Some('/') if self.lax => Some(Ok((Token::Or, 1))),
+            Some('/') if self.mode.allow_slash_as_or_operator => Some(Ok((Token::Or, 1))),
             Some(_) => match Lexer::find_text_token(self.inner) {
                 None => Some(Err(ParseError {
                     original: self.original.to_owned(),
@@ -211,9 +229,9 @@ impl<'a> Iterator for Lexer<'a> {
                         ok_token(Token::And)
                     } else if m == "OR" {
                         ok_token(Token::Or)
-                    } else if self.lax && m == "and" {
+                    } else if self.mode.allow_lower_case_operators && m == "and" {
                         ok_token(Token::And)
-                    } else if self.lax && m == "or" {
+                    } else if self.mode.allow_lower_case_operators && m == "or" {
                         ok_token(Token::Or)
                     } else if let Some(lic_id) = crate::license_id(m) {
                         ok_token(Token::Spdx(lic_id))
@@ -230,11 +248,13 @@ impl<'a> Iterator for Lexer<'a> {
                             doc_ref: None,
                             lic_ref,
                         })
-                    } else if let Some((lic_id, token_len)) = if self.lax {
-                        crate::imprecise_license_id(self.inner)
-                    } else {
-                        None
-                    } {
+                    } else if let Some((lic_id, token_len)) =
+                        if self.mode.allow_imprecise_license_names {
+                            crate::imprecise_license_id(self.inner)
+                        } else {
+                            None
+                        }
+                    {
                         Some(Ok((Token::Spdx(lic_id), token_len)))
                     } else {
                         Some(Err(ParseError {

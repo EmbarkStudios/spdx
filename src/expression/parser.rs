@@ -23,7 +23,7 @@ impl Expression {
     /// spdx::Expression::parse("MIT OR Apache-2.0 WITH LLVM-exception").unwrap();
     /// ```
     pub fn parse(original: &str) -> Result<Self, ParseError> {
-        Self::parse_mode(original, ParseMode::Strict)
+        Self::parse_mode(original, ParseMode::STRICT)
     }
 
     /// Parses an expression with the specified `ParseMode`. With
@@ -33,7 +33,7 @@ impl Expression {
     /// ```
     /// spdx::Expression::parse_mode(
     ///     "mit/Apache-2.0 WITH LLVM-exception",
-    ///     spdx::ParseMode::Lax
+    ///     spdx::ParseMode::LAX
     /// ).unwrap();
     /// ```
     pub fn parse_mode(original: &str, mode: ParseMode) -> Result<Self, ParseError> {
@@ -130,7 +130,7 @@ impl Expression {
                             ..
                         }) => {
                             // Handle GNU licenses differently, as they should *NOT* be used with the `+`
-                            if mode == ParseMode::Strict && id.is_gnu() {
+                            if !mode.allow_postfix_plus_on_gpl && id.is_gnu() {
                                 return Err(ParseError {
                                     original: original.to_owned(),
                                     span: lt.span,

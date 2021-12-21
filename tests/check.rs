@@ -10,13 +10,13 @@ macro_rules! exact {
 
 macro_rules! check {
     ($le:expr => [$($logical_expr:expr => $is_allowed:expr),+$(,)?]) => {
-        check_mode!(spdx::ParseMode::Strict, $le => [$($logical_expr => $is_allowed),+])
+        check_mode!(spdx::ParseMode::STRICT, $le => [$($logical_expr => $is_allowed),+])
     };
 }
 
 macro_rules! check_lax {
     ($le:expr => [$($logical_expr:expr => $is_allowed:expr),+$(,)?]) => {
-        check_mode!(spdx::ParseMode::Lax, $le => [$($logical_expr => $is_allowed),+])
+        check_mode!(spdx::ParseMode::LAX, $le => [$($logical_expr => $is_allowed),+])
     };
 }
 
@@ -191,7 +191,7 @@ fn gpl_or_later_plus_strict() {
 
 #[test]
 fn gpl_or_later_plus_lax() {
-    spdx::Expression::parse_mode("GPL-2.0+", spdx::ParseMode::Lax).unwrap();
+    spdx::Expression::parse_mode("GPL-2.0+", spdx::ParseMode::LAX).unwrap();
 }
 
 #[test]

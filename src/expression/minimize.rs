@@ -1,3 +1,4 @@
+use super::Expression;
 use crate::{LicenseReq, Licensee};
 use std::fmt;
 
@@ -36,21 +37,22 @@ impl std::error::Error for MinimizeError {
     }
 }
 
-impl super::Expression {
+impl Expression {
     /// Given a set of [`Licensee`]s, attempts to find the minimum number that
-    /// satisfy this [`Expression`]. The list of licensees should be given in
-    /// priority order, eg, if you wish to accept the `Apache-2.0` license if
-    /// it is available and the `MIT` if not, putting `Apache-2.0` before `MIT`
-    /// will cause the ubiquitous `Apache-2.0 OR MIT` expression to minimize to
-    /// just `Apache-2.0` as only only 1 of the licenses is required, and the
-    /// `Apache-2.0` has priority.
+    /// satisfy this [`Expression`].
+    ///
+    /// The list of licensees should be given in priority order, eg, if you wish
+    /// to accept the `Apache-2.0` license if it is available, and the `MIT` if
+    /// not, putting `Apache-2.0` before `MIT` will cause the ubiquitous
+    /// `Apache-2.0 OR MIT` expression to minimize to just `Apache-2.0` as only
+    /// 1 of the licenses is required, and `Apache-2.0` has priority.
     ///
     /// # Errors
     ///
     /// This method will fail if more than 64 unique licensees are satisfied by
-    /// this expression, but such a case is unlikely to say the least in a real
-    /// world scenario. The list of licensees must also actually satisfy this
-    /// expression, otherwise it can't be minimized.
+    /// this expression, but such a case is unlikely in a real world scenario.
+    /// The list of licensees must also actually satisfy this expression,
+    /// otherwise it can't be minimized.
     ///
     /// # Example
     ///

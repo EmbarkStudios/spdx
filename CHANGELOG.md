@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.8.0] - 2021-12-21
 ### Changed
 - [PR#50](https://github.com/EmbarkStudios/spdx/pull/50) changed `ParseMode` to be a struct with several fields to give finer grained control over which parts of expression parsing/evaluation can be relaxed. Thanks [@Turbo87](https://github.com/Turbo87)!
 
@@ -120,7 +121,8 @@ a user provided callback
 - Initial add of spdx crate, based primarily on [`license-exprs`](https://github.com/rust-lang-nursery/license-exprs)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.7.0...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.8.0...HEAD
+[0.8.0]: https://github.com/EmbarkStudios/spdx/compare/0.7.0...0.8.0
 [0.7.0]: https://github.com/EmbarkStudios/spdx/compare/0.6.2...0.7.0
 [0.6.2]: https://github.com/EmbarkStudios/spdx/compare/0.6.1...0.6.2
 [0.6.1]: https://github.com/EmbarkStudios/spdx/compare/0.6.0...0.6.1

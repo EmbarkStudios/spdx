@@ -3,17 +3,33 @@ use crate::{
     ExceptionId, LicenseId,
 };
 
-/// Available modes when parsing SPDX expressions
+/// Parsing configuration for SPDX expression
 #[derive(Default, Copy, Clone)]
 pub struct ParseMode {
+    /// The `AND`, `OR`, and `WITH` operators are required to be uppercase in
+    /// the SPDX spec, but enabling this option allows them to be lowercased
     pub allow_lower_case_operators: bool,
+    /// Allows the use of `/` as a synonym for the `OR` operator. This also
+    /// allows for not having whitespace between the `/` and the terms on either
+    /// side
     pub allow_slash_as_or_operator: bool,
+    /// Allows some invalid/imprecise identifiers as synonyms for an actual
+    /// license identifier. See [`IMPRECISE_NAMES`](crate::identifiers::IMPRECISE_NAMES)
+    /// for a list of the current synonyms. Note that this list is not
+    /// comprehensive but can be expanded upon when invalid identifiers are
+    /// found in the wild.
     pub allow_imprecise_license_names: bool,
+    /// The various GPL licenses diverge from every other license in the SPDX
+    /// license list by having an `-or-later` variant that used as a suffix on a
+    /// base license (eg. `GPL-3.0-or-later`) rather than the canonical `GPL-3.0+`.
+    /// This option just allows GPL licenses to be treated similarly to all of
+    /// the other SPDX licenses.
     pub allow_postfix_plus_on_gpl: bool,
 }
 
 impl ParseMode {
-    /// Strict SPDX parsing.
+    /// Strict, specification compliant SPDX parsing.
+    ///
     /// 1. Only license identifiers in the SPDX license list, or
     /// Document/LicenseRef, are allowed. The license identifiers are also
     /// case-sensitive.
@@ -26,10 +42,11 @@ impl ParseMode {
     };
 
     /// Allow non-conforming syntax for crates-io compatibility
+    ///
     /// 1. Additional, invalid, identifiers are accepted and mapped to a correct
-    /// SPDX license identifier. See
-    /// [identifiers::IMPRECISE_NAMES](../identifiers/constant.IMPRECISE_NAMES.html)
-    /// for the list of additionally accepted identifiers and the license they
+    /// SPDX license identifier.
+    /// See [`IMPRECISE_NAMES`](crate::identifiers::IMPRECISE_NAMES) for the
+    /// list of additionally accepted identifiers and the license they
     /// correspond to.
     /// 1. `/` can by used as a synonym for `OR`, and doesn't need to be
     /// separated by whitespace from the terms it combines

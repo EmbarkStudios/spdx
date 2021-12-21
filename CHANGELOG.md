@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Changed
+- [PR#50](https://github.com/EmbarkStudios/spdx/pull/50) changed `ParseMode` to be a struct with several fields to give finer grained control over which parts of expression parsing/evaluation can be relaxed. Thanks [@Turbo87](https://github.com/Turbo87)!
+
 ## [0.7.0] - 2021-11-23
 ### Changed
 - [PR#48](https://github.com/EmbarkStudios/spdx/pull/48) resolved [#45](https://github.com/EmbarkStudios/spdx/issues/45) by making the original error string owned in the case of a parse error, simplifying the handling of errors. Thanks [@hoijui](https://github.com/hoijui)!

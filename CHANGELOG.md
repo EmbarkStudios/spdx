@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.8.1] - 2022-02-04
 ### Changed
 - [PR#51](https://github.com/EmbarkStudios/spdx/pull/51) updates the crates.io metadata for the crate.
 
@@ -124,7 +125,8 @@ a user provided callback
 - Initial add of spdx crate, based primarily on [`license-exprs`](https://github.com/rust-lang-nursery/license-exprs)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.8.0...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.8.1...HEAD
+[0.8.1]: https://github.com/EmbarkStudios/spdx/compare/0.8.0...0.8.1
 [0.8.0]: https://github.com/EmbarkStudios/spdx/compare/0.7.0...0.8.0
 [0.7.0]: https://github.com/EmbarkStudios/spdx/compare/0.6.2...0.7.0
 [0.6.2]: https://github.com/EmbarkStudios/spdx/compare/0.6.1...0.6.2

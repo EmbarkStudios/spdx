@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Changed
+- [PR#51](https://github.com/EmbarkStudios/spdx/pull/51) updates the crates.io metadata for the crate.
+
 ## [0.8.0] - 2021-12-21
 ### Changed
 - [PR#50](https://github.com/EmbarkStudios/spdx/pull/50) changed `ParseMode` to be a struct with several fields to give finer grained control over which parts of expression parsing/evaluation can be relaxed. Thanks [@Turbo87](https://github.com/Turbo87)!

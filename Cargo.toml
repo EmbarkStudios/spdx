@@ -12,9 +12,16 @@ homepage = "https://github.com/EmbarkStudios/spdx"
 documentation = "https://docs.rs/spdx"
 readme = "README.md"
 keywords = ["spdx", "license"]
+categories = ["parser-implementations"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/EmbarkStudios/spdx"
-include = ["Cargo.toml", "LICENSE-APACHE", "LICENSE-MIT", "src/**/*"]
+include = [
+    "Cargo.toml",
+    "LICENSE-APACHE",
+    "LICENSE-MIT",
+    "README.md",
+    "src/**/*",
+]
 
 [features]
 # Includes the full canonical text of each license

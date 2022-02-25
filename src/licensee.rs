@@ -220,10 +220,8 @@ impl Licensee {
                         // so chop that off and ensure the base strings match, and if so,
                         // just a do a lexical compare, if this "allowed license" is >,
                         // then we satisfed the license requirement
-                        let a_test_name =
-                            &a_name[..a_name.rfind('-').unwrap_or_else(|| a_name.len())];
-                        let b_test_name =
-                            &b_name[..b_name.rfind('-').unwrap_or_else(|| b_name.len())];
+                        let a_test_name = &a_name[..a_name.rfind('-').unwrap_or(a_name.len())];
+                        let b_test_name = &b_name[..b_name.rfind('-').unwrap_or(b_name.len())];
 
                         if a_test_name != b_test_name || a_name < b_name {
                             return false;

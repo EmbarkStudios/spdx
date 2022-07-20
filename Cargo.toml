@@ -34,3 +34,6 @@ smallvec = "1.7"
 [dev-dependencies]
 # Used to print colored diffs in case of test failures
 similar-asserts = "1.1"
+
+[package.metadata.docs.rs]
+all-features = true

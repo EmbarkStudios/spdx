@@ -440,7 +440,6 @@ impl PartialEq for LicenseItem {
     }
 }
 
-#[must_use]
 impl fmt::Display for LicenseItem {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match self {
@@ -542,7 +541,7 @@ pub fn exception_id(name: &str) -> Option<ExceptionId> {
 /// the license and exception identifiers are sourced from
 ///
 /// ```
-/// assert_eq!(spdx::license_version(), "3.14");
+/// assert_eq!(spdx::license_version(), "3.18");
 /// ```
 #[inline]
 #[must_use]

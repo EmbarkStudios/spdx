@@ -3,7 +3,7 @@ use crate::{LicenseReq, Licensee};
 use std::fmt;
 
 /// Errors that can occur when trying to minimize the requirements for an [`Expression`]
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum MinimizeError {
     /// More than `64` unique licensees satisfied a requirement in the [`Expression`]
     TooManyRequirements(usize),

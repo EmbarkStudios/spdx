@@ -440,7 +440,6 @@ impl PartialEq for LicenseItem {
     }
 }
 
-#[must_use]
 impl fmt::Display for LicenseItem {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match self {

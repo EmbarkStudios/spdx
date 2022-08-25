@@ -2,7 +2,7 @@ use std::{error::Error, fmt};
 
 /// An error related to parsing of an SPDX license expression
 /// or identifier
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ParseError {
     /// The string that was attempting to be parsed
     pub original: String,
@@ -14,7 +14,7 @@ pub struct ParseError {
 }
 
 /// The particular reason for a `ParseError`
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Reason {
     /// The specified license short-identifier was not
     /// found the SPDX list

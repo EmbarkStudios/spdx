@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Changed
+- [PR#40](https://github.com/EmbarkStudios/spdx/pull/54) updated the SPDX license list from `3.14` => `3.18`.
+
 ## [0.8.1] - 2022-02-04
 ### Changed
 - [PR#51](https://github.com/EmbarkStudios/spdx/pull/51) updates the crates.io metadata for the crate.

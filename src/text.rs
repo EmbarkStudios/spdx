@@ -274,6 +274,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("FSFAP", include!("text/licenses/FSFAP")),
     ("FSFUL", include!("text/licenses/FSFUL")),
     ("FSFULLR", include!("text/licenses/FSFULLR")),
+    ("FSFULLRWD", include!("text/licenses/FSFULLRWD")),
     ("FTL", include!("text/licenses/FTL")),
     ("Fair", include!("text/licenses/Fair")),
     ("Frameworx-1.0", include!("text/licenses/Frameworx-1.0")),
@@ -448,6 +449,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("JSON", include!("text/licenses/JSON")),
     ("Jam", include!("text/licenses/Jam")),
     ("JasPer-2.0", include!("text/licenses/JasPer-2.0")),
+    ("Knuth-CTAN", include!("text/licenses/Knuth-CTAN")),
     ("LAL-1.2", include!("text/licenses/LAL-1.2")),
     ("LAL-1.3", include!("text/licenses/LAL-1.3")),
     ("LGPL-2.0", include!("text/licenses/LGPL-2.0")),
@@ -707,6 +709,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("blessing", include!("text/licenses/blessing")),
     ("bzip2-1.0.5", include!("text/licenses/bzip2-1.0.5")),
     ("bzip2-1.0.6", include!("text/licenses/bzip2-1.0.6")),
+    ("checkmk", include!("text/licenses/checkmk")),
     (
         "copyleft-next-0.3.0",
         include!("text/licenses/copyleft-next-0.3.0"),
@@ -727,6 +730,10 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("libpng-2.0", include!("text/licenses/libpng-2.0")),
     ("libselinux-1.0", include!("text/licenses/libselinux-1.0")),
     ("libtiff", include!("text/licenses/libtiff")),
+    (
+        "libutil-David-Nugent",
+        include!("text/licenses/libutil-David-Nugent"),
+    ),
     ("mpi-permissive", include!("text/licenses/mpi-permissive")),
     ("mpich2", include!("text/licenses/mpich2")),
     ("mplus", include!("text/licenses/mplus")),
@@ -893,5 +900,9 @@ pub const EXCEPTION_TEXTS: &[(&str, &str)] = &[
     (
         "u-boot-exception-2.0",
         include!("text/exceptions/u-boot-exception-2.0"),
+    ),
+    (
+        "x11vnc-openssl-exception",
+        include!("text/exceptions/x11vnc-openssl-exception"),
     ),
 ];

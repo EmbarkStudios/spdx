@@ -541,7 +541,7 @@ pub fn exception_id(name: &str) -> Option<ExceptionId> {
 /// the license and exception identifiers are sourced from
 ///
 /// ```
-/// assert_eq!(spdx::license_version(), "3.18");
+/// assert_eq!(spdx::license_version(), "3.19");
 /// ```
 #[inline]
 #[must_use]

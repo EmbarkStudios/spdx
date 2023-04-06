@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Changed
+- [PR#59](https://github.com/EmbarkStudios/spdx/pull/59) updated the SPDX license list from `3.19` => `3.20`.
+
 ## [0.10.0] - 2022-12-20
 ### Changed
 - [PR#57](https://github.com/EmbarkStudios/spdx/pull/57) updated the SPDX license list from `3.18` => `3.19`.

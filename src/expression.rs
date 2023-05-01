@@ -154,7 +154,7 @@ impl Expression {
     }
 
     /// Just as with evaluate, the license expression is evaluated to see if
-    /// enough license requirements in the expresssion are met for the evaluation
+    /// enough license requirements in the expression are met for the evaluation
     /// to succeed, except this method also keeps track of each failed requirement
     /// and returns them, allowing for more detailed error reporting about precisely
     /// what terms in the expression caused the overall failure

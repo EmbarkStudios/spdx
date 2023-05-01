@@ -1,4 +1,4 @@
-/// Pairs an invalid license identifier with its valide SPDX license identifier.
+/// Pairs an invalid license identifier with its valid SPDX license identifier.
 /// These invalid identifiers are only allowed when using `Lax` parsing.
 pub const IMPRECISE_NAMES: &[(&str, &str)] = &[
     ("agplv3", "AGPL-3.0"),

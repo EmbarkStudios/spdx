@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.10.2] - 2023-07-14
 ### Changed
 - [PR#61](https://github.com/EmbarkStudios/spdx/pull/61) updated the SPDX license list from `3.20` => `3.21`.
 
@@ -143,7 +144,8 @@ a user provided callback
 - Initial add of spdx crate, based primarily on [`license-exprs`](https://github.com/rust-lang-nursery/license-exprs)
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.10.1...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.10.2...HEAD
+[0.10.2]: https://github.com/EmbarkStudios/spdx/compare/0.10.1...0.10.2
 [0.10.1]: https://github.com/EmbarkStudios/spdx/compare/0.10.0...0.10.1
 [0.10.0]: https://github.com/EmbarkStudios/spdx/compare/0.9.0...0.10.0
 [0.9.0]: https://github.com/EmbarkStudios/spdx/compare/0.8.1...0.9.0

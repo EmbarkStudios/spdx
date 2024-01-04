@@ -42,6 +42,10 @@ impl Expression {
     /// Note that this only does fixup of otherwise valid expressions, passing
     /// the resulting string to [`Expression::parse`] can still result in
     /// additional parse errors, eg. unbalanced parentheses
+    ///
+    /// ```
+    /// assert_eq!(spdx::Expression::canonicalize("apache with LLVM-exception/gpl-3.0+").unwrap().unwrap(), "Apache-2.0 WITH LLVM-exception OR GPL-3.0-or-later");
+    /// ```
     pub fn canonicalize(original: &str) -> Result<Option<String>, ParseError> {
         let mut can = String::with_capacity(original.len());
 

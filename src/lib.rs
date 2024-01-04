@@ -495,6 +495,7 @@ pub fn license_id(name: &str) -> Option<LicenseId> {
 }
 
 /// Find license partially matching the name, e.g. "apache" => "Apache-2.0"
+///
 /// Returns length (in bytes) of the string matched. Garbage at the end is
 /// ignored. See
 /// [`identifiers::IMPRECISE_NAMES`](identifiers/constant.IMPRECISE_NAMES.html)
@@ -510,11 +511,7 @@ pub fn imprecise_license_id(name: &str) -> Option<(LicenseId, usize)> {
     for (prefix, correct_name) in identifiers::IMPRECISE_NAMES {
         if let Some(name_prefix) = name.as_bytes().get(0..prefix.len()) {
             if prefix.as_bytes().eq_ignore_ascii_case(name_prefix) {
-                let mut len = prefix.len();
-                if name.as_bytes().get(len).copied() == Some(b'+') {
-                    len += 1;
-                }
-                return license_id(correct_name).map(|lic| (lic, len));
+                return license_id(correct_name).map(|lic| (lic, prefix.len()));
             }
         }
     }

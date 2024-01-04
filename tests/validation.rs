@@ -224,3 +224,34 @@ fn validates_excessive_parens() {
         ]
     ]);
 }
+
+#[test]
+fn canonicalization() {
+    use spdx::Expression;
+
+    assert!(Expression::canonicalize("Apache-2.0 OR MIT")
+        .unwrap()
+        .is_none());
+    assert_eq!(
+        Expression::canonicalize("Apache-2.0/MIT").unwrap().unwrap(),
+        "Apache-2.0 OR MIT"
+    );
+    assert_eq!(
+        Expression::canonicalize("MIT and GPL-3.0+")
+            .unwrap()
+            .unwrap(),
+        "MIT AND GPL-3.0-or-later"
+    );
+    assert_eq!(
+        Expression::canonicalize("simplified bsd license or gpl-2.0+")
+            .unwrap()
+            .unwrap(),
+        "BSD-2-Clause OR GPL-2.0-or-later"
+    );
+    assert_eq!(
+        Expression::canonicalize("apache with LLVM-exception/mpl")
+            .unwrap()
+            .unwrap(),
+        "Apache-2.0 WITH LLVM-exception OR MPL-2.0"
+    );
+}

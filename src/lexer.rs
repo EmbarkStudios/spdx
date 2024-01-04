@@ -9,19 +9,23 @@ pub struct ParseMode {
     /// The `AND`, `OR`, and `WITH` operators are required to be uppercase in
     /// the SPDX spec, but enabling this option allows them to be lowercased
     pub allow_lower_case_operators: bool,
-    /// Allows the use of `/` as a synonym for the `OR` operator. This also
-    /// allows for not having whitespace between the `/` and the terms on either
-    /// side
+    /// Allows the use of `/` as a synonym for the `OR` operator.
+    ///
+    /// This also allows for not having whitespace between the `/` and the terms
+    /// on either side
     pub allow_slash_as_or_operator: bool,
     /// Allows some invalid/imprecise identifiers as synonyms for an actual
-    /// license identifier. See [`IMPRECISE_NAMES`](crate::identifiers::IMPRECISE_NAMES)
-    /// for a list of the current synonyms. Note that this list is not
-    /// comprehensive but can be expanded upon when invalid identifiers are
-    /// found in the wild.
+    /// license identifier.
+    ///
+    /// See [`IMPRECISE_NAMES`](crate::identifiers::IMPRECISE_NAMES) for a list
+    /// of the current synonyms. Note that this list is not comprehensive but
+    /// can be expanded upon when invalid identifiers are found in the wild.
     pub allow_imprecise_license_names: bool,
     /// The various GPL licenses diverge from every other license in the SPDX
-    /// license list by having an `-or-later` variant that used as a suffix on a
-    /// base license (eg. `GPL-3.0-or-later`) rather than the canonical `GPL-3.0+`.
+    /// license list by having an `-or-later` variant that is used as a suffix
+    /// on a base license (eg. `GPL-3.0-or-later`) rather than the canonical
+    /// `GPL-3.0+`.
+    ///
     /// This option just allows GPL licenses to be treated similarly to all of
     /// the other SPDX licenses.
     pub allow_postfix_plus_on_gpl: bool,
@@ -63,8 +67,7 @@ impl ParseMode {
 pub enum Token<'a> {
     /// A recognized SPDX license id
     Spdx(LicenseId),
-    /// A `LicenseRef-` prefixed id, with an optional
-    /// `DocRef-`
+    /// A `LicenseRef-` prefixed id, with an optional `DocumentRef-`
     LicenseRef {
         doc_ref: Option<&'a str>,
         lic_ref: &'a str,
@@ -250,6 +253,8 @@ impl<'a> Iterator for Lexer<'a> {
                         ok_token(Token::And)
                     } else if self.mode.allow_lower_case_operators && m == "or" {
                         ok_token(Token::Or)
+                    } else if self.mode.allow_lower_case_operators && m == "with" {
+                        ok_token(Token::With)
                     } else if let Some(lic_id) = crate::license_id(m) {
                         ok_token(Token::Spdx(lic_id))
                     } else if let Some(exc_id) = crate::exception_id(m) {

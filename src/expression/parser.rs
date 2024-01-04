@@ -26,6 +26,71 @@ impl Expression {
         Self::parse_mode(original, ParseMode::STRICT)
     }
 
+    /// Canonicalizes the input expression into a form that can be parsed with
+    /// [`ParseMode::STRICT`]
+    ///
+    /// ## Transforms
+    ///
+    /// 1. '/' is replaced with ' OR '
+    /// 1. Lower-cased operators ('or', 'and', 'with') are upper-cased
+    /// 1. '+' is tranformed to `-or-later` for GNU licenses
+    /// 1. Invalid/imprecise license identifiers (eg. `apache2`) are replaced
+    /// with their valid identifiers
+    ///
+    /// If the provided expression is not modified then `None` is returned
+    ///
+    /// Note that this only does fixup of otherwise valid expressions, passing
+    /// the resulting string to [`Expression::parse`] can still result in
+    /// additional parse errors, eg. unbalanced parentheses
+    ///
+    /// ```
+    /// assert_eq!(spdx::Expression::canonicalize("apache with LLVM-exception/gpl-3.0+").unwrap().unwrap(), "Apache-2.0 WITH LLVM-exception OR GPL-3.0-or-later");
+    /// ```
+    pub fn canonicalize(original: &str) -> Result<Option<String>, ParseError> {
+        let mut can = String::with_capacity(original.len());
+
+        let lexer = Lexer::new_mode(original, ParseMode::LAX);
+
+        // Keep track if the last license id is a GNU license that uses the -or-later
+        // convention rather than the + like all other licenses
+        let mut last_is_gnu = false;
+        for tok in lexer {
+            let tok = tok?;
+
+            match tok.token {
+                Token::Spdx(id) => {
+                    last_is_gnu = id.is_gnu();
+                    can.push_str(id.name);
+                }
+                Token::And => can.push_str(" AND "),
+                Token::Or => can.push_str(" OR "),
+                Token::With => can.push_str(" WITH "),
+                Token::Plus => {
+                    if last_is_gnu {
+                        can.push_str("-or-later");
+                    } else {
+                        can.push('+');
+                    }
+                }
+                Token::OpenParen => can.push('('),
+                Token::CloseParen => can.push(')'),
+                Token::Exception(exc) => can.push_str(exc.name),
+                Token::LicenseRef { doc_ref, lic_ref } => {
+                    if let Some(dr) = doc_ref {
+                        can.push_str("DocumentRef-");
+                        can.push_str(dr);
+                        can.push(':');
+                    }
+
+                    can.push_str("LicenseRef-");
+                    can.push_str(lic_ref);
+                }
+            }
+        }
+
+        Ok((can != original).then_some(can))
+    }
+
     /// Parses an expression with the specified `ParseMode`. With
     /// `ParseMode::Lax` it permits some non-SPDX syntax, such as imprecise
     /// license names and "/" used instead of "OR" in exprssions.

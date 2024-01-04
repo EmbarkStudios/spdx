@@ -412,6 +412,7 @@ impl Ord for LicenseItem {
 }
 
 impl PartialOrd for LicenseItem {
+    #[allow(clippy::non_canonical_partial_ord_impl)]
     fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
         match (self, o) {
             (Self::Spdx { id: a, .. }, Self::Spdx { id: b, .. }) => a.partial_cmp(b),

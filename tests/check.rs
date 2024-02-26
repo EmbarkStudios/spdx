@@ -127,6 +127,7 @@ fn allow_excessive_parens() {
 }
 
 #[test]
+#[allow(clippy::blocks_in_conditions)]
 fn allow_osi_fsf() {
     // Borceux is neither OSI or FSF
     // MIT is both

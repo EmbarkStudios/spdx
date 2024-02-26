@@ -1,3 +1,5 @@
+<!-- markdownlint-disable no-inline-html first-line-heading -->
+
 <div align="center">
 
 # `🆔 spdx`
@@ -9,7 +11,7 @@
 [![Crates.io](https://img.shields.io/crates/v/spdx.svg)](https://crates.io/crates/spdx)
 [![Docs](https://docs.rs/spdx/badge.svg)](https://docs.rs/spdx)
 [![Minimum Stable Rust Version](https://img.shields.io/badge/Rust-1.65.0-blue?color=fc8d62&logo=rust)](https://blog.rust-lang.org/2022/11/03/Rust-1.65.0.html)
-[![SPDX Version](https://img.shields.io/badge/SPDX%20Version-3.22-blue.svg)](https://spdx.org/licenses/)
+[![SPDX Version](https://img.shields.io/badge/SPDX%20Version-3.23-blue.svg)](https://spdx.org/licenses/)
 [![dependency status](https://deps.rs/repo/github/EmbarkStudios/spdx/status.svg)](https://deps.rs/repo/github/EmbarkStudios/spdx)
 [![Build Status](https://github.com/EmbarkStudios/spdx/workflows/CI/badge.svg)](https://github.com/EmbarkStudios/spdx/actions?workflow=CI)
 

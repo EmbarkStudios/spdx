@@ -8,12 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Changed
+- [PR#65](https://github.com/EmbarkStudios/spdx/pull/65) update SPDX license list to 3.23.
+
 ## [0.10.3] - 2024-01-04
 ### Changed
 - [PR#63](https://github.com/EmbarkStudios/spdx/pull/63) update SPDX license list to 3.22.
 
 ### Added
-- [PR#64](https://github.com/EmbarkStudios/spdx/pull/64) resolved [#64](https://github.com/EmbarkStudios/spdx/issues/64) by adding `Expression::canonicalize` which fixes otherwise valid expressions into a form parsable with `ParseMode::STRICT`
+- [PR#64](https://github.com/EmbarkStudios/spdx/pull/64) resolved [#56](https://github.com/EmbarkStudios/spdx/issues/56) by adding `Expression::canonicalize` which fixes otherwise valid expressions into a form parsable with `ParseMode::STRICT`
 
 ## [0.10.2] - 2023-07-14
 ### Changed

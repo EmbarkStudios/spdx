@@ -25,6 +25,14 @@ impl fmt::Display for Licensee {
     }
 }
 
+impl std::str::FromStr for Licensee {
+    type Err = ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::parse(s)
+    }
+}
+
 impl Licensee {
     /// Creates a licensee from its component parts. Note that use of SPDX's
     /// `or_later` is completely ignored for licensees as it only applies

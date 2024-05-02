@@ -1,7 +1,7 @@
 mod minimize;
 mod parser;
 
-use crate::LicenseReq;
+use crate::{error::ParseError, LicenseReq};
 pub use minimize::MinimizeError;
 use smallvec::SmallVec;
 use std::fmt;
@@ -228,6 +228,13 @@ impl fmt::Debug for Expression {
 impl fmt::Display for Expression {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(&self.original)
+    }
+}
+
+impl std::str::FromStr for Expression {
+    type Err = ParseError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::parse(s)
     }
 }
 

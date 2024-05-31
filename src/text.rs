@@ -1,5 +1,6 @@
 pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("0BSD", include!("text/licenses/0BSD")),
+    ("3D-Slicer-1.0", include!("text/licenses/3D-Slicer-1.0")),
     ("AAL", include!("text/licenses/AAL")),
     ("ADSL", include!("text/licenses/ADSL")),
     ("AFL-1.1", include!("text/licenses/AFL-1.1")),
@@ -19,6 +20,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
         "AGPL-3.0-or-later",
         include!("text/licenses/AGPL-3.0-or-later"),
     ),
+    ("AMD-newlib", include!("text/licenses/AMD-newlib")),
     ("AMDPLPA", include!("text/licenses/AMDPLPA")),
     ("AML", include!("text/licenses/AML")),
     ("AML-glslang", include!("text/licenses/AML-glslang")),
@@ -89,6 +91,10 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     (
         "BSD-2-Clause-Views",
         include!("text/licenses/BSD-2-Clause-Views"),
+    ),
+    (
+        "BSD-2-Clause-first-lines",
+        include!("text/licenses/BSD-2-Clause-first-lines"),
     ),
     ("BSD-3-Clause", include!("text/licenses/BSD-3-Clause")),
     (
@@ -324,6 +330,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
         "Caldera-no-preamble",
         include!("text/licenses/Caldera-no-preamble"),
     ),
+    ("Catharon", include!("text/licenses/Catharon")),
     ("ClArtistic", include!("text/licenses/ClArtistic")),
     ("Clips", include!("text/licenses/Clips")),
     (
@@ -530,6 +537,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("Glide", include!("text/licenses/Glide")),
     ("Glulxe", include!("text/licenses/Glulxe")),
     ("Graphics-Gems", include!("text/licenses/Graphics-Gems")),
+    ("Gutmann", include!("text/licenses/Gutmann")),
     ("HP-1986", include!("text/licenses/HP-1986")),
     ("HP-1989", include!("text/licenses/HP-1989")),
     ("HPND", include!("text/licenses/HPND")),
@@ -539,6 +547,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
         include!("text/licenses/HPND-Fenneberg-Livingston"),
     ),
     ("HPND-INRIA-IMAG", include!("text/licenses/HPND-INRIA-IMAG")),
+    ("HPND-Intel", include!("text/licenses/HPND-Intel")),
     (
         "HPND-Kevlin-Henney",
         include!("text/licenses/HPND-Kevlin-Henney"),
@@ -553,12 +562,25 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ),
     ("HPND-Pbmplus", include!("text/licenses/HPND-Pbmplus")),
     ("HPND-UC", include!("text/licenses/HPND-UC")),
+    (
+        "HPND-UC-export-US",
+        include!("text/licenses/HPND-UC-export-US"),
+    ),
     ("HPND-doc", include!("text/licenses/HPND-doc")),
     ("HPND-doc-sell", include!("text/licenses/HPND-doc-sell")),
     ("HPND-export-US", include!("text/licenses/HPND-export-US")),
     (
+        "HPND-export-US-acknowledgement",
+        include!("text/licenses/HPND-export-US-acknowledgement"),
+    ),
+    (
         "HPND-export-US-modify",
         include!("text/licenses/HPND-export-US-modify"),
+    ),
+    ("HPND-export2-US", include!("text/licenses/HPND-export2-US")),
+    (
+        "HPND-merchantability-variant",
+        include!("text/licenses/HPND-merchantability-variant"),
     ),
     (
         "HPND-sell-MIT-disclaimer-xserver",
@@ -575,6 +597,10 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     (
         "HPND-sell-variant-MIT-disclaimer",
         include!("text/licenses/HPND-sell-variant-MIT-disclaimer"),
+    ),
+    (
+        "HPND-sell-variant-MIT-disclaimer-rev",
+        include!("text/licenses/HPND-sell-variant-MIT-disclaimer-rev"),
     ),
     ("HTMLTIDY", include!("text/licenses/HTMLTIDY")),
     ("HaskellReport", include!("text/licenses/HaskellReport")),
@@ -679,6 +705,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("MIT-0", include!("text/licenses/MIT-0")),
     ("MIT-CMU", include!("text/licenses/MIT-CMU")),
     ("MIT-Festival", include!("text/licenses/MIT-Festival")),
+    ("MIT-Khronos-old", include!("text/licenses/MIT-Khronos-old")),
     (
         "MIT-Modern-Variant",
         include!("text/licenses/MIT-Modern-Variant"),
@@ -730,7 +757,9 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("NAIST-2003", include!("text/licenses/NAIST-2003")),
     ("NASA-1.3", include!("text/licenses/NASA-1.3")),
     ("NBPL-1.0", include!("text/licenses/NBPL-1.0")),
+    ("NCBI-PD", include!("text/licenses/NCBI-PD")),
     ("NCGL-UK-2.0", include!("text/licenses/NCGL-UK-2.0")),
+    ("NCL", include!("text/licenses/NCL")),
     ("NCSA", include!("text/licenses/NCSA")),
     ("NGPL", include!("text/licenses/NGPL")),
     ("NICTA-1.0", include!("text/licenses/NICTA-1.0")),
@@ -759,6 +788,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("Noweb", include!("text/licenses/Noweb")),
     ("Nunit", include!("text/licenses/Nunit")),
     ("O-UDA-1.0", include!("text/licenses/O-UDA-1.0")),
+    ("OAR", include!("text/licenses/OAR")),
     ("OCCT-PL", include!("text/licenses/OCCT-PL")),
     ("OCLC-2.0", include!("text/licenses/OCLC-2.0")),
     ("ODC-By-1.0", include!("text/licenses/ODC-By-1.0")),
@@ -815,6 +845,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("PDDL-1.0", include!("text/licenses/PDDL-1.0")),
     ("PHP-3.0", include!("text/licenses/PHP-3.0")),
     ("PHP-3.01", include!("text/licenses/PHP-3.01")),
+    ("PPL", include!("text/licenses/PPL")),
     ("PSF-2.0", include!("text/licenses/PSF-2.0")),
     ("Parity-6.0.0", include!("text/licenses/Parity-6.0.0")),
     ("Parity-7.0.0", include!("text/licenses/Parity-7.0.0")),
@@ -883,6 +914,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("StandardML-NJ", include!("text/licenses/StandardML-NJ")),
     ("SugarCRM-1.1.3", include!("text/licenses/SugarCRM-1.1.3")),
     ("Sun-PPP", include!("text/licenses/Sun-PPP")),
+    ("Sun-PPP-2000", include!("text/licenses/Sun-PPP-2000")),
     ("SunPro", include!("text/licenses/SunPro")),
     ("Symlinks", include!("text/licenses/Symlinks")),
     ("TAPR-OHL-1.0", include!("text/licenses/TAPR-OHL-1.0")),
@@ -948,6 +980,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("Zimbra-1.3", include!("text/licenses/Zimbra-1.3")),
     ("Zimbra-1.4", include!("text/licenses/Zimbra-1.4")),
     ("Zlib", include!("text/licenses/Zlib")),
+    ("any-OSI", include!("text/licenses/any-OSI")),
     (
         "bcrypt-Solar-Designer",
         include!("text/licenses/bcrypt-Solar-Designer"),
@@ -966,6 +999,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
         include!("text/licenses/copyleft-next-0.3.1"),
     ),
     ("curl", include!("text/licenses/curl")),
+    ("cve-tou", include!("text/licenses/cve-tou")),
     ("diffmark", include!("text/licenses/diffmark")),
     ("dtoa", include!("text/licenses/dtoa")),
     ("dvipdfm", include!("text/licenses/dvipdfm")),
@@ -992,6 +1026,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("mpi-permissive", include!("text/licenses/mpi-permissive")),
     ("mpich2", include!("text/licenses/mpich2")),
     ("mplus", include!("text/licenses/mplus")),
+    ("pkgconf", include!("text/licenses/pkgconf")),
     ("pnmstitch", include!("text/licenses/pnmstitch")),
     ("psfrag", include!("text/licenses/psfrag")),
     ("psutils", include!("text/licenses/psutils")),
@@ -1001,6 +1036,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("softSurfer", include!("text/licenses/softSurfer")),
     ("ssh-keyscan", include!("text/licenses/ssh-keyscan")),
     ("swrule", include!("text/licenses/swrule")),
+    ("threeparttable", include!("text/licenses/threeparttable")),
     ("ulem", include!("text/licenses/ulem")),
     ("w3m", include!("text/licenses/w3m")),
     ("wxWindows", include!("text/licenses/wxWindows")),
@@ -1011,6 +1047,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ),
     ("xlock", include!("text/licenses/xlock")),
     ("xpp", include!("text/licenses/xpp")),
+    ("xzoom", include!("text/licenses/xzoom")),
     (
         "zlib-acknowledgement",
         include!("text/licenses/zlib-acknowledgement"),
@@ -1022,6 +1059,10 @@ pub const EXCEPTION_TEXTS: &[(&str, &str)] = &[
     (
         "Asterisk-exception",
         include!("text/exceptions/Asterisk-exception"),
+    ),
+    (
+        "Asterisk-linking-protocols-exception",
+        include!("text/exceptions/Asterisk-linking-protocols-exception"),
     ),
     (
         "Autoconf-exception-2.0",
@@ -1155,6 +1196,10 @@ pub const EXCEPTION_TEXTS: &[(&str, &str)] = &[
         include!("text/exceptions/OpenJDK-assembly-exception-1.0"),
     ),
     (
+        "PCRE2-exception",
+        include!("text/exceptions/PCRE2-exception"),
+    ),
+    (
         "PS-or-PDF-font-exception-20170817",
         include!("text/exceptions/PS-or-PDF-font-exception-20170817"),
     ),
@@ -1173,6 +1218,10 @@ pub const EXCEPTION_TEXTS: &[(&str, &str)] = &[
     (
         "Qwt-exception-1.0",
         include!("text/exceptions/Qwt-exception-1.0"),
+    ),
+    (
+        "RRDtool-FLOSS-exception-2.0",
+        include!("text/exceptions/RRDtool-FLOSS-exception-2.0"),
     ),
     ("SANE-exception", include!("text/exceptions/SANE-exception")),
     ("SHL-2.0", include!("text/exceptions/SHL-2.0")),

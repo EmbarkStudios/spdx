@@ -390,7 +390,7 @@ fn real_main() -> Result<()> {
  * cargo run --manifest-path update/Cargo.toml -- v<version> > src/identifiers.rs
 */",
             upstream_tag
-        );
+        )?;
 
         std::fs::remove_dir_all("src/text").context("failed to nuke directory")?;
 

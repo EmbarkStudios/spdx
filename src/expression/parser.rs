@@ -13,10 +13,10 @@ impl Expression {
     /// The validation can fail for many reasons:
     /// * The expression contains invalid characters
     /// * An unknown/invalid license or exception identifier was found. Only
-    /// [SPDX short identifiers](https://spdx.org/ids) are allowed
+    ///     [SPDX short identifiers](https://spdx.org/ids) are allowed
     /// * The expression contained unbalanced parentheses
     /// * A license or exception immediately follows another license or exception, without
-    /// a valid AND, OR, or WITH operator separating them
+    ///     a valid AND, OR, or WITH operator separating them
     /// * An AND, OR, or WITH doesn't have a license or `)` preceding it
     ///
     /// ```
@@ -35,7 +35,7 @@ impl Expression {
     /// 1. Lower-cased operators ('or', 'and', 'with') are upper-cased
     /// 1. '+' is tranformed to `-or-later` for GNU licenses
     /// 1. Invalid/imprecise license identifiers (eg. `apache2`) are replaced
-    /// with their valid identifiers
+    ///     with their valid identifiers
     ///
     /// If the provided expression is not modified then `None` is returned
     ///

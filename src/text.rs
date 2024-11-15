@@ -354,6 +354,8 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("DRL-1.0", include!("text/licenses/DRL-1.0")),
     ("DRL-1.1", include!("text/licenses/DRL-1.1")),
     ("DSDP", include!("text/licenses/DSDP")),
+    ("DocBook-Schema", include!("text/licenses/DocBook-Schema")),
+    ("DocBook-XML", include!("text/licenses/DocBook-XML")),
     ("Dotseqn", include!("text/licenses/Dotseqn")),
     ("ECL-1.0", include!("text/licenses/ECL-1.0")),
     ("ECL-2.0", include!("text/licenses/ECL-2.0")),
@@ -538,6 +540,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("Glulxe", include!("text/licenses/Glulxe")),
     ("Graphics-Gems", include!("text/licenses/Graphics-Gems")),
     ("Gutmann", include!("text/licenses/Gutmann")),
+    ("HIDAPI", include!("text/licenses/HIDAPI")),
     ("HP-1986", include!("text/licenses/HP-1986")),
     ("HP-1989", include!("text/licenses/HP-1989")),
     ("HPND", include!("text/licenses/HPND")),
@@ -560,6 +563,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
         "HPND-Markus-Kuhn",
         include!("text/licenses/HPND-Markus-Kuhn"),
     ),
+    ("HPND-Netrek", include!("text/licenses/HPND-Netrek")),
     ("HPND-Pbmplus", include!("text/licenses/HPND-Pbmplus")),
     ("HPND-UC", include!("text/licenses/HPND-UC")),
     (
@@ -876,6 +880,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("RSCPL", include!("text/licenses/RSCPL")),
     ("Rdisc", include!("text/licenses/Rdisc")),
     ("Ruby", include!("text/licenses/Ruby")),
+    ("Ruby-pty", include!("text/licenses/Ruby-pty")),
     ("SAX-PD", include!("text/licenses/SAX-PD")),
     ("SAX-PD-2.0", include!("text/licenses/SAX-PD-2.0")),
     ("SCEA", include!("text/licenses/SCEA")),
@@ -936,6 +941,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("UMich-Merit", include!("text/licenses/UMich-Merit")),
     ("UPL-1.0", include!("text/licenses/UPL-1.0")),
     ("URT-RLE", include!("text/licenses/URT-RLE")),
+    ("Ubuntu-font-1.0", include!("text/licenses/Ubuntu-font-1.0")),
     ("Unicode-3.0", include!("text/licenses/Unicode-3.0")),
     (
         "Unicode-DFS-2015",
@@ -963,6 +969,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
         "X11-distribute-modifications-variant",
         include!("text/licenses/X11-distribute-modifications-variant"),
     ),
+    ("X11-swapped", include!("text/licenses/X11-swapped")),
     ("XFree86-1.1", include!("text/licenses/XFree86-1.1")),
     ("XSkat", include!("text/licenses/XSkat")),
     ("Xdebug-1.03", include!("text/licenses/Xdebug-1.03")),
@@ -1252,6 +1259,10 @@ pub const EXCEPTION_TEXTS: &[(&str, &str)] = &[
         "eCos-exception-2.0",
         include!("text/exceptions/eCos-exception-2.0"),
     ),
+    (
+        "erlang-otp-linking-exception",
+        include!("text/exceptions/erlang-otp-linking-exception"),
+    ),
     ("fmt-exception", include!("text/exceptions/fmt-exception")),
     (
         "freertos-exception-2.0",
@@ -1273,6 +1284,10 @@ pub const EXCEPTION_TEXTS: &[(&str, &str)] = &[
     (
         "openvpn-openssl-exception",
         include!("text/exceptions/openvpn-openssl-exception"),
+    ),
+    (
+        "romic-exception",
+        include!("text/exceptions/romic-exception"),
     ),
     (
         "stunnel-exception",

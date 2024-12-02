@@ -1,7 +1,4 @@
 [advisories]
-unmaintained = "deny"
-vulnerability = "deny"
-unsound = "deny"
 yanked = "deny"
 ignore = [
 ]
@@ -10,7 +7,6 @@ ignore = [
 multiple-versions = "deny"
 
 [licenses]
-unlicensed = "deny"
 # We want really high confidence when inferring licenses from text
 confidence-threshold = 0.92
 allow = [

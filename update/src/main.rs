@@ -420,6 +420,32 @@ fn real_main() -> Result<()> {
         .status()
         .with_context(|| format!("failed to run rustfmt"))?;
 
+    let mut readme = std::fs::read_to_string("README.md").context("failed to read README.md")?;
+
+    const VERSION: &str = "SPDX%20Version-";
+
+    let index = readme
+        .find(VERSION)
+        .context("failed to find SPDX version")?;
+    let end_index = readme[index + VERSION.len()..]
+        .find('-')
+        .context("failed to find version end")?
+        + index
+        + VERSION.len();
+
+    let mut rmfile = std::io::BufWriter::new(
+        std::fs::File::create("README.md").context("failed to open README.md")?,
+    );
+    rmfile
+        .write(readme[..index + VERSION.len()].as_bytes())
+        .context("failed to write prefix")?;
+    rmfile
+        .write(upstream_tag[1..].as_bytes())
+        .context("failed to write version")?;
+    rmfile
+        .write(readme[end_index..].as_bytes())
+        .context("failed to write suffix")?;
+
     Ok(())
 }
 

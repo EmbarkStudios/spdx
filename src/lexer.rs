@@ -35,8 +35,8 @@ impl ParseMode {
     /// Strict, specification compliant SPDX parsing.
     ///
     /// 1. Only license identifiers in the SPDX license list, or
-    ///     Document/LicenseRef, are allowed. The license identifiers are also
-    ///     case-sensitive.
+    ///    Document/LicenseRef, are allowed. The license identifiers are also
+    ///    case-sensitive.
     /// 1. `WITH`, `AND`, and `OR` are the only valid operators
     pub const STRICT: Self = Self {
         allow_lower_case_operators: false,
@@ -48,12 +48,12 @@ impl ParseMode {
     /// Allow non-conforming syntax for crates-io compatibility
     ///
     /// 1. Additional, invalid, identifiers are accepted and mapped to a correct
-    ///     SPDX license identifier.
-    ///     See [`IMPRECISE_NAMES`](crate::identifiers::IMPRECISE_NAMES) for the
-    ///     list of additionally accepted identifiers and the license they
-    ///     correspond to.
+    ///    SPDX license identifier.
+    ///    See [`IMPRECISE_NAMES`](crate::identifiers::IMPRECISE_NAMES) for the
+    ///    list of additionally accepted identifiers and the license they
+    ///    correspond to.
     /// 1. `/` can by used as a synonym for `OR`, and doesn't need to be
-    ///     separated by whitespace from the terms it combines
+    ///    separated by whitespace from the terms it combines
     pub const LAX: Self = Self {
         allow_lower_case_operators: true,
         allow_slash_as_or_operator: true,

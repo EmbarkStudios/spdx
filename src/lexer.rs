@@ -1,6 +1,6 @@
 use crate::{
-    error::{ParseError, Reason},
     ExceptionId, LicenseId,
+    error::{ParseError, Reason},
 };
 
 /// Parsing configuration for SPDX expression

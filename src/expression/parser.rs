@@ -1,8 +1,8 @@
 use crate::{
+    LicenseItem, LicenseReq, ParseMode,
     error::{ParseError, Reason},
     expression::{ExprNode, Expression, ExpressionReq, Operator},
     lexer::{Lexer, Token},
-    LicenseItem, LicenseReq, ParseMode,
 };
 use smallvec::SmallVec;
 

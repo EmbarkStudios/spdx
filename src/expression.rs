@@ -1,7 +1,7 @@
 mod minimize;
 mod parser;
 
-use crate::{error::ParseError, LicenseReq};
+use crate::{LicenseReq, error::ParseError};
 pub use minimize::MinimizeError;
 use smallvec::SmallVec;
 use std::fmt;

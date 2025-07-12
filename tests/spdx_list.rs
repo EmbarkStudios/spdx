@@ -54,9 +54,11 @@ fn handles_deprecated_fsf_and_osi() {
 
 #[test]
 fn handles_exception_deprecation() {
-    assert!(exception_id("Nokia-Qt-exception-1.1")
-        .unwrap()
-        .is_deprecated());
+    assert!(
+        exception_id("Nokia-Qt-exception-1.1")
+            .unwrap()
+            .is_deprecated()
+    );
 }
 
 #[test]

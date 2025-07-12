@@ -1,7 +1,7 @@
 use crate::{
+    ExceptionId, LicenseItem, LicenseReq,
     error::{ParseError, Reason},
     lexer::{Lexer, Token},
-    ExceptionId, LicenseItem, LicenseReq,
 };
 use std::fmt;
 
@@ -139,7 +139,7 @@ impl Licensee {
                         original: original.to_owned(),
                         span: lt.span,
                         reason: Reason::Unexpected(&["<license>"]),
-                    })
+                    });
                 }
             }
         };
@@ -163,7 +163,7 @@ impl Licensee {
                                     original: original.to_owned(),
                                     span: lt.span,
                                     reason: Reason::Unexpected(&["<exception>"]),
-                                })
+                                });
                             }
                         }
                     }
@@ -172,7 +172,7 @@ impl Licensee {
                             original: original.to_owned(),
                             span: lt.span,
                             reason: Reason::Unexpected(&["WITH"]),
-                        })
+                        });
                     }
                 }
             }
@@ -288,7 +288,7 @@ impl AsRef<LicenseReq> for Licensee {
 
 #[cfg(test)]
 mod test {
-    use crate::{exception_id, license_id, LicenseItem, LicenseReq, Licensee};
+    use crate::{LicenseItem, LicenseReq, Licensee, exception_id, license_id};
 
     const LICENSEES: &[&str] = &[
         "LicenseRef-Embark-Proprietary",

@@ -22,6 +22,7 @@ include = [
     "README.md",
     "src/**/*",
 ]
+exclude = ["spdx-data"]
 
 [features]
 # Includes the full canonical text of each license

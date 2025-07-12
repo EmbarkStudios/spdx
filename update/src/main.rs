@@ -1,5 +1,5 @@
-use anyhow::{bail, Context as _, Result};
-use serde_json::{map, Value};
+use anyhow::{Context as _, Result, bail};
+use serde_json::{Value, map};
 use std::{
     env,
     io::{self, Write},
@@ -11,10 +11,11 @@ type Map = map::Map<String, Value>;
 #[inline]
 fn get<'a>(m: &'a Map, k: &str) -> Result<&'a Value> {
     m.get(k)
-        .with_context(|| format!("Malformed JSON: {:?} lacks {}", m, k))
+        .with_context(|| format!("Malformed JSON: {m:?} lacks {k}"))
 }
 
 const IMPRECISE: &str = include_str!("imprecise.rs");
+const ROOT: &str = "target/spdx-data";
 
 fn write_exception_texts(
     texts: &mut impl Write,
@@ -28,13 +29,13 @@ fn write_exception_texts(
         let text_path = format!("src/text/exceptions/{}", exc);
         if !std::path::Path::new(&text_path).exists() {
             let json: Map = serde_json::from_str(
-                &std::fs::read_to_string(format!("spdx-data/json/exceptions/{}.json", exc))
-                    .with_context(|| format!("unable to open exceptions/{}.json", exc))?,
+                &std::fs::read_to_string(format!("{ROOT}/json/exceptions/{exc}.json"))
+                    .with_context(|| format!("unable to open exceptions/{exc}.json"))?,
             )
-            .with_context(|| format!("unable to deserialize exceptions/{}.json", exc))?;
+            .with_context(|| format!("unable to deserialize exceptions/{exc}.json"))?;
 
             let text = get(&json, "licenseExceptionText")
-                .with_context(|| format!("failed to get license exception text for {}", exc))?;
+                .with_context(|| format!("failed to get license exception text for {exc}"))?;
 
             std::fs::write(
                 text_path,
@@ -44,7 +45,7 @@ fn write_exception_texts(
                         .context("licenseExceptionText is not a string")?
                 ),
             )
-            .with_context(|| format!("failed to write license exception text for {}", exc))?;
+            .with_context(|| format!("failed to write license exception text for {exc}"))?;
         }
 
         writeln!(
@@ -61,7 +62,7 @@ fn write_exception_texts(
 
 fn write_exceptions(identifiers: &mut impl Write, texts: &mut impl Write) -> Result<()> {
     let json: Map = serde_json::from_str(
-        &std::fs::read_to_string("spdx-data/json/exceptions.json")
+        &std::fs::read_to_string(format!("{ROOT}/json/exceptions.json"))
             .context("unable to open exceptions.json")?,
     )
     .context("failed to deserialize exceptions.json")?;
@@ -104,7 +105,7 @@ fn write_exceptions(identifiers: &mut impl Write, texts: &mut impl Write) -> Res
     writeln!(identifiers, "pub const EXCEPTIONS: &[(&str, u8)] = &[")?;
     v.sort_by_key(|v| v.0);
     for (exc, flags) in v.iter() {
-        writeln!(identifiers, "    (\"{}\", {}),", exc, flags)?;
+        writeln!(identifiers, "    (\"{exc}\", {flags}),")?;
     }
     writeln!(identifiers, "];")?;
 
@@ -156,7 +157,7 @@ fn write_license_texts<'lic>(
     for license in licenses {
         let license = license.as_ref();
         if license == "NOASSERTION" {
-            writeln!(texts, "    (\"{0}\", \"\"),", license)?;
+            writeln!(texts, "    (\"{license}\", \"\"),")?;
             continue;
         }
 
@@ -174,13 +175,13 @@ fn write_license_texts<'lic>(
         let text_path = format!("src/text/licenses/{}", license_name);
         if !std::path::Path::new(&text_path).exists() {
             let json: Map = serde_json::from_str(
-                &std::fs::read_to_string(format!("spdx-data/json/details/{}.json", license_name))
-                    .with_context(|| format!("unable to open details/{}.json", license_name))?,
+                &std::fs::read_to_string(format!("{ROOT}/json/details/{license_name}.json"))
+                    .with_context(|| format!("unable to open details/{license_name}.json"))?,
             )
-            .with_context(|| format!("unable to deserialize details/{}.json", license_name))?;
+            .with_context(|| format!("unable to deserialize details/{license_name}.json"))?;
 
             let text = get(&json, "licenseText")
-                .with_context(|| format!("failed to get license text for {}", license_name))?;
+                .with_context(|| format!("failed to get license text for {license_name}"))?;
 
             std::fs::write(
                 text_path,
@@ -189,13 +190,12 @@ fn write_license_texts<'lic>(
                     text.as_str().context("licenseText is not a string")?
                 ),
             )
-            .with_context(|| format!("failed to write license text for {}", license_name))?;
+            .with_context(|| format!("failed to write license text for {license_name}"))?;
         }
 
         writeln!(
             texts,
-            "    (\"{}\", include!(\"text/licenses/{}\")),",
-            license, license_name
+            "    (\"{license}\", include!(\"text/licenses/{license_name}\")),"
         )?;
     }
 
@@ -217,7 +217,7 @@ pub const IS_GNU: u8 = 0x10;
     )?;
 
     let json: Map = serde_json::from_str(
-        &std::fs::read_to_string("spdx-data/json/licenses.json")
+        &std::fs::read_to_string(format!("{ROOT}/json/licenses.json"))
             .context("unable to open licenses.json")?,
     )
     .context("failed to deserialize licenses.json")?;
@@ -226,7 +226,7 @@ pub const IS_GNU: u8 = 0x10;
     let licenses = if let Value::Array(v) = licenses {
         v
     } else {
-        bail!("Malformed JSON: {:?}", licenses)
+        bail!("Malformed JSON: {licenses:?}")
     };
     eprintln!("#licenses == {}", licenses.len());
 
@@ -235,7 +235,7 @@ pub const IS_GNU: u8 = 0x10;
         let lic = if let Value::Object(ref m) = *lic {
             m
         } else {
-            bail!("Malformed JSON: {:?}", lic)
+            bail!("Malformed JSON: {lic:?}")
         };
 
         let lic_id = get(lic, "licenseId")?;
@@ -285,13 +285,13 @@ pub const IS_GNU: u8 = 0x10;
             // licenses so that they work slightly nicer
             if id.starts_with("GFDL-") {
                 if let Some(id) = id.strip_suffix("-invariants-only") {
-                    v.push((format!("{}-invariants", id), full_name, flags.clone()));
+                    v.push((format!("{id}-invariants"), full_name, flags.clone()));
                 }
             }
 
             v.push((id.to_owned(), full_name, flags));
         } else {
-            bail!("Malformed JSON: {:?}", lic_id);
+            bail!("Malformed JSON: {lic_id:?}");
         }
     }
 
@@ -304,14 +304,14 @@ pub const IS_GNU: u8 = 0x10;
 
     let lic_list_ver = get(&json, "licenseListVersion")?;
     if let Value::String(s) = lic_list_ver {
-        writeln!(identifiers, "pub const VERSION: &str = {:?};", s)?;
+        writeln!(identifiers, "pub const VERSION: &str = {s:?};")?;
     } else {
-        bail!("Malformed JSON: {:?}", lic_list_ver)
+        bail!("Malformed JSON: {lic_list_ver:?}")
     }
     writeln!(identifiers)?;
     writeln!(identifiers, "pub const LICENSES: &[(&str, &str, u8)] = &[")?;
     for (id, name, flags) in &v {
-        writeln!(identifiers, "    (\"{}\", r#\"{}\"#, {}),", id, name, flags)?;
+        writeln!(identifiers, "    (\"{id}\", r#\"{name}\"#, {flags}),")?;
     }
     writeln!(identifiers, "];\n")?;
 
@@ -342,38 +342,44 @@ fn real_main() -> Result<()> {
         }
         Some(ut) => {
             if debug {
-                eprintln!("Using tag {:?}", ut);
+                eprintln!("Using tag {ut:?}");
             }
             ut
         }
     };
 
-    if !std::path::Path::new("spdx-data").exists() {
+    if !std::path::Path::new(ROOT).exists() {
         println!("cloning...");
-        assert!(std::process::Command::new("git")
-            .args(&[
-                "clone",
-                "https://github.com/spdx/license-list-data.git",
-                "spdx-data"
-            ])
-            .status()
-            .unwrap()
-            .success());
+        assert!(
+            std::process::Command::new("git")
+                .args(&[
+                    "clone",
+                    "https://github.com/spdx/license-list-data.git",
+                    ROOT
+                ])
+                .status()
+                .unwrap()
+                .success()
+        );
     } else {
         println!("fetching...");
-        assert!(std::process::Command::new("git")
-            .args(&["-C", "spdx-data", "fetch"])
-            .status()
-            .unwrap()
-            .success());
+        assert!(
+            std::process::Command::new("git")
+                .args(&["-C", ROOT, "fetch"])
+                .status()
+                .unwrap()
+                .success()
+        );
     }
 
     println!("checking out...");
-    assert!(std::process::Command::new("git")
-        .args(&["-C", "spdx-data", "checkout", &upstream_tag])
-        .status()
-        .unwrap()
-        .success());
+    assert!(
+        std::process::Command::new("git")
+            .args(&["-C", ROOT, "checkout", &upstream_tag])
+            .status()
+            .unwrap()
+            .success()
+    );
 
     {
         let mut identifiers = io::BufWriter::new(std::fs::File::create("src/identifiers.rs")?);
@@ -451,7 +457,7 @@ fn real_main() -> Result<()> {
 
 fn main() {
     if let Err(ref e) = real_main() {
-        eprintln!("error: {}", e);
+        eprintln!("error: {e:#}");
         process::exit(1);
     }
 }

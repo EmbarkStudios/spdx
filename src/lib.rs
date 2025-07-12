@@ -467,7 +467,7 @@ pub fn license_version() -> &'static str {
 mod test {
     use super::LicenseItem;
 
-    use crate::{license_id, Expression};
+    use crate::{Expression, license_id};
 
     #[test]
     fn gnu_or_later_display() {

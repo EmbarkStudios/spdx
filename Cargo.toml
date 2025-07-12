@@ -6,8 +6,8 @@ authors = [
     "Jake Shadle <jake.shadle@embark-studios.com>",
 ]
 description = "Helper crate for SPDX expressions"
-edition = "2021"
-rust-version = "1.65.0"
+edition = "2024"
+rust-version = "1.85.0"
 homepage = "https://github.com/EmbarkStudios/spdx"
 documentation = "https://docs.rs/spdx"
 readme = "README.md"
@@ -29,11 +29,11 @@ text = []
 
 [dependencies]
 # In most cases expressions are quite small so we can avoid heap allocations
-smallvec = "1.7"
+smallvec = "1.15"
 
 [dev-dependencies]
 # Used to print colored diffs in case of test failures
-similar-asserts = "1.1"
+similar-asserts = "1.7"
 
 [package.metadata.docs.rs]
 all-features = true

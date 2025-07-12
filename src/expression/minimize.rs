@@ -16,8 +16,7 @@ impl fmt::Display for MinimizeError {
         match self {
             Self::TooManyRequirements(n) => write!(
                 f,
-                "the license expression required {} licensees which exceeds the limit of 64",
-                n
+                "the license expression required {n} licensees which exceeds the limit of 64",
             ),
             Self::RequirementsUnmet => {
                 f.write_str("the expression was not satisfied by the provided list of licensees")

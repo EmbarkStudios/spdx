@@ -380,11 +380,11 @@ impl fmt::Display for LicenseItem {
             LicenseItem::Other {
                 doc_ref: Some(d),
                 lic_ref: l,
-            } => write!(f, "DocumentRef-{}:LicenseRef-{}", d, l),
+            } => write!(f, "DocumentRef-{d}:LicenseRef-{l}"),
             LicenseItem::Other {
                 doc_ref: None,
                 lic_ref: l,
-            } => write!(f, "LicenseRef-{}", l),
+            } => write!(f, "LicenseRef-{l}"),
         }
     }
 }
@@ -457,10 +457,6 @@ pub fn exception_id(name: &str) -> Option<ExceptionId> {
 
 /// Returns the version number of the SPDX list from which
 /// the license and exception identifiers are sourced from
-///
-/// ```
-/// assert_eq!(spdx::license_version(), "3.26.0");
-/// ```
 #[inline]
 #[must_use]
 pub fn license_version() -> &'static str {

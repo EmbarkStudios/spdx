@@ -66,7 +66,7 @@ impl fmt::Display for ParseError {
                     f.write_str("^")?;
                 }
 
-                f.write_fmt(format_args!(" {}", other))
+                f.write_fmt(format_args!(" {other}"))
             }
         }
     }

@@ -335,7 +335,7 @@ mod test {
         .license
         {
             LicenseItem::Spdx { id, .. } => assert_eq!(*id, mpl_id),
-            o @ LicenseItem::Other { .. } => panic!("unexpected {:?}", o),
+            o @ LicenseItem::Other { .. } => panic!("unexpected {o:?}"),
         }
     }
 
@@ -419,7 +419,7 @@ mod test {
             .license
             {
                 LicenseItem::Spdx { id, .. } => assert_eq!(*id, lic_id),
-                o @ LicenseItem::Other { .. } => panic!("unexpected {:?}", o),
+                o @ LicenseItem::Other { .. } => panic!("unexpected {o:?}"),
             }
         }
     }

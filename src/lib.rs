@@ -380,11 +380,11 @@ impl fmt::Display for LicenseItem {
             LicenseItem::Other {
                 doc_ref: Some(d),
                 lic_ref: l,
-            } => write!(f, "DocumentRef-{}:LicenseRef-{}", d, l),
+            } => write!(f, "DocumentRef-{d}:LicenseRef-{l}"),
             LicenseItem::Other {
                 doc_ref: None,
                 lic_ref: l,
-            } => write!(f, "LicenseRef-{}", l),
+            } => write!(f, "LicenseRef-{l}"),
         }
     }
 }

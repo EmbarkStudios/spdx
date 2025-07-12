@@ -70,6 +70,8 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
         include!("text/licenses/Artistic-1.0-cl8"),
     ),
     ("Artistic-2.0", include!("text/licenses/Artistic-2.0")),
+    ("Artistic-dist", include!("text/licenses/Artistic-dist")),
+    ("Aspell-RU", include!("text/licenses/Aspell-RU")),
     ("BSD-1-Clause", include!("text/licenses/BSD-1-Clause")),
     ("BSD-2-Clause", include!("text/licenses/BSD-2-Clause")),
     (
@@ -95,6 +97,10 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     (
         "BSD-2-Clause-first-lines",
         include!("text/licenses/BSD-2-Clause-first-lines"),
+    ),
+    (
+        "BSD-2-Clause-pkgconf-disclaimer",
+        include!("text/licenses/BSD-2-Clause-pkgconf-disclaimer"),
     ),
     ("BSD-3-Clause", include!("text/licenses/BSD-3-Clause")),
     (
@@ -350,6 +356,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ),
     ("Cronyx", include!("text/licenses/Cronyx")),
     ("Crossword", include!("text/licenses/Crossword")),
+    ("CryptoSwift", include!("text/licenses/CryptoSwift")),
     ("CrystalStacker", include!("text/licenses/CrystalStacker")),
     ("Cube", include!("text/licenses/Cube")),
     ("D-FSL-1.0", include!("text/licenses/D-FSL-1.0")),
@@ -360,6 +367,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("DRL-1.0", include!("text/licenses/DRL-1.0")),
     ("DRL-1.1", include!("text/licenses/DRL-1.1")),
     ("DSDP", include!("text/licenses/DSDP")),
+    ("DocBook-DTD", include!("text/licenses/DocBook-DTD")),
     ("DocBook-Schema", include!("text/licenses/DocBook-Schema")),
     (
         "DocBook-Stylesheet",
@@ -391,7 +399,10 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ),
     ("FSFUL", include!("text/licenses/FSFUL")),
     ("FSFULLR", include!("text/licenses/FSFULLR")),
+    ("FSFULLRSD", include!("text/licenses/FSFULLRSD")),
     ("FSFULLRWD", include!("text/licenses/FSFULLRWD")),
+    ("FSL-1.1-ALv2", include!("text/licenses/FSL-1.1-ALv2")),
+    ("FSL-1.1-MIT", include!("text/licenses/FSL-1.1-MIT")),
     ("FTL", include!("text/licenses/FTL")),
     ("Fair", include!("text/licenses/Fair")),
     (
@@ -545,11 +556,16 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
         "GPL-3.0-with-autoconf-exception",
         include!("text/licenses/GPL-3.0-with-autoconf-exception"),
     ),
+    (
+        "Game-Programming-Gems",
+        include!("text/licenses/Game-Programming-Gems"),
+    ),
     ("Giftware", include!("text/licenses/Giftware")),
     ("Glide", include!("text/licenses/Glide")),
     ("Glulxe", include!("text/licenses/Glulxe")),
     ("Graphics-Gems", include!("text/licenses/Graphics-Gems")),
     ("Gutmann", include!("text/licenses/Gutmann")),
+    ("HDF5", include!("text/licenses/HDF5")),
     ("HIDAPI", include!("text/licenses/HIDAPI")),
     ("HP-1986", include!("text/licenses/HP-1986")),
     ("HP-1989", include!("text/licenses/HP-1989")),
@@ -795,6 +811,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("NPL-1.1", include!("text/licenses/NPL-1.1")),
     ("NPOSL-3.0", include!("text/licenses/NPOSL-3.0")),
     ("NRL", include!("text/licenses/NRL")),
+    ("NTIA-PD", include!("text/licenses/NTIA-PD")),
     ("NTP", include!("text/licenses/NTP")),
     ("NTP-0", include!("text/licenses/NTP-0")),
     ("Naumen", include!("text/licenses/Naumen")),
@@ -911,6 +928,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("SMLNJ", include!("text/licenses/SMLNJ")),
     ("SMPPL", include!("text/licenses/SMPPL")),
     ("SNIA", include!("text/licenses/SNIA")),
+    ("SOFA", include!("text/licenses/SOFA")),
     ("SPL-1.0", include!("text/licenses/SPL-1.0")),
     ("SSH-OpenSSH", include!("text/licenses/SSH-OpenSSH")),
     ("SSH-short", include!("text/licenses/SSH-short")),
@@ -919,6 +937,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
         include!("text/licenses/SSLeay-standalone"),
     ),
     ("SSPL-1.0", include!("text/licenses/SSPL-1.0")),
+    ("SUL-1.0", include!("text/licenses/SUL-1.0")),
     ("SWL", include!("text/licenses/SWL")),
     ("Saxpath", include!("text/licenses/Saxpath")),
     ("SchemeReport", include!("text/licenses/SchemeReport")),
@@ -974,6 +993,14 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("Unicode-TOU", include!("text/licenses/Unicode-TOU")),
     ("UnixCrypt", include!("text/licenses/UnixCrypt")),
     ("Unlicense", include!("text/licenses/Unlicense")),
+    (
+        "Unlicense-libtelnet",
+        include!("text/licenses/Unlicense-libtelnet"),
+    ),
+    (
+        "Unlicense-libwhirlpool",
+        include!("text/licenses/Unlicense-libwhirlpool"),
+    ),
     ("VOSTROM", include!("text/licenses/VOSTROM")),
     ("VSL-1.0", include!("text/licenses/VSL-1.0")),
     ("Vim", include!("text/licenses/Vim")),
@@ -1044,6 +1071,8 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("gtkbook", include!("text/licenses/gtkbook")),
     ("hdparm", include!("text/licenses/hdparm")),
     ("iMatix", include!("text/licenses/iMatix")),
+    ("jove", include!("text/licenses/jove")),
+    ("libpng-1.6.35", include!("text/licenses/libpng-1.6.35")),
     ("libpng-2.0", include!("text/licenses/libpng-2.0")),
     ("libselinux-1.0", include!("text/licenses/libselinux-1.0")),
     ("libtiff", include!("text/licenses/libtiff")),
@@ -1054,10 +1083,12 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("lsof", include!("text/licenses/lsof")),
     ("magaz", include!("text/licenses/magaz")),
     ("mailprio", include!("text/licenses/mailprio")),
+    ("man2html", include!("text/licenses/man2html")),
     ("metamail", include!("text/licenses/metamail")),
     ("mpi-permissive", include!("text/licenses/mpi-permissive")),
     ("mpich2", include!("text/licenses/mpich2")),
     ("mplus", include!("text/licenses/mplus")),
+    ("ngrep", include!("text/licenses/ngrep")),
     ("pkgconf", include!("text/licenses/pkgconf")),
     ("pnmstitch", include!("text/licenses/pnmstitch")),
     ("psfrag", include!("text/licenses/psfrag")),
@@ -1144,6 +1175,10 @@ pub const EXCEPTION_TEXTS: &[(&str, &str)] = &[
     (
         "DigiRule-FOSS-exception",
         include!("text/exceptions/DigiRule-FOSS-exception"),
+    ),
+    (
+        "Digia-Qt-LGPL-exception-1.1",
+        include!("text/exceptions/Digia-Qt-LGPL-exception-1.1"),
     ),
     ("FLTK-exception", include!("text/exceptions/FLTK-exception")),
     (
@@ -1327,6 +1362,10 @@ pub const EXCEPTION_TEXTS: &[(&str, &str)] = &[
     (
         "openvpn-openssl-exception",
         include!("text/exceptions/openvpn-openssl-exception"),
+    ),
+    (
+        "polyparse-exception",
+        include!("text/exceptions/polyparse-exception"),
     ),
     (
         "romic-exception",

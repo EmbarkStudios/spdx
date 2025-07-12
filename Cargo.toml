@@ -1,6 +1,6 @@
 [package]
 name = "spdx"
-version = "0.10.9"
+version = "0.10.8"
 authors = [
     "Embark <opensource@embark-studios.com>",
     "Jake Shadle <jake.shadle@embark-studios.com>",
@@ -22,7 +22,6 @@ include = [
     "README.md",
     "src/**/*",
 ]
-exclude = ["spdx-data"]
 
 [features]
 # Includes the full canonical text of each license

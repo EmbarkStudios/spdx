@@ -29,6 +29,8 @@ pub struct ParseMode {
     /// This option just allows GPL licenses to be treated similarly to all of
     /// the other SPDX licenses.
     pub allow_postfix_plus_on_gpl: bool,
+    /// How deprecated license identifiers are treated
+    pub allow_deprecated: bool,
 }
 
 impl ParseMode {
@@ -38,11 +40,13 @@ impl ParseMode {
     ///    Document/LicenseRef, are allowed. The license identifiers are also
     ///    case-sensitive.
     /// 1. `WITH`, `AND`, and `OR` are the only valid operators
+    /// 1. Deprecated licenses are not allowed
     pub const STRICT: Self = Self {
         allow_lower_case_operators: false,
         allow_slash_as_or_operator: false,
         allow_imprecise_license_names: false,
         allow_postfix_plus_on_gpl: false,
+        allow_deprecated: false,
     };
 
     /// Allow non-conforming syntax for crates-io compatibility
@@ -54,11 +58,13 @@ impl ParseMode {
     ///    correspond to.
     /// 1. `/` can by used as a synonym for `OR`, and doesn't need to be
     ///    separated by whitespace from the terms it combines
+    /// 1. Deprecated license identifiers are allowed
     pub const LAX: Self = Self {
         allow_lower_case_operators: true,
         allow_slash_as_or_operator: true,
         allow_imprecise_license_names: true,
         allow_postfix_plus_on_gpl: true,
+        allow_deprecated: true,
     };
 }
 

@@ -10,9 +10,10 @@ use std::fmt;
 /// placed by a license holder
 ///
 /// ```
-/// let licensee = spdx::Licensee::parse("GPL-2.0").unwrap();
+/// let licensee = spdx::Licensee::parse("GPL-2.0-or-later").unwrap();
+/// let req = spdx::LicenseReq::from(spdx::license_id("GPL-2.0-only").unwrap());
 ///
-/// assert!(licensee.satisfies(&spdx::LicenseReq::from(spdx::license_id("GPL-2.0-only").unwrap())));
+/// assert!(licensee.satisfies(&req));
 /// ```
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone)]
 pub struct Licensee {
@@ -34,9 +35,10 @@ impl std::str::FromStr for Licensee {
 }
 
 impl Licensee {
-    /// Creates a licensee from its component parts. Note that use of SPDX's
-    /// `or_later` is completely ignored for licensees as it only applies
-    /// to the license holder(s), not the licensee
+    /// Creates a licensee from its component parts.
+    ///
+    /// Note that use of SPDX's `or_later` is completely ignored for licensees
+    /// as it only applies to the license holder(s), not the licensee
     #[must_use]
     pub fn new(license: LicenseItem, exception: Option<ExceptionId>) -> Self {
         if let LicenseItem::Spdx { or_later, .. } = &license {
@@ -48,8 +50,14 @@ impl Licensee {
         }
     }
 
+    /// See [Self::parse_mode], this is a short-handle for `Licensee::parse_mode(.., ParseMode::STRICT)`.
+    #[inline]
+    pub fn parse(original: &str) -> Result<Self, ParseError> {
+        Self::parse_mode(original, crate::ParseMode::STRICT)
+    }
+
     /// Parses an simplified version of an SPDX license expression that can
-    /// contain at most 1 valid SDPX license with an optional exception joined
+    /// contain at most 1 valid SPDX license with an optional exception joined
     /// by a `WITH`.
     ///
     /// ```
@@ -68,16 +76,10 @@ impl Licensee {
     /// // `+` is only allowed to be used by license requirements from the license holder
     /// Licensee::parse("Apache-2.0+").unwrap_err();
     ///
-    /// Licensee::parse("GPL-2.0").unwrap();
-    ///
-    /// // GNU suffix license (GPL, AGPL, LGPL, GFDL) must not contain the suffix
-    /// Licensee::parse("GPL-3.0-or-later").unwrap_err();
-    ///
-    /// // GFDL licenses are only allowed to contain the `invariants` suffix
-    /// Licensee::parse("GFDL-1.3-invariants").unwrap();
+    /// Licensee::parse_mode("GPL-2.0", spdx::ParseMode::LAX).unwrap();
     /// ```
-    pub fn parse(original: &str) -> Result<Self, ParseError> {
-        let mut lexer = Lexer::new(original);
+    pub fn parse_mode(original: &str, mode: crate::ParseMode) -> Result<Self, ParseError> {
+        let mut lexer = Lexer::new_mode(original, mode);
 
         let license = {
             let lt = lexer.next().ok_or_else(|| ParseError {
@@ -87,41 +89,34 @@ impl Licensee {
             })??;
 
             match lt.token {
-                Token::Spdx(id) => {
-                    // If we have one of the GNU licenses which use the `-only`
-                    // or `-or-later` suffixes return an error rather than
-                    // silently truncating, the `-only` and `-or-later` suffixes
-                    // are for the license holder(s) to specify what license(s)
-                    // they can be licensed under, not for the licensee,
-                    // similarly to the `+`
+                Token::Spdx(mut id) => {
+                    if !mode.allow_deprecated && id.is_deprecated() {
+                        return Err(ParseError {
+                            original: original.to_owned(),
+                            span: lt.span,
+                            reason: Reason::DeprecatedLicenseId,
+                        });
+                    }
+
                     if id.is_gnu() {
-                        let is_only = original.ends_with("-only");
-                        let or_later = original.ends_with("-or-later");
-
-                        if is_only || or_later {
-                            return Err(ParseError {
-                                original: original.to_owned(),
-                                span: if is_only {
-                                    original.len() - 5..original.len()
-                                } else {
-                                    original.len() - 9..original.len()
-                                },
-                                reason: Reason::Unexpected(&["<bare-gnu-license>"]),
-                            });
-                        }
-
-                        // GFDL has `no-invariants` and `invariants` variants, we
-                        // treat `no-invariants` as invalid, just the same as
-                        // only, it would be the same as a bare GFDL-<version>.
-                        // However, the `invariants`...variant we do allow since
-                        // it is a modifier on the license...and should therefore
-                        // by a WITH exception but GNU licenses are the worst
-                        if original.starts_with("GFDL") && original.contains("-no-invariants") {
-                            return Err(ParseError {
-                                original: original.to_owned(),
-                                span: 8..original.len(),
-                                reason: Reason::Unexpected(&["<bare-gfdl-license>"]),
-                            });
+                        if !id.name.ends_with("-or-later") && !id.name.ends_with("-only") {
+                            id = crate::identifiers::LICENSES
+                                .iter()
+                                .enumerate()
+                                .find_map(|(index, (short, fname, flags))| {
+                                    let no_only = short.strip_suffix("-only")?;
+                                    (id.name == no_only).then(|| crate::LicenseId {
+                                        name: short,
+                                        full_name: fname,
+                                        flags: *flags,
+                                        index,
+                                    })
+                                })
+                                .ok_or_else(|| ParseError {
+                                    original: original.to_owned(),
+                                    span: lt.span,
+                                    reason: Reason::UnknownLicense,
+                                })?;
                         }
                     }
 
@@ -178,7 +173,7 @@ impl Licensee {
             }
         };
 
-        Ok(Licensee {
+        Ok(Self {
             inner: LicenseReq { license, exception },
         })
     }
@@ -203,35 +198,66 @@ impl Licensee {
         match (&self.inner.license, &req.license) {
             (LicenseItem::Spdx { id: a, .. }, LicenseItem::Spdx { id: b, or_later }) => {
                 if a.index != b.index {
+                    let version =
+                        |s: &'static str| s.chars().all(|c| c == '.' || c.is_ascii_digit());
+
                     if *or_later {
-                        let (a_name, a_gfdl_invariants) = if a.name.starts_with("GFDL") {
-                            a.name
-                                .strip_suffix("-invariants")
-                                .map_or((a.name, false), |name| (name, true))
-                        } else {
-                            (a.name, false)
-                        };
+                        let mut ai = a.name.split('-');
+                        let mut bi = b.name.split('-');
 
-                        let (b_name, b_gfdl_invariants) = if b.name.starts_with("GFDL") {
-                            b.name
-                                .strip_suffix("-invariants")
-                                .map_or((b.name, false), |name| (name, true))
-                        } else {
-                            (b.name, false)
-                        };
+                        loop {
+                            match (ai.next(), bi.next()) {
+                                (Some(a_comp), Some(b_comp)) => {
+                                    if a_comp == b_comp {
+                                        continue;
+                                    }
 
-                        if a_gfdl_invariants != b_gfdl_invariants {
+                                    if version(a_comp) && version(b_comp) {
+                                        if a_comp > b_comp {
+                                            continue;
+                                        }
+                                    }
+
+                                    return false;
+                                }
+                                (None, None) => {
+                                    break;
+                                }
+                                _ => return false,
+                            }
+                        }
+                    } else if a.is_gnu() && b.is_gnu() {
+                        let abn = a.base();
+                        let bbn = b.base();
+
+                        if abn != bbn {
                             return false;
                         }
 
-                        // Many of the SPDX identifiers end with `-<version number>`,
-                        // so chop that off and ensure the base strings match, and if so,
-                        // just a do a lexical compare, if this "allowed license" is >,
-                        // then we satisfed the license requirement
-                        let a_test_name = &a_name[..a_name.rfind('-').unwrap_or(a_name.len())];
-                        let b_test_name = &b_name[..b_name.rfind('-').unwrap_or(b_name.len())];
+                        // GFDL has the annoying -no -invariants...variants, both
+                        // sides have to agree on all or none
+                        if abn == "GFDL" {
+                            if a.name.contains("-invariants") ^ b.name.contains("-invariants") {
+                                return false;
+                            }
 
-                        if a_test_name != b_test_name || a_name < b_name {
+                            if a.name.contains("-no-") ^ b.name.contains("-no-") {
+                                return false;
+                            }
+                        }
+
+                        if a.name.ends_with("-or-later") || b.name.ends_with("-or-later") {
+                            let Some(av) = a.version() else {
+                                return false;
+                            };
+                            let Some(bv) = b.version() else {
+                                return false;
+                            };
+
+                            if av < bv {
+                                return false;
+                            }
+                        } else {
                             return false;
                         }
                     } else {
@@ -312,7 +338,7 @@ mod test {
     fn handles_or_later() {
         let mut licensees: Vec<_> = LICENSEES
             .iter()
-            .map(|l| Licensee::parse(l).unwrap())
+            .map(|l| Licensee::parse_mode(l, crate::ParseMode::LAX).unwrap())
             .collect();
         licensees.sort();
 
@@ -343,7 +369,7 @@ mod test {
     fn handles_exceptions() {
         let mut licensees: Vec<_> = LICENSEES
             .iter()
-            .map(|l| Licensee::parse(l).unwrap())
+            .map(|l| Licensee::parse_mode(l, crate::ParseMode::LAX).unwrap())
             .collect();
         licensees.sort();
 
@@ -370,7 +396,7 @@ mod test {
     fn handles_license_ref() {
         let mut licensees: Vec<_> = LICENSEES
             .iter()
-            .map(|l| Licensee::parse(l).unwrap())
+            .map(|l| Licensee::parse_mode(l, crate::ParseMode::LAX).unwrap())
             .collect();
         licensees.sort();
 
@@ -395,7 +421,7 @@ mod test {
     fn handles_close() {
         let mut licensees: Vec<_> = LICENSEES
             .iter()
-            .map(|l| Licensee::parse(l).unwrap())
+            .map(|l| Licensee::parse_mode(l, crate::ParseMode::LAX).unwrap())
             .collect();
         licensees.sort();
 

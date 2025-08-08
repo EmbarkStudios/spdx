@@ -458,7 +458,7 @@ pub fn gnu_license_id(base: &str, or_later: bool) -> Option<LicenseId> {
 /// Find license partially matching the name, e.g. "apache" => "Apache-2.0"
 ///
 /// Returns length (in bytes) of the string matched. Garbage at the end is
-/// ignored. See [crate::identifiers::IMPRECISE_NAMES] for the list of invalid
+/// ignored. See [`crate::identifiers::IMPRECISE_NAMES`] for the list of invalid
 /// names, and the valid license identifiers they are mapped to.
 ///
 /// ```

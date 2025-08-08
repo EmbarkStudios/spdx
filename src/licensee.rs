@@ -50,7 +50,7 @@ impl Licensee {
         }
     }
 
-    /// See [Self::parse_mode], this is a short-handle for `Licensee::parse_mode(.., ParseMode::STRICT)`.
+    /// See [`Self::parse_mode`], this is a short-handle for `Licensee::parse_mode(.., ParseMode::STRICT)`.
     #[inline]
     pub fn parse(original: &str) -> Result<Self, ParseError> {
         Self::parse_mode(original, crate::ParseMode::STRICT)
@@ -98,26 +98,13 @@ impl Licensee {
                         });
                     }
 
-                    if id.is_gnu() {
-                        if !id.name.ends_with("-or-later") && !id.name.ends_with("-only") {
-                            id = crate::identifiers::LICENSES
-                                .iter()
-                                .enumerate()
-                                .find_map(|(index, (short, fname, flags))| {
-                                    let no_only = short.strip_suffix("-only")?;
-                                    (id.name == no_only).then(|| crate::LicenseId {
-                                        name: short,
-                                        full_name: fname,
-                                        flags: *flags,
-                                        index,
-                                    })
-                                })
-                                .ok_or_else(|| ParseError {
-                                    original: original.to_owned(),
-                                    span: lt.span,
-                                    reason: Reason::UnknownLicense,
-                                })?;
-                        }
+                    if id.is_gnu() && !id.name.ends_with("-or-later") && !id.name.ends_with("-only")
+                    {
+                        id = crate::gnu_license_id(id.name, false).ok_or_else(|| ParseError {
+                            original: original.to_owned(),
+                            span: lt.span,
+                            reason: Reason::UnknownLicense,
+                        })?;
                     }
 
                     LicenseItem::Spdx {
@@ -212,10 +199,8 @@ impl Licensee {
                                         continue;
                                     }
 
-                                    if version(a_comp) && version(b_comp) {
-                                        if a_comp > b_comp {
-                                            continue;
-                                        }
+                                    if version(a_comp) && version(b_comp) && a_comp > b_comp {
+                                        continue;
                                     }
 
                                     return false;

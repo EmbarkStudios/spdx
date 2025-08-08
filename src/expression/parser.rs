@@ -100,8 +100,6 @@ impl Expression {
                     } else {
                         can.push('+');
                     }
-
-                    continue;
                 }
                 Token::OpenParen => can.push('('),
                 Token::CloseParen => can.push(')'),

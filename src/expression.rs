@@ -155,7 +155,7 @@ impl Expression {
         result_stack.pop().unwrap()
     }
 
-    /// A version of [Self::evaluate] that returns the requirements that are not
+    /// A version of [`Self::evaluate`] that returns the requirements that are not
     /// met if the evaluation returns `false`.
     pub fn evaluate_with_failures<AF: FnMut(&LicenseReq) -> bool>(
         &self,

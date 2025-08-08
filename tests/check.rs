@@ -200,6 +200,110 @@ fn gpl_or_later_plus_lax() {
 }
 
 #[test]
+fn gpl_pedantic() {
+    // | Licensee | GPL-1.0-only  | GPL-1.0-or-later | GPL-2.0-only | GPL-2.0-or-later | GPL-3.0-only | GPL-3.0-or-later |
+    // | ----------------- | -- | -- | -- | -- | -- | -- |
+    // | GPL-1.0-only      | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+    // | GPL-1.0-or-later  | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+    // | GPL-2.0-only      | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ |
+    // | GPL-2.0-or-later  | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ |
+    // | GPL-3.0-only      | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
+    // | GPL-3.0-or-later  | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
+
+    const ONE_ONLY: &str = "GPL-1.0-only";
+    const ONE_LATER: &str = "GPL-1.0-or-later";
+    const TWO_ONLY: &str = "GPL-2.0-only";
+    const TWO_LATER: &str = "GPL-2.0-or-later";
+    const THREE_ONLY: &str = "GPL-3.0-only";
+    const THREE_LATER: &str = "GPL-3.0-or-later";
+
+    let table = [
+        (
+            ONE_ONLY,
+            [
+                (ONE_ONLY, true),
+                (ONE_LATER, true),
+                (TWO_ONLY, false),
+                (TWO_LATER, false),
+                (THREE_ONLY, false),
+                (THREE_LATER, false),
+            ],
+        ),
+        (
+            ONE_LATER,
+            [
+                (ONE_ONLY, true),
+                (ONE_LATER, true),
+                (TWO_ONLY, false),
+                (TWO_LATER, false),
+                (THREE_ONLY, false),
+                (THREE_LATER, false),
+            ],
+        ),
+        (
+            TWO_ONLY,
+            [
+                (ONE_ONLY, false),
+                (ONE_LATER, true),
+                (TWO_ONLY, true),
+                (TWO_LATER, true),
+                (THREE_ONLY, false),
+                (THREE_LATER, false),
+            ],
+        ),
+        (
+            TWO_LATER,
+            [
+                (ONE_ONLY, false),
+                (ONE_LATER, true),
+                (TWO_ONLY, true),
+                (TWO_LATER, true),
+                (THREE_ONLY, false),
+                (THREE_LATER, false),
+            ],
+        ),
+        (
+            THREE_ONLY,
+            [
+                (ONE_ONLY, false),
+                (ONE_LATER, true),
+                (TWO_ONLY, false),
+                (TWO_LATER, true),
+                (THREE_ONLY, true),
+                (THREE_LATER, true),
+            ],
+        ),
+        (
+            THREE_LATER,
+            [
+                (ONE_ONLY, false),
+                (ONE_LATER, true),
+                (TWO_ONLY, false),
+                (TWO_LATER, true),
+                (THREE_ONLY, true),
+                (THREE_LATER, true),
+            ],
+        ),
+    ];
+
+    for (licensee, items) in table {
+        let lic = spdx::Licensee::parse(licensee).unwrap();
+
+        for (req, passes) in items {
+            let req = spdx::LicenseReq {
+                license: spdx::LicenseItem::Spdx {
+                    id: spdx::license_id(req).unwrap(),
+                    or_later: false,
+                },
+                exception: None,
+            };
+
+            assert_eq!(lic.satisfies(&req), passes);
+        }
+    }
+}
+
+#[test]
 fn gfdl() {
     check!("GFDL-1.2-or-later" => [
         false => |req| exact!(req, "GFDL-1.1"),

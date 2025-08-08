@@ -8,6 +8,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Changed
+- [PR#78] removed `ParseMode::allow_lower_case_operators`, newer revisions of the SPDX spec allow all lower-case operators, making the option pointless.
+- [PR#78] added `ParseMode::allow_deprecated`, which will cause an error if a deprecated license identifier is used, `false` in `LAX` and `true` in `STRICT`.
+- [PR#78] changed the various imprecise names for GPL licenses to be mapped to the non-deprecated `-only` versions.
+- [PR#78] `Expression::canonicalize` now always changes GNU licenses to be `-only` or `-or-later` as the bare identifiers are deprecated.
+
+### Added
+- [PR#78] added `LicenseId::version` to retrieve the numeric version of the license if it has one.
+- [PR#78] added `LicenseId::base` to retrieve the base name of the license.
+- [PR#78] added `gnu_license_id` which attempts to retrieve the license id for a GNU license from its base identifier. This retrieves the `-only` or `-or-later` license that matches.
+- [PR#78] added `Licensee::parse_mode`, `Licensee::parse` now forwards to that function with `ParseMode::STRICT`.
+- [PR#78] added `Reason::GnuPlusWithSuffix` and `Reason::DeprecatedLicenseId` as errors.
+
+### Fixed
+- [PR#78] fixed an issue where `Licensee::satisfies` would not properly allow some licenses if the version was not at the end when using a `+`, notably the BSD licenses have the version in the middle of the license id.
+- [PR#78] fixed the handling of GNU licenses in `Licensee::satisfies`, at least to my best understanding.
+    | Licensee | GPL-1.0-only  | GPL-1.0-or-later | GPL-2.0-only | GPL-2.0-or-later | GPL-3.0-only | GPL-3.0-or-later |
+    | ----------------- | -- | -- | -- | -- | -- | -- |
+    | GPL-1.0-only      | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+    | GPL-1.0-or-later  | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+    | GPL-2.0-only      | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ |
+    | GPL-2.0-or-later  | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ |
+    | GPL-3.0-only      | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
+    | GPL-3.0-or-later  | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
+
 ## [0.10.9] - 2025-07-12
 ### Changed
 - [PR#74](https://github.com/EmbarkStudios/spdx/pull/76) update SPDX license list to 3.27.0.
@@ -169,6 +194,9 @@ a user provided callback
 ## [0.1.0] - 2019-09-02
 ### Added
 - Initial add of spdx crate, based primarily on [`license-exprs`](https://github.com/rust-lang-nursery/license-exprs)
+
+
+[PR#78]: https://github.com/EmbarkStudios/spdx/pull/78
 
 <!-- next-url -->
 [Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.10.9...HEAD

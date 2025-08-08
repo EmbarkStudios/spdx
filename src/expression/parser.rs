@@ -33,7 +33,7 @@ impl Expression {
     ///
     /// 1. '/' is replaced with ' OR '
     /// 1. Lower-cased operators ('or', 'and', 'with') are upper-cased
-    /// 1. '+' is tranformed to `-or-later` for GNU licenses
+    /// 1. '+' is transformed to `-or-later` for GNU licenses, or `-only` with no '+'
     /// 1. Invalid/imprecise license identifiers (eg. `apache2`) are replaced
     ///    with their valid identifiers
     ///
@@ -44,29 +44,58 @@ impl Expression {
     /// additional parse errors, eg. unbalanced parentheses
     ///
     /// ```
-    /// assert_eq!(spdx::Expression::canonicalize("apache with LLVM-exception/gpl-3.0+").unwrap().unwrap(), "Apache-2.0 WITH LLVM-exception OR GPL-3.0-or-later");
+    /// let expr = "apache with LLVM-exception/gpl-3.0+ and gplv2";
+    /// assert_eq!(
+    ///     spdx::Expression::canonicalize(expr).unwrap().unwrap(),
+    ///     "Apache-2.0 WITH LLVM-exception OR GPL-3.0-or-later AND GPL-2.0-only"
+    /// );
     /// ```
     pub fn canonicalize(original: &str) -> Result<Option<String>, ParseError> {
         let mut can = String::with_capacity(original.len());
 
         let lexer = Lexer::new_mode(original, ParseMode::LAX);
 
+        let push_id = |s: &mut String, id: crate::LicenseId| {
+            s.push_str(id.name);
+            if id.is_gnu() && !id.name.ends_with("-only") && !id.name.ends_with("-or-later") {
+                s.push_str("-only");
+            }
+        };
+
         // Keep track if the last license id is a GNU license that uses the -or-later
         // convention rather than the + like all other licenses
-        let mut last_is_gnu = false;
+        let mut last = Option::<crate::LicenseId>::None;
         for tok in lexer {
             let tok = tok?;
 
+            if !matches!(tok.token, Token::Plus) {
+                if let Some(id) = last.take() {
+                    push_id(&mut can, id);
+                }
+            }
+
             match tok.token {
                 Token::Spdx(id) => {
-                    last_is_gnu = id.is_gnu();
-                    can.push_str(id.name);
+                    last = Some(id);
                 }
                 Token::And => can.push_str(" AND "),
                 Token::Or => can.push_str(" OR "),
                 Token::With => can.push_str(" WITH "),
                 Token::Plus => {
-                    if last_is_gnu {
+                    let Some(id) = last.take() else {
+                        return Err(ParseError {
+                            original: original.into(),
+                            span: tok.span,
+                            reason: Reason::Unexpected(&["<license>"]),
+                        });
+                    };
+
+                    push_id(&mut can, id);
+                    if id.is_gnu() {
+                        if can.ends_with("-only") {
+                            can.truncate(can.len() - 5);
+                        }
+
                         can.push_str("-or-later");
                     } else {
                         can.push('+');
@@ -88,12 +117,17 @@ impl Expression {
             }
         }
 
+        if let Some(id) = last {
+            push_id(&mut can, id);
+        }
+
         Ok((can != original).then_some(can))
     }
 
-    /// Parses an expression with the specified `ParseMode`. With
-    /// `ParseMode::Lax` it permits some non-SPDX syntax, such as imprecise
-    /// license names and "/" used instead of "OR" in exprssions.
+    /// Parses an expression with the specified `ParseMode`.
+    ///
+    /// With `ParseMode::Lax` it permits some non-SPDX syntax, such as imprecise
+    /// license names and "/" used instead of "OR" in expressions.
     ///
     /// ```
     /// spdx::Expression::parse_mode(
@@ -162,8 +196,26 @@ impl Expression {
             match &lt.token {
                 Token::Spdx(id) => match last_token {
                     None | Some(Token::And | Token::Or | Token::OpenParen) => {
+                        let id = if id.is_gnu() {
+                            crate::gnu_license_id(id.name, false).ok_or_else(|| ParseError {
+                                original: original.to_owned(),
+                                span: lt.span.clone(),
+                                reason: Reason::UnknownLicense,
+                            })?
+                        } else {
+                            if !mode.allow_deprecated && id.is_deprecated() {
+                                return Err(ParseError {
+                                    original: original.to_owned(),
+                                    span: lt.span,
+                                    reason: Reason::DeprecatedLicenseId,
+                                });
+                            }
+
+                            *id
+                        };
+
                         expr_queue.push(ExprNode::Req(ExpressionReq {
-                            req: LicenseReq::from(*id),
+                            req: LicenseReq::from(id),
                             span: lt.span.start as u32..lt.span.end as u32,
                         }));
                     }
@@ -195,15 +247,35 @@ impl Expression {
                             ..
                         }) => {
                             // Handle GNU licenses differently, as they should *NOT* be used with the `+`
-                            if !mode.allow_postfix_plus_on_gpl && id.is_gnu() {
-                                return Err(ParseError {
+                            if id.is_gnu() {
+                                if !mode.allow_postfix_plus_on_gpl {
+                                    return Err(ParseError {
+                                        original: original.to_owned(),
+                                        span: lt.span,
+                                        reason: Reason::GnuNoPlus,
+                                    });
+                                }
+
+                                if id.name.ends_with("-or-later") {
+                                    return Err(ParseError {
+                                        original: original.to_owned(),
+                                        span: lt.span,
+                                        reason: Reason::GnuPlusWithSuffix,
+                                    });
+                                }
+
+                                *id = crate::gnu_license_id(
+                                    id.name.strip_suffix("-only").unwrap_or(id.name),
+                                    true,
+                                )
+                                .ok_or_else(|| ParseError {
                                     original: original.to_owned(),
                                     span: lt.span,
-                                    reason: Reason::GnuNoPlus,
-                                });
+                                    reason: Reason::UnknownLicense,
+                                })?;
+                            } else {
+                                *or_later = true;
                             }
-
-                            *or_later = true;
                         }
                         _ => unreachable!(),
                     },

@@ -136,7 +136,26 @@ fn fixes_license_names() {
         .collect();
     assert_eq!(
         &lexed,
-        &[lic_tok!("GPL-2.0"), Token::Or, lic_tok!("BSD-2-Clause")]
+        &[
+            lic_tok!("GPL-2.0-only"),
+            Token::Or,
+            lic_tok!("BSD-2-Clause")
+        ]
+    );
+
+    // Note this is just the lexer, so gpl-3.0+ isn't turned into GPL-3.0-or-later,
+    // that is only done in Expression or Licensee
+    let lexed: Vec<_> = Lexer::new_mode("mit and gpl-3.0+", spdx::ParseMode::LAX)
+        .map(|r| r.map(|lt| lt.token).unwrap())
+        .collect();
+    assert_eq!(
+        &lexed,
+        &[
+            lic_tok!("MIT"),
+            Token::And,
+            lic_tok!("GPL-3.0-only"),
+            Token::Plus
+        ]
     );
 }
 

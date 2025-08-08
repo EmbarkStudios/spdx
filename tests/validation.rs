@@ -234,26 +234,34 @@ fn canonicalization() {
             .unwrap()
             .is_none()
     );
-    assert_eq!(
-        Expression::canonicalize("Apache-2.0/MIT").unwrap().unwrap(),
-        "Apache-2.0 OR MIT"
-    );
-    assert_eq!(
-        Expression::canonicalize("MIT and GPL-3.0+")
-            .unwrap()
-            .unwrap(),
-        "MIT AND GPL-3.0-or-later"
-    );
-    assert_eq!(
-        Expression::canonicalize("simplified bsd license or gpl-2.0+")
-            .unwrap()
-            .unwrap(),
+
+    macro_rules! canon {
+        ($bad:literal, $exp:literal) => {
+            assert_eq!(Expression::canonicalize($bad).unwrap().unwrap(), $exp);
+        };
+    }
+
+    canon!("Apache-2.0/MIT", "Apache-2.0 OR MIT");
+    canon!("MIT and GPL-3.0+", "MIT AND GPL-3.0-or-later");
+    canon!("GPL-2.0 and mit", "GPL-2.0-only AND MIT");
+    canon!(
+        "simplified bsd license or gpl-2.0+",
         "BSD-2-Clause OR GPL-2.0-or-later"
     );
-    assert_eq!(
-        Expression::canonicalize("apache with LLVM-exception/mpl")
-            .unwrap()
-            .unwrap(),
+    canon!(
+        "apache with LLVM-exception/mpl",
         "Apache-2.0 WITH LLVM-exception OR MPL-2.0"
+    );
+    canon!(
+        "simplified bsd license or gpl-3.0+",
+        "BSD-2-Clause OR GPL-3.0-or-later"
+    );
+    canon!(
+        "apache with LLVM-exception/gpl-2.0",
+        "Apache-2.0 WITH LLVM-exception OR GPL-2.0-only"
+    );
+    canon!(
+        "apache with LLVM-exception / gpl-3.0 or mit",
+        "Apache-2.0 WITH LLVM-exception OR GPL-3.0-only OR MIT"
     );
 }

@@ -120,6 +120,31 @@ impl LicenseId {
         self.flags & IS_GNU != 0
     }
 
+    /// Retrieves the version of the license ID, if any
+    ///
+    /// ```
+    /// assert_eq!(spdx::license_id("GPL-2.0-only").unwrap().version().unwrap(), "2.0");
+    /// assert_eq!(spdx::license_id("BSD-3-Clause").unwrap().version().unwrap(), "3");
+    /// assert!(spdx::license_id("Aladdin").unwrap().version().is_none());
+    /// ```
+    #[inline]
+    pub fn version(self) -> Option<&'static str> {
+        self.name
+            .split('-')
+            .find(|comp| comp.chars().all(|c| c == '.' || c.is_ascii_digit()))
+    }
+
+    /// The base name of the license
+    ///
+    /// ```
+    /// assert_eq!(spdx::license_id("GPL-2.0-only").unwrap().base(), "GPL");
+    /// assert_eq!(spdx::license_id("MIT").unwrap().base(), "MIT");
+    /// ```
+    #[inline]
+    pub fn base(self) -> &'static str {
+        self.name.split_once('-').map_or(self.name, |(n, _)| n)
+    }
+
     /// Attempts to retrieve the license text
     ///
     /// ```
@@ -203,12 +228,13 @@ impl fmt::Debug for ExceptionId {
     }
 }
 
-/// Represents a single license requirement, which must include a valid
-/// [`LicenseItem`], and may allow current and future versions of the license,
-/// and may also allow for a specific exception
+/// Represents a single license requirement.
+///
+/// The requirement must include a valid [`LicenseItem`], and may allow current
+/// and future versions of the license, and may also allow for a specific exception
 ///
 /// While they can be constructed manually, most of the time these will
-/// be parsed and combined in an `Expression`
+/// be parsed and combined in an [Expression]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct LicenseReq {
     /// The license
@@ -220,29 +246,11 @@ pub struct LicenseReq {
 
 impl From<LicenseId> for LicenseReq {
     fn from(id: LicenseId) -> Self {
-        // We need to special case GNU licenses because reasons
-        let (id, or_later) = if id.is_gnu() {
-            let (or_later, name) = id
-                .name
-                .strip_suffix("-or-later")
-                .map_or((false, id.name), |name| (true, name));
-
-            let root = name.strip_suffix("-only").unwrap_or(name);
-
-            // If the root, eg GPL-2.0 licenses, which are currently deprecated,
-            // are actually removed we will need to add them manually, but that
-            // should only occur on a major revision of the SPDX license list,
-            // so for now we should be fine with this
-            (
-                license_id(root).expect("Unable to find root GNU license"),
-                or_later,
-            )
-        } else {
-            (id, false)
-        };
-
         Self {
-            license: LicenseItem::Spdx { id, or_later },
+            license: LicenseItem::Spdx {
+                id,
+                or_later: false,
+            },
             exception: None,
         }
     }
@@ -261,8 +269,9 @@ impl fmt::Display for LicenseReq {
 }
 
 /// A single license term in a license expression, according to the SPDX spec.
+///
 /// This can be either an SPDX license, which is mapped to a [`LicenseId`] from
-/// a valid SPDX short identifier, or else a document AND/OR license ref
+/// a valid SPDX short identifier, or else a document and/or license ref
 #[derive(Debug, Clone, Eq)]
 pub enum LicenseItem {
     /// A regular SPDX license id
@@ -389,8 +398,9 @@ impl fmt::Display for LicenseItem {
     }
 }
 
-/// Attempts to find a [`LicenseId`] for the string. Note that any `+` at the
-/// end is trimmed when searching for a match.
+/// Attempts to find a [`LicenseId`] for the string.
+///
+/// Note that any `+` at the end is trimmed when searching for a match.
 ///
 /// ```
 /// assert!(spdx::license_id("MIT").is_some());
@@ -414,16 +424,48 @@ pub fn license_id(name: &str) -> Option<LicenseId> {
         .ok()
 }
 
+/// Attempts to find a GNU license from its base name.
+///
+/// GNU licenses are "special", unlike every other license in the SPDX list, they
+/// have (in _most_ cases) a bare variant which is deprecated, eg. GPL-2.0, an
+/// `-only` variant which acts like every other license, and an `-or-later`
+/// variant which acts as if `+` was applied.
+#[inline]
+#[must_use]
+pub fn gnu_license_id(base: &str, or_later: bool) -> Option<LicenseId> {
+    if base.ends_with("-only") || base.ends_with("-or-later") {
+        license_id(base)
+    } else {
+        let mut v = smallvec::SmallVec::<[u8; 32]>::new();
+        v.resize(base.len() + if or_later { 9 } else { 5 }, 0);
+
+        v[..base.len()].copy_from_slice(base.as_bytes());
+
+        if or_later {
+            v[base.len()..].copy_from_slice(b"-or-later");
+        } else {
+            v[base.len()..].copy_from_slice(b"-only");
+        }
+
+        let Ok(s) = std::str::from_utf8(v.as_slice()) else {
+            // Unreachable, but whatever
+            return None;
+        };
+        license_id(s)
+    }
+}
+
 /// Find license partially matching the name, e.g. "apache" => "Apache-2.0"
 ///
 /// Returns length (in bytes) of the string matched. Garbage at the end is
-/// ignored. See
-/// [`identifiers::IMPRECISE_NAMES`](identifiers/constant.IMPRECISE_NAMES.html)
-/// for the list of invalid names, and the valid license identifiers they are
-/// paired with.
+/// ignored. See [`crate::identifiers::IMPRECISE_NAMES`] for the list of invalid
+/// names, and the valid license identifiers they are mapped to.
 ///
 /// ```
-/// assert!(spdx::imprecise_license_id("simplified bsd license").unwrap().0 == spdx::license_id("BSD-2-Clause").unwrap());
+/// assert_eq!(
+///     spdx::imprecise_license_id("simplified bsd license").unwrap().0,
+///     spdx::license_id("BSD-2-Clause").unwrap()
+/// );
 /// ```
 #[inline]
 #[must_use]

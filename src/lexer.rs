@@ -249,17 +249,11 @@ impl<'a> Iterator for Lexer<'a> {
                     reason: Reason::InvalidCharacters,
                 })),
                 Some(m) => {
-                    if m == "WITH" {
-                        ok_token(Token::With)
-                    } else if m == "AND" {
+                    if m == "AND" || self.mode.allow_lower_case_operators && m == "and" {
                         ok_token(Token::And)
-                    } else if m == "OR" {
+                    } else if m == "OR" || self.mode.allow_lower_case_operators && m == "or" {
                         ok_token(Token::Or)
-                    } else if self.mode.allow_lower_case_operators && m == "and" {
-                        ok_token(Token::And)
-                    } else if self.mode.allow_lower_case_operators && m == "or" {
-                        ok_token(Token::Or)
-                    } else if self.mode.allow_lower_case_operators && m == "with" {
+                    } else if m == "WITH" || self.mode.allow_lower_case_operators && m == "with" {
                         ok_token(Token::With)
                     } else if let Some(lic_id) = crate::license_id(m) {
                         ok_token(Token::Spdx(lic_id))

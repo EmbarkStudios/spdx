@@ -6,9 +6,6 @@ use crate::{
 /// Parsing configuration for SPDX expression
 #[derive(Default, Copy, Clone)]
 pub struct ParseMode {
-    /// The `AND`, `OR`, and `WITH` operators are required to be uppercase in
-    /// the SPDX spec, but enabling this option allows them to be lowercased
-    pub allow_lower_case_operators: bool,
     /// Allows the use of `/` as a synonym for the `OR` operator.
     ///
     /// This also allows for not having whitespace between the `/` and the terms
@@ -39,10 +36,9 @@ impl ParseMode {
     /// 1. Only license identifiers in the SPDX license list, or
     ///    Document/LicenseRef, are allowed. The license identifiers are also
     ///    case-sensitive.
-    /// 1. `WITH`, `AND`, and `OR` are the only valid operators
+    /// 1. `WITH`, `AND`, and `OR`, case-insensitive, are the only valid operators
     /// 1. Deprecated licenses are not allowed
     pub const STRICT: Self = Self {
-        allow_lower_case_operators: false,
         allow_slash_as_or_operator: false,
         allow_imprecise_license_names: false,
         allow_postfix_plus_on_gpl: false,
@@ -60,7 +56,6 @@ impl ParseMode {
     ///    separated by whitespace from the terms it combines
     /// 1. Deprecated license identifiers are allowed
     pub const LAX: Self = Self {
-        allow_lower_case_operators: true,
         allow_slash_as_or_operator: true,
         allow_imprecise_license_names: true,
         allow_postfix_plus_on_gpl: true,
@@ -249,11 +244,11 @@ impl<'a> Iterator for Lexer<'a> {
                     reason: Reason::InvalidCharacters,
                 })),
                 Some(m) => {
-                    if m == "AND" || self.mode.allow_lower_case_operators && m == "and" {
+                    if m == "AND" || m == "and" {
                         ok_token(Token::And)
-                    } else if m == "OR" || self.mode.allow_lower_case_operators && m == "or" {
+                    } else if m == "OR" || m == "or" {
                         ok_token(Token::Or)
-                    } else if m == "WITH" || self.mode.allow_lower_case_operators && m == "with" {
+                    } else if m == "WITH" || m == "with" {
                         ok_token(Token::With)
                     } else if let Some(lic_id) = crate::license_id(m) {
                         ok_token(Token::Spdx(lic_id))

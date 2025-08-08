@@ -231,18 +231,18 @@ impl Licensee {
                             }
                         }
 
-                        if a.name.ends_with("-or-later") || b.name.ends_with("-or-later") {
-                            let Some(av) = a.version() else {
-                                return false;
-                            };
-                            let Some(bv) = b.version() else {
-                                return false;
-                            };
+                        let Some(av) = a.version() else {
+                            return false;
+                        };
+                        let Some(bv) = b.version() else {
+                            return false;
+                        };
 
+                        if b.name.ends_with("-or-later") {
                             if av < bv {
                                 return false;
                             }
-                        } else {
+                        } else if abn != bbn || av != bv {
                             return false;
                         }
                     } else {

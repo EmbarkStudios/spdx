@@ -22,7 +22,7 @@ pub enum Reason {
     /// The specified exception short-identifier was not
     /// found the SPDX list
     UnknownException,
-    /// The characters are not valid in an SDPX license expression
+    /// The characters are not valid in an SPDX license expression
     InvalidCharacters,
     /// An opening parens was unmatched with a closing parens
     UnclosedParens,
@@ -45,6 +45,32 @@ pub enum Reason {
     /// GNU suffix licenses don't allow `+` because they already have
     /// the `-or-later` suffix to denote that
     GnuNoPlus,
+    /// A `+` was added to a GNU license that was specified as `-only` or `-or-later`
+    GnuPlusWithSuffix,
+    /// A deprecated license id was used
+    DeprecatedLicenseId,
+}
+
+impl Reason {
+    #[inline]
+    fn description(&self) -> &'static str {
+        match self {
+            Reason::UnknownLicense => "unknown license id",
+            Reason::UnknownException => "unknown exception id",
+            Reason::InvalidCharacters => "invalid character(s)",
+            Reason::UnclosedParens => "unclosed parens",
+            Reason::UnopenedParens => "unopened parens",
+            Reason::Empty => "empty expression",
+            Reason::Unexpected(_) => "unexpected term",
+            Reason::SeparatedPlus => "`+` must not follow whitespace",
+            Reason::UnknownTerm => "unknown term",
+            Reason::GnuNoPlus => "a GNU license was followed by a `+`",
+            Reason::GnuPlusWithSuffix => {
+                "a GNU license was followed by a `+` even though it ended in `-only` or `-or-later`"
+            }
+            Reason::DeprecatedLicenseId => "a deprecated license identifier was used",
+        }
+    }
 }
 
 impl fmt::Display for ParseError {
@@ -74,47 +100,28 @@ impl fmt::Display for ParseError {
 
 impl fmt::Display for Reason {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::UnknownLicense => f.write_str("unknown license id"),
-            Self::UnknownException => f.write_str("unknown exception id"),
-            Self::InvalidCharacters => f.write_str("invalid character(s)"),
-            Self::UnclosedParens => f.write_str("unclosed parens"),
-            Self::UnopenedParens => f.write_str("unopened parens"),
-            Self::Empty => f.write_str("empty expression"),
-            Self::Unexpected(expected) => {
-                if expected.len() > 1 {
-                    f.write_str("expected one of ")?;
+        if let Self::Unexpected(expected) = self {
+            if expected.len() > 1 {
+                f.write_str("expected one of ")?;
 
-                    for (i, exp) in expected.iter().enumerate() {
-                        f.write_fmt(format_args!("{}`{}`", if i > 0 { ", " } else { "" }, exp))?;
-                    }
-                    f.write_str(" here")
-                } else if expected.is_empty() {
-                    f.write_str("the term was not expected here")
-                } else {
-                    f.write_fmt(format_args!("expected a `{}` here", expected[0]))
+                for (i, exp) in expected.iter().enumerate() {
+                    f.write_fmt(format_args!("{}`{}`", if i > 0 { ", " } else { "" }, exp))?;
                 }
+                f.write_str(" here")
+            } else if expected.is_empty() {
+                f.write_str("the term was not expected here")
+            } else {
+                f.write_fmt(format_args!("expected a `{}` here", expected[0]))
             }
-            Self::SeparatedPlus => f.write_str("`+` must not follow whitespace"),
-            Self::UnknownTerm => f.write_str("unknown term"),
-            Self::GnuNoPlus => f.write_str("a GNU license was followed by a `+`"),
+        } else {
+            f.write_str(self.description())
         }
     }
 }
 
 impl Error for ParseError {
+    #[inline]
     fn description(&self) -> &str {
-        match self.reason {
-            Reason::UnknownLicense => "unknown license id",
-            Reason::UnknownException => "unknown exception id",
-            Reason::InvalidCharacters => "invalid character(s)",
-            Reason::UnclosedParens => "unclosed parens",
-            Reason::UnopenedParens => "unopened parens",
-            Reason::Empty => "empty expression",
-            Reason::Unexpected(_) => "unexpected term",
-            Reason::SeparatedPlus => "`+` must not follow whitespace",
-            Reason::UnknownTerm => "unknown term",
-            Reason::GnuNoPlus => "a GNU license was followed by a `+`",
-        }
+        self.reason.description()
     }
 }

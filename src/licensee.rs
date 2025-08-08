@@ -221,14 +221,11 @@ impl Licensee {
 
                         // GFDL has the annoying -no -invariants...variants, both
                         // sides have to agree on all or none
-                        if abn == "GFDL" {
-                            if a.name.contains("-invariants") ^ b.name.contains("-invariants") {
-                                return false;
-                            }
-
-                            if a.name.contains("-no-") ^ b.name.contains("-no-") {
-                                return false;
-                            }
+                        if abn == "GFDL"
+                            && a.name.contains("-invariants") ^ b.name.contains("-invariants")
+                            || a.name.contains("-no-") ^ b.name.contains("-no-")
+                        {
+                            return false;
                         }
 
                         let Some(av) = a.version() else {

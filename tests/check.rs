@@ -4,7 +4,9 @@ use spdx::LicenseItem;
 
 macro_rules! exact {
     ($req:expr, $e:expr) => {
-        spdx::Licensee::parse($e).unwrap().satisfies($req)
+        spdx::Licensee::parse_mode($e, spdx::ParseMode::LAX)
+            .unwrap()
+            .satisfies($req)
     };
 }
 
@@ -82,7 +84,7 @@ fn complex() {
         false && (false || false) => |req| exact!(req, "Apache-2.0"),
         true && (false || false) => |req| exact!(req, "MIT"),
         true && (false || true) => |req| exact!(req, "MIT") || exact!(req, "BSD-3-Clause"),
-        true && (true || false) => |req| exact!(req, "MIT") || exact!(req, "LGPL-3.0"),
+        true && (true || false) => |req| exact!(req, "MIT") || exact!(req, "LGPL-3.0-or-later"),
     ]);
 }
 
@@ -180,7 +182,9 @@ fn gpl_or_later() {
     check!("GPL-3.0-or-later" => [
         false => |req| exact!(req, "GPL-1.0"),
         false => |req| exact!(req, "GPL-2.0"),
+        true => |req| exact!(req, "GPL-3.0-only"),
         true => |req| exact!(req, "GPL-3.0"),
+        true => |req| exact!(req, "GPL-3.0-or-later"),
         //true => |req| exact!(req, "GPL-4.0"),
     ]);
 }
@@ -197,28 +201,31 @@ fn gpl_or_later_plus_lax() {
 
 #[test]
 fn gfdl() {
-    check!("GFDL-1.1-or-later" => [
-        true => |req| exact!(req, "GFDL-1.1"),
+    check!("GFDL-1.2-or-later" => [
+        false => |req| exact!(req, "GFDL-1.1"),
         true => |req| exact!(req, "GFDL-1.2"),
         true => |req| exact!(req, "GFDL-1.3"),
+        false => |req| exact!(req, "GFDL-1.1-or-later"),
+        true => |req| exact!(req, "GFDL-1.2-or-later"),
+        true => |req| exact!(req, "GFDL-1.3-or-later"),
     ]);
 
     check!("GFDL-1.2-invariants-or-later" => [
         false => |req| exact!(req, "GFDL-1.1"),
         false => |req| exact!(req, "GFDL-1.1-invariants"),
         false => |req| exact!(req, "GFDL-1.2"),
-        true => |req| exact!(req, "GFDL-1.2-invariants"),
+        true => |req| exact!(req, "GFDL-1.2-invariants-or-later"),
         false => |req| exact!(req, "GFDL-1.3"),
-        true => |req| exact!(req, "GFDL-1.3-invariants"),
+        true => |req| exact!(req, "GFDL-1.3-invariants-only"),
     ]);
 
     check_lax!("GFDL-1.1-invariants+" => [
         false => |req| exact!(req, "GFDL-1.1"),
-        true => |req| exact!(req, "GFDL-1.1-invariants"),
+        true => |req| exact!(req, "GFDL-1.1-invariants-or-later"),
         false => |req| exact!(req, "GFDL-1.2"),
-        true => |req| exact!(req, "GFDL-1.2-invariants"),
+        true => |req| exact!(req, "GFDL-1.2-invariants-or-later"),
         false => |req| exact!(req, "GFDL-1.3"),
-        true => |req| exact!(req, "GFDL-1.3-invariants"),
+        true => |req| exact!(req, "GFDL-1.3-invariants-or-later"),
     ]);
 
     check!("GFDL-1.2-invariants" => [
@@ -246,6 +253,18 @@ fn gfdl() {
         false => |req| exact!(req, "GFDL-1.2-invariants"),
         true => |req| exact!(req, "GFDL-1.3"),
         false => |req| exact!(req, "GFDL-1.3-invariants"),
+    ]);
+}
+
+#[test]
+fn bsd() {
+    check!("BSD-1-Clause+" => [
+        true => |req| exact!(req, "BSD-1-Clause"),
+        true => |req| exact!(req, "BSD-2-Clause"),
+        true => |req| exact!(req, "BSD-3-Clause"),
+        false => |req| exact!(req, "BSD-2-Clause-Darwin"),
+        false => |req| exact!(req, "BSD-2-Clause-pkgconf-disclaimer"),
+        false => |req| exact!(req, "BSD-3-Clause-flex"),
     ]);
 }
 
@@ -436,7 +455,7 @@ fn too_many_to_minimize() {
             ridiculous.push_str(lic);
             ridiculous.push_str(" AND ");
 
-            ohno.push(spdx::Licensee::parse(lic).unwrap());
+            ohno.push(spdx::Licensee::parse_mode(lic, spdx::ParseMode::LAX).unwrap());
         }
 
         if ohno.len() >= 65 {
@@ -446,7 +465,7 @@ fn too_many_to_minimize() {
 
     ridiculous.truncate(ridiculous.len() - 5);
 
-    let ridiculous = spdx::Expression::parse(&ridiculous).unwrap();
+    let ridiculous = spdx::Expression::parse_mode(&ridiculous, spdx::ParseMode::LAX).unwrap();
 
     assert_eq!(
         ridiculous.minimized_requirements(ohno.iter()).unwrap_err(),

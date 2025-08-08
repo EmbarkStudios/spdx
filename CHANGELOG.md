@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.11.0] - 2025-08-08
 ### Changed
 - [PR#78] removed `ParseMode::allow_lower_case_operators`, newer revisions of the SPDX spec allow all lower-case operators, making the option pointless.
 - [PR#78] added `ParseMode::allow_deprecated`, which will cause an error if a deprecated license identifier is used, `false` in `LAX` and `true` in `STRICT`.
@@ -199,7 +200,8 @@ a user provided callback
 [PR#78]: https://github.com/EmbarkStudios/spdx/pull/78
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.10.9...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.11.0...HEAD
+[0.11.0]: https://github.com/EmbarkStudios/spdx/compare/0.10.9...0.11.0
 [0.10.9]: https://github.com/EmbarkStudios/spdx/compare/0.10.9...0.10.9
 [0.10.9]: https://github.com/EmbarkStudios/spdx/compare/0.10.8...0.10.9
 [0.10.8]: https://github.com/EmbarkStudios/spdx/compare/0.10.7...0.10.8

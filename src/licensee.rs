@@ -11,7 +11,7 @@ use std::fmt;
 ///
 /// ```
 /// let licensee = spdx::Licensee::parse("GPL-2.0-or-later").unwrap();
-/// let req = spdx::LicenseReq::from(spdx::license_id("GPL-2.0-only").unwrap());
+/// let req = spdx::LicenseReq::from(spdx::license_id("GPL-2.0-or-later").unwrap());
 ///
 /// assert!(licensee.satisfies(&req));
 /// ```

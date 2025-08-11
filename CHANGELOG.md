@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.11.1] - 2025-08-11
 ### Changed
 - [PR#80](https://github.com/EmbarkStudios/spdx/pull/80) changed how `Licensee::satisfies` works for GNU licenses again, it now requires that the license ids match exactly. This is incredibly pedantic but means it's up to consumers if the want to have a smarter comparison, I just don't want to have to care about GNU licenses, ever.
 
@@ -206,7 +207,8 @@ a user provided callback
 [PR#78]: https://github.com/EmbarkStudios/spdx/pull/78
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.11.0...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.11.1...HEAD
+[0.11.1]: https://github.com/EmbarkStudios/spdx/compare/0.11.0...0.11.1
 [0.11.0]: https://github.com/EmbarkStudios/spdx/compare/0.10.9...0.11.0
 [0.10.9]: https://github.com/EmbarkStudios/spdx/compare/0.10.9...0.10.9
 [0.10.9]: https://github.com/EmbarkStudios/spdx/compare/0.10.8...0.10.9

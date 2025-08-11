@@ -196,26 +196,16 @@ impl Expression {
             match &lt.token {
                 Token::Spdx(id) => match last_token {
                     None | Some(Token::And | Token::Or | Token::OpenParen) => {
-                        let id = if id.is_gnu() {
-                            crate::gnu_license_id(id.name, false).ok_or_else(|| ParseError {
+                        if !mode.allow_deprecated && id.is_deprecated() {
+                            return Err(ParseError {
                                 original: original.to_owned(),
-                                span: lt.span.clone(),
-                                reason: Reason::UnknownLicense,
-                            })?
-                        } else {
-                            if !mode.allow_deprecated && id.is_deprecated() {
-                                return Err(ParseError {
-                                    original: original.to_owned(),
-                                    span: lt.span,
-                                    reason: Reason::DeprecatedLicenseId,
-                                });
-                            }
-
-                            *id
-                        };
+                                span: lt.span,
+                                reason: Reason::DeprecatedLicenseId,
+                            });
+                        }
 
                         expr_queue.push(ExprNode::Req(ExpressionReq {
-                            req: LicenseReq::from(id),
+                            req: LicenseReq::from(*id),
                             span: lt.span.start as u32..lt.span.end as u32,
                         }));
                     }

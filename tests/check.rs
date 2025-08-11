@@ -84,7 +84,7 @@ fn complex() {
         false && (false || false) => |req| exact!(req, "Apache-2.0"),
         true && (false || false) => |req| exact!(req, "MIT"),
         true && (false || true) => |req| exact!(req, "MIT") || exact!(req, "BSD-3-Clause"),
-        true && (true || false) => |req| exact!(req, "MIT") || exact!(req, "LGPL-3.0-or-later"),
+        true && (true || false) => |req| exact!(req, "MIT") || exact!(req, "LGPL-2.1-or-later"),
     ]);
 }
 
@@ -171,21 +171,10 @@ fn or_later() {
 fn lgpl_only() {
     check!("LGPL-2.1-only" => [
         false => |req| exact!(req, "LGPL-2.0"),
-        true => |req| exact!(req, "LGPL-2.1"),
+        false => |req| exact!(req, "LGPL-2.1"),
+        true => |req| exact!(req, "LGPL-2.1-only"),
         false => |req| exact!(req, "LGPL-3.0"),
         //false => |req| exact!(req, "LGPL-4.0"),
-    ]);
-}
-
-#[test]
-fn gpl_or_later() {
-    check!("GPL-3.0-or-later" => [
-        false => |req| exact!(req, "GPL-1.0"),
-        false => |req| exact!(req, "GPL-2.0"),
-        true => |req| exact!(req, "GPL-3.0-only"),
-        true => |req| exact!(req, "GPL-3.0"),
-        true => |req| exact!(req, "GPL-3.0-or-later"),
-        //true => |req| exact!(req, "GPL-4.0"),
     ]);
 }
 
@@ -201,15 +190,6 @@ fn gpl_or_later_plus_lax() {
 
 #[test]
 fn gpl_pedantic() {
-    // | Licensee | GPL-1.0-only  | GPL-1.0-or-later | GPL-2.0-only | GPL-2.0-or-later | GPL-3.0-only | GPL-3.0-or-later |
-    // | ----------------- | -- | -- | -- | -- | -- | -- |
-    // | GPL-1.0-only      | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-    // | GPL-1.0-or-later  | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-    // | GPL-2.0-only      | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ |
-    // | GPL-2.0-or-later  | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ |
-    // | GPL-3.0-only      | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
-    // | GPL-3.0-or-later  | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
-
     const ONE_ONLY: &str = "GPL-1.0-only";
     const ONE_LATER: &str = "GPL-1.0-or-later";
     const TWO_ONLY: &str = "GPL-2.0-only";
@@ -217,88 +197,88 @@ fn gpl_pedantic() {
     const THREE_ONLY: &str = "GPL-3.0-only";
     const THREE_LATER: &str = "GPL-3.0-or-later";
 
-    let table = [
-        (
-            ONE_ONLY,
-            [
-                (ONE_ONLY, true),
-                (ONE_LATER, true),
-                (TWO_ONLY, false),
-                (TWO_LATER, false),
-                (THREE_ONLY, false),
-                (THREE_LATER, false),
-            ],
-        ),
-        (
-            ONE_LATER,
-            [
-                (ONE_ONLY, true),
-                (ONE_LATER, true),
-                (TWO_ONLY, false),
-                (TWO_LATER, false),
-                (THREE_ONLY, false),
-                (THREE_LATER, false),
-            ],
-        ),
-        (
-            TWO_ONLY,
-            [
-                (ONE_ONLY, false),
-                (ONE_LATER, true),
-                (TWO_ONLY, true),
-                (TWO_LATER, true),
-                (THREE_ONLY, false),
-                (THREE_LATER, false),
-            ],
-        ),
-        (
-            TWO_LATER,
-            [
-                (ONE_ONLY, false),
-                (ONE_LATER, true),
-                (TWO_ONLY, true),
-                (TWO_LATER, true),
-                (THREE_ONLY, false),
-                (THREE_LATER, false),
-            ],
-        ),
-        (
-            THREE_ONLY,
-            [
-                (ONE_ONLY, false),
-                (ONE_LATER, true),
-                (TWO_ONLY, false),
-                (TWO_LATER, true),
-                (THREE_ONLY, true),
-                (THREE_LATER, true),
-            ],
-        ),
-        (
-            THREE_LATER,
-            [
-                (ONE_ONLY, false),
-                (ONE_LATER, true),
-                (TWO_ONLY, false),
-                (TWO_LATER, true),
-                (THREE_ONLY, true),
-                (THREE_LATER, true),
-            ],
-        ),
+    const COLUMNS: &[&str] = &[
+        ONE_ONLY,
+        ONE_LATER,
+        TWO_ONLY,
+        TWO_LATER,
+        THREE_ONLY,
+        THREE_LATER,
     ];
 
+    let table = [
+        (ONE_ONLY, [true, false, false, false, false, false]),
+        (ONE_LATER, [false, true, false, false, false, false]),
+        (TWO_ONLY, [false, false, true, false, false, false]),
+        (TWO_LATER, [false, false, false, true, false, false]),
+        (THREE_ONLY, [false, false, false, false, true, false]),
+        (THREE_LATER, [false, false, false, false, false, true]),
+    ];
+
+    fn header(s: &mut String) {
+        s.push_str("| Licensee         | GPL-1.0-only | GPL-1.0-or-later | GPL-2.0-only | GPL-2.0-or-later | GPL-3.0-only | GPL-3.0-or-later |\n");
+        s.push_str("| ---------------- | ------------ | ---------------- | ------------ | ---------------- | ------------ | ---------------- |\n");
+    }
+
+    fn fill(s: &mut String, c: &str, len: usize) {
+        for _ in 0..len - c.len() {
+            s.push(' ');
+        }
+    }
+
+    fn lic(s: &mut String, lic: &str) {
+        s.push_str("| ");
+        s.push_str(lic);
+        fill(s, lic, 16);
+        s.push_str(" | ");
+    }
+
     for (licensee, items) in table {
+        let mut expected = String::new();
+        let exp = &mut expected;
+        header(exp);
+
+        let mut actual = String::new();
+        let act = &mut actual;
+        header(act);
+
+        lic(exp, licensee);
+        lic(act, licensee);
+
         let lic = spdx::Licensee::parse(licensee).unwrap();
 
-        for (req, passes) in items {
+        let mut fail = false;
+        for (col, passes) in COLUMNS.iter().zip(items.iter()) {
             let req = spdx::LicenseReq {
                 license: spdx::LicenseItem::Spdx {
-                    id: spdx::license_id(req).unwrap(),
+                    id: spdx::license_id(col).unwrap(),
                     or_later: false,
                 },
                 exception: None,
             };
 
-            assert_eq!(lic.satisfies(&req), passes);
+            exp.push_str(if *passes { "+" } else { "-" });
+            fill(exp, " ", col.len());
+
+            exp.push_str(" | ");
+
+            let satisfies = lic.satisfies(&req);
+
+            act.push_str(if satisfies { "+" } else { "-" });
+            fill(act, " ", col.len());
+            act.push_str(" | ");
+
+            fail |= *passes != satisfies;
+        }
+
+        exp.push_str("\n");
+        act.push_str("\n");
+
+        if fail {
+            panic!(
+                "{}",
+                similar_asserts::SimpleDiff::from_str(exp, act, "expected", "calculated")
+            );
         }
     }
 }
@@ -307,11 +287,11 @@ fn gpl_pedantic() {
 fn gfdl() {
     check!("GFDL-1.2-or-later" => [
         false => |req| exact!(req, "GFDL-1.1"),
-        true => |req| exact!(req, "GFDL-1.2"),
-        true => |req| exact!(req, "GFDL-1.3"),
+        false => |req| exact!(req, "GFDL-1.2"),
+        false => |req| exact!(req, "GFDL-1.3"),
         false => |req| exact!(req, "GFDL-1.1-or-later"),
         true => |req| exact!(req, "GFDL-1.2-or-later"),
-        true => |req| exact!(req, "GFDL-1.3-or-later"),
+        false => |req| exact!(req, "GFDL-1.3-or-later"),
     ]);
 
     check!("GFDL-1.2-invariants-or-later" => [
@@ -320,16 +300,16 @@ fn gfdl() {
         false => |req| exact!(req, "GFDL-1.2"),
         true => |req| exact!(req, "GFDL-1.2-invariants-or-later"),
         false => |req| exact!(req, "GFDL-1.3"),
-        true => |req| exact!(req, "GFDL-1.3-invariants-only"),
+        false => |req| exact!(req, "GFDL-1.3-invariants-only"),
     ]);
 
     check_lax!("GFDL-1.1-invariants+" => [
         false => |req| exact!(req, "GFDL-1.1"),
         true => |req| exact!(req, "GFDL-1.1-invariants-or-later"),
         false => |req| exact!(req, "GFDL-1.2"),
-        true => |req| exact!(req, "GFDL-1.2-invariants-or-later"),
+        false => |req| exact!(req, "GFDL-1.2-invariants-or-later"),
         false => |req| exact!(req, "GFDL-1.3"),
-        true => |req| exact!(req, "GFDL-1.3-invariants-or-later"),
+        false => |req| exact!(req, "GFDL-1.3-invariants-or-later"),
     ]);
 
     check!("GFDL-1.2-invariants" => [
@@ -337,6 +317,7 @@ fn gfdl() {
         false => |req| exact!(req, "GFDL-1.1-invariants"),
         false => |req| exact!(req, "GFDL-1.2"),
         true => |req| exact!(req, "GFDL-1.2-invariants"),
+        false => |req| exact!(req, "GFDL-1.2-invariants-only"),
         false => |req| exact!(req, "GFDL-1.3"),
         false => |req| exact!(req, "GFDL-1.3-invariants"),
     ]);
@@ -345,7 +326,8 @@ fn gfdl() {
         false => |req| exact!(req, "GFDL-1.1"),
         false => |req| exact!(req, "GFDL-1.1-invariants"),
         false => |req| exact!(req, "GFDL-1.2"),
-        true => |req| exact!(req, "GFDL-1.2-invariants"),
+        false => |req| exact!(req, "GFDL-1.2-invariants"),
+        true => |req| exact!(req, "GFDL-1.2-invariants-only"),
         false => |req| exact!(req, "GFDL-1.3"),
         false => |req| exact!(req, "GFDL-1.3-invariants"),
     ]);
@@ -355,7 +337,8 @@ fn gfdl() {
         false => |req| exact!(req, "GFDL-1.1-invariants"),
         false => |req| exact!(req, "GFDL-1.2"),
         false => |req| exact!(req, "GFDL-1.2-invariants"),
-        true => |req| exact!(req, "GFDL-1.3"),
+        false => |req| exact!(req, "GFDL-1.3"),
+        true => |req| exact!(req, "GFDL-1.3-only"),
         false => |req| exact!(req, "GFDL-1.3-invariants"),
     ]);
 }

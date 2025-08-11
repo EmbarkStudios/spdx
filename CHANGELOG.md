@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [PR#80](https://github.com/EmbarkStudios/spdx/pull/80) changed how `Licensee::satisfies` works for GNU licenses again, it now requires that the license ids match exactly. This is incredibly pedantic but means it's up to consumers if the want to have a smarter comparison, I just don't want to have to care about GNU licenses, ever.
 
 ### Fixed
-- [PR#80](https://github.com/EmbarkStudios/spdx/pull/80) reverted a change introduced in [#78] that would auto-fixup GNU licenses to their non-deprecated forms eg. `GPL-2.0` => `GPL-2.0-only`. This is no longer done.
+- [PR#80](https://github.com/EmbarkStudios/spdx/pull/80) reverted a change introduced in [PR#78] that would auto-fixup GNU licenses to their non-deprecated forms eg. `GPL-2.0` => `GPL-2.0-only`. This is no longer done, resolving [#79](https://github.com/EmbarkStudios/spdx/issues/79).
 
 ## [0.11.0] - 2025-08-08
 ### Changed

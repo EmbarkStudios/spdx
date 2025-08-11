@@ -271,8 +271,8 @@ fn gpl_pedantic() {
             fail |= *passes != satisfies;
         }
 
-        exp.push_str("\n");
-        act.push_str("\n");
+        exp.push('\n');
+        act.push('\n');
 
         if fail {
             panic!(

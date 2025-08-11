@@ -11,7 +11,7 @@ use std::fmt;
 ///
 /// ```
 /// let licensee = spdx::Licensee::parse("GPL-2.0-or-later").unwrap();
-/// let req = spdx::LicenseReq::from(spdx::license_id("GPL-2.0-only").unwrap());
+/// let req = spdx::LicenseReq::from(spdx::license_id("GPL-2.0-or-later").unwrap());
 ///
 /// assert!(licensee.satisfies(&req));
 /// ```
@@ -89,22 +89,13 @@ impl Licensee {
             })??;
 
             match lt.token {
-                Token::Spdx(mut id) => {
+                Token::Spdx(id) => {
                     if !mode.allow_deprecated && id.is_deprecated() {
                         return Err(ParseError {
                             original: original.to_owned(),
                             span: lt.span,
                             reason: Reason::DeprecatedLicenseId,
                         });
-                    }
-
-                    if id.is_gnu() && !id.name.ends_with("-or-later") && !id.name.ends_with("-only")
-                    {
-                        id = crate::gnu_license_id(id.name, false).ok_or_else(|| ParseError {
-                            original: original.to_owned(),
-                            span: lt.span,
-                            reason: Reason::UnknownLicense,
-                        })?;
                     }
 
                     LicenseItem::Spdx {
@@ -210,37 +201,6 @@ impl Licensee {
                                 }
                                 _ => return false,
                             }
-                        }
-                    } else if a.is_gnu() && b.is_gnu() {
-                        let abn = a.base();
-                        let bbn = b.base();
-
-                        if abn != bbn {
-                            return false;
-                        }
-
-                        // GFDL has the annoying -no -invariants...variants, both
-                        // sides have to agree on all or none
-                        if abn == "GFDL"
-                            && a.name.contains("-invariants") ^ b.name.contains("-invariants")
-                            || a.name.contains("-no-") ^ b.name.contains("-no-")
-                        {
-                            return false;
-                        }
-
-                        let Some(av) = a.version() else {
-                            return false;
-                        };
-                        let Some(bv) = b.version() else {
-                            return false;
-                        };
-
-                        if b.name.ends_with("-or-later") {
-                            if av < bv {
-                                return false;
-                            }
-                        } else if abn != bbn || av != bv {
-                            return false;
                         }
                     } else {
                         return false;

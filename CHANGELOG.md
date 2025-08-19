@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Added
+- [PR#81](https://github.com/EmbarkStudios/spdx/pull/81) resolved [#68](https://github.com/EmbarkStudios/spdx/issues/68) by adding support for the ` WITH [%s"DocumentRef-"(idstring)":"]%s"AdditionRef-"(idstring)` syntax. Thanks [@weihanglo](https://github.com/weihanglo)!
+
 ## [0.11.1] - 2025-08-11
 ### Changed
 - [PR#80](https://github.com/EmbarkStudios/spdx/pull/80) changed how `Licensee::satisfies` works for GNU licenses again, it now requires that the license ids match exactly. This is incredibly pedantic but means it's up to consumers if the want to have a smarter comparison, I just don't want to have to care about GNU licenses, ever.

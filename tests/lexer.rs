@@ -25,7 +25,7 @@ macro_rules! exc_tok {
 
 #[test]
 fn lexes_all_the_things() {
-    let text = "MIT+ OR () Apache-2.0 WITH AND LicenseRef-World Classpath-exception-2.0 DocumentRef-Test:LicenseRef-Hello";
+    let text = "MIT+ OR () Apache-2.0 WITH AND LicenseRef-World Classpath-exception-2.0 DocumentRef-Test:LicenseRef-Hello AdditionRef-add1 DocumentRef-add-doc:AdditionRef-add2";
 
     test_lex!(
         text,
@@ -46,6 +46,14 @@ fn lexes_all_the_things() {
             Token::LicenseRef {
                 doc_ref: Some("Test"),
                 lic_ref: "Hello",
+            },
+            Token::AdditionRef {
+                doc_ref: None,
+                add_ref: "add1",
+            },
+            Token::AdditionRef {
+                doc_ref: Some("add-doc"),
+                add_ref: "add2",
             },
         ]
     );

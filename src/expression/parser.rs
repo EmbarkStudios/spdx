@@ -1,5 +1,5 @@
 use crate::{
-    LicenseItem, LicenseReq, ParseMode,
+    AdditionItem, LicenseItem, LicenseReq, ParseMode,
     error::{ParseError, Reason},
     expression::{ExprNode, Expression, ExpressionReq, Operator},
     lexer::{Lexer, Token},
@@ -114,6 +114,16 @@ impl Expression {
                     can.push_str("LicenseRef-");
                     can.push_str(lic_ref);
                 }
+                Token::AdditionRef { doc_ref, add_ref } => {
+                    if let Some(dr) = doc_ref {
+                        can.push_str("DocumentRef-");
+                        can.push_str(dr);
+                        can.push(':');
+                    }
+
+                    can.push_str("AdditionRef-");
+                    can.push_str(add_ref);
+                }
             }
         }
 
@@ -177,10 +187,10 @@ impl Expression {
             let expected: &[&str] = match last_token {
                 None | Some(Token::And | Token::Or | Token::OpenParen) => &["<license>", "("],
                 Some(Token::CloseParen) => &["AND", "OR"],
-                Some(Token::Exception(_)) => &["AND", "OR", ")"],
+                Some(Token::Exception(_) | Token::AdditionRef { .. }) => &["AND", "OR", ")"],
                 Some(Token::Spdx(_)) => &["AND", "OR", "WITH", ")", "+"],
                 Some(Token::LicenseRef { .. } | Token::Plus) => &["AND", "OR", "WITH", ")"],
-                Some(Token::With) => &["<exception>"],
+                Some(Token::With) => &["<addition>"],
             };
 
             Err(ParseError {
@@ -219,7 +229,7 @@ impl Expression {
                                     doc_ref: doc_ref.map(String::from),
                                     lic_ref: String::from(*lic_ref),
                                 },
-                                exception: None,
+                                addition: None,
                             },
                             span: lt.span.start as u32..lt.span.end as u32,
                         }));
@@ -281,6 +291,7 @@ impl Expression {
                         | Token::LicenseRef { .. }
                         | Token::CloseParen
                         | Token::Exception(_)
+                        | Token::AdditionRef { .. }
                         | Token::Plus,
                     ) => {
                         let new_op = match lt.token {
@@ -330,6 +341,7 @@ impl Expression {
                             | Token::LicenseRef { .. }
                             | Token::Plus
                             | Token::Exception(_)
+                            | Token::AdditionRef { .. }
                             | Token::CloseParen,
                         ) => {
                             while let Some(top) = op_stack.pop() {
@@ -357,7 +369,19 @@ impl Expression {
                 Token::Exception(exc) => match last_token {
                     Some(Token::With) => match expr_queue.last_mut() {
                         Some(ExprNode::Req(lic)) => {
-                            lic.req.exception = Some(*exc);
+                            lic.req.addition = Some(AdditionItem::Spdx(*exc));
+                        }
+                        _ => unreachable!(),
+                    },
+                    _ => return make_err_for_token(last_token, lt.span),
+                },
+                Token::AdditionRef { doc_ref, add_ref } => match last_token {
+                    Some(Token::With) => match expr_queue.last_mut() {
+                        Some(ExprNode::Req(lic)) => {
+                            lic.req.addition = Some(AdditionItem::Other {
+                                doc_ref: doc_ref.map(String::from),
+                                add_ref: String::from(*add_ref),
+                            });
                         }
                         _ => unreachable!(),
                     },
@@ -374,6 +398,7 @@ impl Expression {
                 Token::Spdx(_)
                 | Token::LicenseRef { .. }
                 | Token::Exception(_)
+                | Token::AdditionRef { .. }
                 | Token::CloseParen
                 | Token::Plus,
             ) => {}

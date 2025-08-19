@@ -254,7 +254,7 @@ fn gpl_pedantic() {
                     id: spdx::license_id(col).unwrap(),
                     or_later: false,
                 },
-                exception: None,
+                addition: None,
             };
 
             exp.push_str(if *passes { "+" } else { "-" });
@@ -391,7 +391,7 @@ fn minimizes_vanilla() {
                 id: spdx::license_id("Apache-2.0").unwrap(),
                 or_later: false,
             },
-            exception: None,
+            addition: None,
         }]
     );
 
@@ -407,7 +407,7 @@ fn minimizes_vanilla() {
                 id: spdx::license_id("MIT").unwrap(),
                 or_later: false,
             },
-            exception: None,
+            addition: None,
         }]
     );
 }
@@ -430,21 +430,21 @@ fn handles_unminimizable() {
                     id: spdx::license_id("ISC").unwrap(),
                     or_later: false,
                 },
-                exception: None,
+                addition: None,
             },
             spdx::LicenseReq {
                 license: LicenseItem::Spdx {
                     id: spdx::license_id("OpenSSL").unwrap(),
                     or_later: false,
                 },
-                exception: None,
+                addition: None,
             },
             spdx::LicenseReq {
                 license: LicenseItem::Spdx {
                     id: spdx::license_id("MIT").unwrap(),
                     or_later: false,
                 },
-                exception: None,
+                addition: None,
             }
         ]
     );
@@ -468,21 +468,21 @@ fn handles_complicated() {
                     id: spdx::license_id("Apache-2.0").unwrap(),
                     or_later: false,
                 },
-                exception: None,
+                addition: None,
             },
             spdx::LicenseReq {
                 license: LicenseItem::Spdx {
                     id: spdx::license_id("ISC").unwrap(),
                     or_later: false,
                 },
-                exception: None,
+                addition: None,
             },
             spdx::LicenseReq {
                 license: LicenseItem::Spdx {
                     id: spdx::license_id("OpenSSL").unwrap(),
                     or_later: false,
                 },
-                exception: None,
+                addition: None,
             },
         ]
     );
@@ -502,21 +502,21 @@ fn handles_complicated() {
                     id: spdx::license_id("MIT").unwrap(),
                     or_later: false,
                 },
-                exception: None,
+                addition: None,
             },
             spdx::LicenseReq {
                 license: LicenseItem::Spdx {
                     id: spdx::license_id("ISC").unwrap(),
                     or_later: false,
                 },
-                exception: None,
+                addition: None,
             },
             spdx::LicenseReq {
                 license: LicenseItem::Spdx {
                     id: spdx::license_id("OpenSSL").unwrap(),
                     or_later: false,
                 },
-                exception: None,
+                addition: None,
             },
         ]
     );

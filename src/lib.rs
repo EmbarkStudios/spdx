@@ -239,9 +239,9 @@ impl fmt::Debug for ExceptionId {
 pub struct LicenseReq {
     /// The license
     pub license: LicenseItem,
-    /// The exception allowed for this license, as specified following
+    /// The additional text for this license, as specified following
     /// the `WITH` operator
-    pub exception: Option<ExceptionId>,
+    pub addition: Option<AdditionItem>,
 }
 
 impl From<LicenseId> for LicenseReq {
@@ -251,7 +251,7 @@ impl From<LicenseId> for LicenseReq {
                 id,
                 or_later: false,
             },
-            exception: None,
+            addition: None,
         }
     }
 }
@@ -260,8 +260,8 @@ impl fmt::Display for LicenseReq {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         self.license.fmt(f)?;
 
-        if let Some(ref exe) = self.exception {
-            write!(f, " WITH {}", exe.name)?;
+        if let Some(ref exe) = self.addition {
+            write!(f, " WITH {exe}")?;
         }
 
         Ok(())
@@ -394,6 +394,110 @@ impl fmt::Display for LicenseItem {
                 doc_ref: None,
                 lic_ref: l,
             } => write!(f, "LicenseRef-{l}"),
+        }
+    }
+}
+
+/// A single addition term in a addition expression, according to the SPDX spec.
+///
+/// This can be either an SPDX license exception, which is mapped to a [`ExceptionId`]
+/// from a valid SPDX short identifier, or else a document and/or addition ref
+#[derive(Debug, Clone, Eq)]
+pub enum AdditionItem {
+    /// A regular SPDX license exception id
+    Spdx(ExceptionId),
+    Other {
+        /// Purpose: Identify any external SPDX documents referenced within this SPDX document.
+        /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.h430e9ypa0j9) for
+        /// more details.
+        doc_ref: Option<String>,
+        /// Purpose: Provide a locally unique identifier to refer to additional text that are not found on the SPDX License List.
+        /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.4f1mdlm) for
+        /// more details.
+        add_ref: String,
+    },
+}
+
+impl AdditionItem {
+    /// Returns the license exception identifier, if it is a recognized SPDX license exception
+    /// and not a license exception referencer
+    #[must_use]
+    pub fn id(&self) -> Option<ExceptionId> {
+        match self {
+            Self::Spdx(id) => Some(*id),
+            Self::Other { .. } => None,
+        }
+    }
+}
+
+impl Ord for AdditionItem {
+    fn cmp(&self, o: &Self) -> Ordering {
+        match (self, o) {
+            (Self::Spdx(a), Self::Spdx(b)) => match a.cmp(b) {
+                Ordering::Equal => a.cmp(b),
+                o => o,
+            },
+            (
+                Self::Other {
+                    doc_ref: ad,
+                    add_ref: aa,
+                },
+                Self::Other {
+                    doc_ref: bd,
+                    add_ref: ba,
+                },
+            ) => match ad.cmp(bd) {
+                Ordering::Equal => aa.cmp(ba),
+                o => o,
+            },
+            (Self::Spdx(_), Self::Other { .. }) => Ordering::Less,
+            (Self::Other { .. }, Self::Spdx(_)) => Ordering::Greater,
+        }
+    }
+}
+
+impl PartialOrd for AdditionItem {
+    #[allow(clippy::non_canonical_partial_ord_impl)]
+    fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
+        match (self, o) {
+            (Self::Spdx(a), Self::Spdx(b)) => a.partial_cmp(b),
+            (
+                Self::Other {
+                    doc_ref: ad,
+                    add_ref: aa,
+                },
+                Self::Other {
+                    doc_ref: bd,
+                    add_ref: ba,
+                },
+            ) => match ad.cmp(bd) {
+                Ordering::Equal => aa.partial_cmp(ba),
+                o => Some(o),
+            },
+            (Self::Spdx(_), Self::Other { .. }) => Some(cmp::Ordering::Less),
+            (Self::Other { .. }, Self::Spdx(_)) => Some(cmp::Ordering::Greater),
+        }
+    }
+}
+
+impl PartialEq for AdditionItem {
+    fn eq(&self, o: &Self) -> bool {
+        matches!(self.partial_cmp(o), Some(cmp::Ordering::Equal))
+    }
+}
+
+impl fmt::Display for AdditionItem {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        match self {
+            AdditionItem::Spdx(id) => id.name.fmt(f),
+            AdditionItem::Other {
+                doc_ref: Some(d),
+                add_ref: a,
+            } => write!(f, "DocumentRef-{d}:AdditionRef-{a}"),
+            AdditionItem::Other {
+                doc_ref: None,
+                add_ref: a,
+            } => write!(f, "AdditionRef-{a}"),
         }
     }
 }

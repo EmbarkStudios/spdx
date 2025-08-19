@@ -75,6 +75,11 @@ pub enum Token<'a> {
     },
     /// A recognized SPDX exception id
     Exception(ExceptionId),
+    /// A `AdditionRef-` prefixed id, with an optional `DocumentRef-`
+    AdditionRef {
+        doc_ref: Option<&'a str>,
+        add_ref: &'a str,
+    },
     /// A postfix `+` indicating "or later" for a particular SPDX license id
     Plus,
     /// A `(` for starting a group
@@ -110,6 +115,13 @@ impl Token<'_> {
                     "DocumentRef-".len() + d.len() + 1
                 }) + "LicenseRef-".len()
                     + lic_ref.len()
+            }
+            Token::AdditionRef { doc_ref, add_ref } => {
+                doc_ref.map_or(0, |d| {
+                    // +1 is for the `:`
+                    "DocumentRef-".len() + d.len() + 1
+                }) + "AdditionRef-".len()
+                    + add_ref.len()
             }
         }
     }
@@ -175,6 +187,12 @@ impl<'a> Lexer<'a> {
         })
     }
 
+    /// Return a document ref if found - equivalent to the regex `^DocumentRef-([-a-zA-Z0-9.]+)`
+    #[inline]
+    fn find_document_ref(text: &'a str) -> Option<&'a str> {
+        Self::find_ref("DocumentRef-", text)
+    }
+
     /// Return a license ref if found - equivalent to the regex `^LicenseRef-([-a-zA-Z0-9.]+)`
     #[inline]
     fn find_license_ref(text: &'a str) -> Option<&'a str> {
@@ -185,8 +203,23 @@ impl<'a> Lexer<'a> {
     /// equivalent to the regex `^DocumentRef-([-a-zA-Z0-9.]+):LicenseRef-([-a-zA-Z0-9.]+)`
     fn find_document_and_license_ref(text: &'a str) -> Option<(&'a str, &'a str)> {
         let split = text.split_once(':');
-        let doc_ref = split.and_then(|(doc, _)| Self::find_ref("DocumentRef-", doc));
+        let doc_ref = split.and_then(|(doc, _)| Self::find_document_ref(doc));
         let lic_ref = split.and_then(|(_, lic)| Self::find_license_ref(lic));
+        Option::zip(doc_ref, lic_ref)
+    }
+
+    /// Return an addition ref if found - equivalent to the regex `^AdditionRef-([-a-zA-Z0-9.]+)`
+    #[inline]
+    fn find_addition_ref(text: &'a str) -> Option<&'a str> {
+        Self::find_ref("AdditionRef-", text)
+    }
+
+    /// Return a document ref and license ref if found,
+    /// equivalent to the regex `^DocumentRef-([-a-zA-Z0-9.]+):AdditionRef-([-a-zA-Z0-9.]+)`
+    fn find_document_and_addition_ref(text: &'a str) -> Option<(&'a str, &'a str)> {
+        let split = text.split_once(':');
+        let doc_ref = split.and_then(|(doc, _)| Self::find_document_ref(doc));
+        let lic_ref = split.and_then(|(_, add)| Self::find_addition_ref(add));
         Option::zip(doc_ref, lic_ref)
     }
 }
@@ -264,6 +297,18 @@ impl<'a> Iterator for Lexer<'a> {
                         ok_token(Token::LicenseRef {
                             doc_ref: None,
                             lic_ref,
+                        })
+                    } else if let Some((doc_ref, add_ref)) =
+                        Lexer::find_document_and_addition_ref(m)
+                    {
+                        ok_token(Token::AdditionRef {
+                            doc_ref: Some(doc_ref),
+                            add_ref,
+                        })
+                    } else if let Some(add_ref) = Lexer::find_addition_ref(m) {
+                        ok_token(Token::AdditionRef {
+                            doc_ref: None,
+                            add_ref,
                         })
                     } else if let Some((lic_id, token_len)) =
                         if self.mode.allow_imprecise_license_names {

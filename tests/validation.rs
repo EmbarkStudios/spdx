@@ -71,17 +71,17 @@ fn fails_unbalanced_parens() {
 
 #[test]
 fn fails_bad_exception() {
-    err!("Apache-2.0 WITH WITH LLVM-exception OR Apache-2.0" => &["<exception>"]; 16..20);
-    err!("Apache-2.0 WITH WITH LLVM-exception" => &["<exception>"]; 16..20);
+    err!("Apache-2.0 WITH WITH LLVM-exception OR Apache-2.0" => &["<addition>"]; 16..20);
+    err!("Apache-2.0 WITH WITH LLVM-exception" => &["<addition>"]; 16..20);
     err!("(Apache-2.0) WITH LLVM-exception" => &["AND", "OR"]; 13..17);
     err!("Apache-2.0 (WITH LLVM-exception)" => &["AND", "OR", "WITH", ")", "+"]; 11..12);
-    err!("(Apache-2.0 WITH) LLVM-exception" => &["<exception>"]; 16..17);
-    err!("(Apache-2.0 WITH)+ LLVM-exception" => &["<exception>"]; 16..17);
-    err!("Apache-2.0 WITH MIT" => &["<exception>"]; 16..19);
-    err!("Apache-2.0 WITH WITH MIT" => &["<exception>"]; 16..20);
+    err!("(Apache-2.0 WITH) LLVM-exception" => &["<addition>"]; 16..17);
+    err!("(Apache-2.0 WITH)+ LLVM-exception" => &["<addition>"]; 16..17);
+    err!("Apache-2.0 WITH MIT" => &["<addition>"]; 16..19);
+    err!("Apache-2.0 WITH WITH MIT" => &["<addition>"]; 16..20);
     err!("Apache-2.0 AND WITH MIT" => &["<license>", "("]; 15..19);
-    err!("Apache-2.0 WITH AND MIT" => &["<exception>"]; 16..19);
-    err!("Apache-2.0 WITH" => &["<exception>"]; 15..15);
+    err!("Apache-2.0 WITH AND MIT" => &["<addition>"]; 16..19);
+    err!("Apache-2.0 WITH" => &["<addition>"]; 15..15);
 }
 
 #[test]
@@ -97,8 +97,9 @@ fn fails_bad_plus() {
     err!("LicenseRef-Nope+" => &["AND", "OR", "WITH", ")"]; 15..16);
     err!("LAL-1.2 AND+" => &["<license>", "("]; 11..12);
     err!("LAL-1.2 OR +" => SeparatedPlus @ 10..11);
-    err!("LAL-1.2 WITH+ LLVM-exception" => &["<exception>"]; 12..13);
+    err!("LAL-1.2 WITH+ LLVM-exception" => &["<addition>"]; 12..13);
     err!("LAL-1.2 WITH LLVM-exception+" => &["AND", "OR", ")"]; 27..28);
+    err!("LAL-1.2 WITH AdditionRef-myexc+" => &["AND", "OR", ")"]; 30..31);
 }
 
 #[test]
@@ -111,7 +112,7 @@ fn fails_bad_ops() {
     err!("(MIT-advertising AND) MIT" => &["<license>", "("]; 20..21);
     err!("MIT-advertising (AND MIT)" => &["AND", "OR", "WITH", ")", "+"]; 16..17);
     err!("OR MIT-advertising" => &["<license>", "("]; 0..2);
-    err!("MIT-advertising WITH AND" => &["<exception>"]; 21..24);
+    err!("MIT-advertising WITH AND" => &["<addition>"]; 21..24);
 }
 
 #[test]
@@ -136,9 +137,13 @@ fn validates_canonical() {
 #[test]
 fn validates_single_with_exception() {
     let with_exception = "Apache-2.0 WITH LLVM-exception";
+    let addition_ref = "MPL-2.0 WITH AdditionRef-Embark-Exception";
+    let doc_addition_ref = "MIT WITH DocumentRef-Embark:AdditionRef-Embark-Exception";
 
     test_validate!(ok [
         with_exception => [with_exception],
+        addition_ref => [addition_ref],
+        doc_addition_ref => [doc_addition_ref],
     ]);
 }
 

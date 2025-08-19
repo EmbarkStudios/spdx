@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.12.0] - 2025-08-19
 ### Added
 - [PR#81](https://github.com/EmbarkStudios/spdx/pull/81) resolved [#68](https://github.com/EmbarkStudios/spdx/issues/68) by adding support for the ` WITH [%s"DocumentRef-"(idstring)":"]%s"AdditionRef-"(idstring)` syntax. Thanks [@weihanglo](https://github.com/weihanglo)!
 
@@ -210,7 +211,8 @@ a user provided callback
 [PR#78]: https://github.com/EmbarkStudios/spdx/pull/78
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.11.1...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.12.0...HEAD
+[0.12.0]: https://github.com/EmbarkStudios/spdx/compare/0.11.1...0.12.0
 [0.11.1]: https://github.com/EmbarkStudios/spdx/compare/0.11.0...0.11.1
 [0.11.0]: https://github.com/EmbarkStudios/spdx/compare/0.10.9...0.11.0
 [0.10.9]: https://github.com/EmbarkStudios/spdx/compare/0.10.9...0.10.9

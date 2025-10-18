@@ -138,10 +138,12 @@ impl Licensee {
 
                         match lt.token {
                             Token::Exception(id) => Some(AdditionItem::Spdx(id)),
-                            Token::AdditionRef { doc_ref, add_ref } => Some(AdditionItem::Other {
-                                doc_ref: doc_ref.map(String::from),
-                                add_ref: add_ref.to_owned(),
-                            }),
+                            Token::AdditionRef { doc_ref, add_ref } => {
+                                Some(AdditionItem::Other(Box::new(crate::AdditionRef {
+                                    doc_ref: doc_ref.map(String::from),
+                                    add_ref: add_ref.to_owned(),
+                                })))
+                            }
                             _ => {
                                 return Err(ParseError {
                                     original: original.to_owned(),

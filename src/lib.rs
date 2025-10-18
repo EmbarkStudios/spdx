@@ -423,24 +423,27 @@ impl fmt::Display for LicenseItem {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct AdditionRef {
+    /// Purpose: Identify any external SPDX documents referenced within this SPDX document.
+    /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.h430e9ypa0j9) for
+    /// more details.
+    pub doc_ref: Option<String>,
+    /// Purpose: Provide a locally unique identifier to refer to additional text that are not found on the SPDX License List.
+    /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.4f1mdlm) for
+    /// more details.
+    pub add_ref: String,
+}
+
 /// A single addition term in a addition expression, according to the SPDX spec.
 ///
 /// This can be either an SPDX license exception, which is mapped to a [`ExceptionId`]
 /// from a valid SPDX short identifier, or else a document and/or addition ref
-#[derive(Debug, Clone, Eq)]
+#[derive(Debug, Clone)]
 pub enum AdditionItem {
     /// A regular SPDX license exception id
     Spdx(ExceptionId),
-    Other {
-        /// Purpose: Identify any external SPDX documents referenced within this SPDX document.
-        /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.h430e9ypa0j9) for
-        /// more details.
-        doc_ref: Option<String>,
-        /// Purpose: Provide a locally unique identifier to refer to additional text that are not found on the SPDX License List.
-        /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.4f1mdlm) for
-        /// more details.
-        add_ref: String,
-    },
+    Other(Box<AdditionRef>),
 }
 
 impl AdditionItem {
@@ -462,17 +465,8 @@ impl Ord for AdditionItem {
                 Ordering::Equal => a.cmp(b),
                 o => o,
             },
-            (
-                Self::Other {
-                    doc_ref: ad,
-                    add_ref: aa,
-                },
-                Self::Other {
-                    doc_ref: bd,
-                    add_ref: ba,
-                },
-            ) => match ad.cmp(bd) {
-                Ordering::Equal => aa.cmp(ba),
+            (Self::Other(a), Self::Other(b)) => match a.doc_ref.cmp(&b.doc_ref) {
+                Ordering::Equal => a.add_ref.cmp(&b.add_ref),
                 o => o,
             },
             (Self::Spdx(_), Self::Other { .. }) => Ordering::Less,
@@ -486,17 +480,8 @@ impl PartialOrd for AdditionItem {
     fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
         match (self, o) {
             (Self::Spdx(a), Self::Spdx(b)) => a.partial_cmp(b),
-            (
-                Self::Other {
-                    doc_ref: ad,
-                    add_ref: aa,
-                },
-                Self::Other {
-                    doc_ref: bd,
-                    add_ref: ba,
-                },
-            ) => match ad.cmp(bd) {
-                Ordering::Equal => aa.partial_cmp(ba),
+            (Self::Other(a), Self::Other(b)) => match a.doc_ref.cmp(&b.doc_ref) {
+                Ordering::Equal => a.add_ref.partial_cmp(&b.add_ref),
                 o => Some(o),
             },
             (Self::Spdx(_), Self::Other { .. }) => Some(cmp::Ordering::Less),
@@ -510,19 +495,22 @@ impl PartialEq for AdditionItem {
         matches!(self.partial_cmp(o), Some(cmp::Ordering::Equal))
     }
 }
+impl Eq for AdditionItem {}
 
 impl fmt::Display for AdditionItem {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match self {
             AdditionItem::Spdx(id) => id.name().fmt(f),
-            AdditionItem::Other {
-                doc_ref: Some(d),
-                add_ref: a,
-            } => write!(f, "DocumentRef-{d}:AdditionRef-{a}"),
-            AdditionItem::Other {
-                doc_ref: None,
-                add_ref: a,
-            } => write!(f, "AdditionRef-{a}"),
+            AdditionItem::Other(refs) => match refs.as_ref() {
+                AdditionRef {
+                    doc_ref: Some(d),
+                    add_ref: a,
+                } => write!(f, "DocumentRef-{d}:AdditionRef-{a}"),
+                AdditionRef {
+                    doc_ref: None,
+                    add_ref: a,
+                } => write!(f, "AdditionRef-{a}"),
+            },
         }
     }
 }
@@ -611,9 +599,7 @@ pub fn imprecise_license_id(name: &str) -> Option<(LicenseId, usize)> {
 pub fn exception_id(name: &str) -> Option<ExceptionId> {
     identifiers::EXCEPTIONS
         .binary_search_by(|exc| exc.0.cmp(name))
-        .map(|index| {
-            ExceptionId { index }
-        })
+        .map(|index| ExceptionId { index })
         .ok()
 }
 

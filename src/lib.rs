@@ -34,12 +34,7 @@ use std::{
 /// ```
 #[derive(Copy, Clone, Eq)]
 pub struct LicenseId {
-    /// The short identifier for the license
-    pub name: &'static str,
-    /// The full name of the license
-    pub full_name: &'static str,
     index: usize,
-    flags: u8,
 }
 
 impl PartialEq for LicenseId {
@@ -64,6 +59,26 @@ impl PartialOrd for LicenseId {
 }
 
 impl LicenseId {
+    /// The short identifier for the license
+    #[inline]
+    #[must_use]
+    pub fn name(self) -> &'static str {
+        identifiers::LICENSES[self.index].0
+    }
+
+    /// The full name of the license
+    #[inline]
+    #[must_use]
+    pub fn full_name(self) -> &'static str {
+        identifiers::LICENSES[self.index].1
+    }
+
+    #[inline]
+    #[must_use]
+    fn flags(self) -> u8 {
+        identifiers::LICENSES[self.index].2
+    }
+
     /// Returns true if the license is [considered free by the FSF](https://www.gnu.org/licenses/license-list.en.html)
     ///
     /// ```
@@ -72,7 +87,7 @@ impl LicenseId {
     #[inline]
     #[must_use]
     pub fn is_fsf_free_libre(self) -> bool {
-        self.flags & IS_FSF_LIBRE != 0
+        self.flags() & IS_FSF_LIBRE != 0
     }
 
     /// Returns true if the license is [OSI approved](https://opensource.org/licenses)
@@ -83,7 +98,7 @@ impl LicenseId {
     #[inline]
     #[must_use]
     pub fn is_osi_approved(self) -> bool {
-        self.flags & IS_OSI_APPROVED != 0
+        self.flags() & IS_OSI_APPROVED != 0
     }
 
     /// Returns true if the license is deprecated
@@ -94,7 +109,7 @@ impl LicenseId {
     #[inline]
     #[must_use]
     pub fn is_deprecated(self) -> bool {
-        self.flags & IS_DEPRECATED != 0
+        self.flags() & IS_DEPRECATED != 0
     }
 
     /// Returns true if the license is [copyleft](https://en.wikipedia.org/wiki/Copyleft)
@@ -105,7 +120,7 @@ impl LicenseId {
     #[inline]
     #[must_use]
     pub fn is_copyleft(self) -> bool {
-        self.flags & IS_COPYLEFT != 0
+        self.flags() & IS_COPYLEFT != 0
     }
 
     /// Returns true if the license is a [GNU license](https://www.gnu.org/licenses/identify-licenses-clearly.html),
@@ -117,7 +132,7 @@ impl LicenseId {
     #[inline]
     #[must_use]
     pub fn is_gnu(self) -> bool {
-        self.flags & IS_GNU != 0
+        self.flags() & IS_GNU != 0
     }
 
     /// Retrieves the version of the license ID, if any
@@ -129,7 +144,7 @@ impl LicenseId {
     /// ```
     #[inline]
     pub fn version(self) -> Option<&'static str> {
-        self.name
+        self.name()
             .split('-')
             .find(|comp| comp.chars().all(|c| c == '.' || c.is_ascii_digit()))
     }
@@ -142,7 +157,7 @@ impl LicenseId {
     /// ```
     #[inline]
     pub fn base(self) -> &'static str {
-        self.name.split_once('-').map_or(self.name, |(n, _)| n)
+        self.name().split_once('-').map_or(self.name(), |(n, _)| n)
     }
 
     /// Attempts to retrieve the license text
@@ -159,7 +174,7 @@ impl LicenseId {
 
 impl fmt::Debug for LicenseId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.name)
+        write!(f, "{}", self.name())
     }
 }
 
@@ -171,10 +186,7 @@ impl fmt::Debug for LicenseId {
 /// ```
 #[derive(Copy, Clone, Eq)]
 pub struct ExceptionId {
-    /// The short identifier for the exception
-    pub name: &'static str,
     index: usize,
-    flags: u8,
 }
 
 impl PartialEq for ExceptionId {
@@ -199,6 +211,19 @@ impl PartialOrd for ExceptionId {
 }
 
 impl ExceptionId {
+    /// The short identifier for the exception
+    #[inline]
+    #[must_use]
+    pub fn name(self) -> &'static str {
+        identifiers::EXCEPTIONS[self.index].0
+    }
+
+    #[inline]
+    #[must_use]
+    fn flags(self) -> u8 {
+        identifiers::EXCEPTIONS[self.index].1
+    }
+
     /// Returns true if the exception is deprecated
     ///
     /// ```
@@ -207,7 +232,7 @@ impl ExceptionId {
     #[inline]
     #[must_use]
     pub fn is_deprecated(self) -> bool {
-        self.flags & IS_DEPRECATED != 0
+        self.flags() & IS_DEPRECATED != 0
     }
 
     /// Attempts to retrieve the license exception text
@@ -224,7 +249,7 @@ impl ExceptionId {
 
 impl fmt::Debug for ExceptionId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.name)
+        write!(f, "{}", self.name())
     }
 }
 
@@ -374,7 +399,7 @@ impl fmt::Display for LicenseItem {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match self {
             LicenseItem::Spdx { id, or_later } => {
-                id.name.fmt(f)?;
+                id.name().fmt(f)?;
 
                 if *or_later {
                     if id.is_gnu() && id.is_deprecated() {
@@ -489,7 +514,7 @@ impl PartialEq for AdditionItem {
 impl fmt::Display for AdditionItem {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match self {
-            AdditionItem::Spdx(id) => id.name.fmt(f),
+            AdditionItem::Spdx(id) => id.name().fmt(f),
             AdditionItem::Other {
                 doc_ref: Some(d),
                 add_ref: a,
@@ -516,15 +541,7 @@ pub fn license_id(name: &str) -> Option<LicenseId> {
     let name = name.trim_end_matches('+');
     identifiers::LICENSES
         .binary_search_by(|lic| lic.0.cmp(name))
-        .map(|index| {
-            let (name, full_name, flags) = identifiers::LICENSES[index];
-            LicenseId {
-                name,
-                full_name,
-                index,
-                flags,
-            }
-        })
+        .map(|index| LicenseId { index })
         .ok()
 }
 
@@ -595,8 +612,7 @@ pub fn exception_id(name: &str) -> Option<ExceptionId> {
     identifiers::EXCEPTIONS
         .binary_search_by(|exc| exc.0.cmp(name))
         .map(|index| {
-            let (name, flags) = identifiers::EXCEPTIONS[index];
-            ExceptionId { name, index, flags }
+            ExceptionId { index }
         })
         .ok()
 }

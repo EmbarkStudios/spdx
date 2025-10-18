@@ -103,8 +103,8 @@ impl std::fmt::Display for Token<'_> {
 impl Token<'_> {
     fn len(&self) -> usize {
         match self {
-            Token::Spdx(id) => id.name.len(),
-            Token::Exception(e) => e.name.len(),
+            Token::Spdx(id) => id.name().len(),
+            Token::Exception(e) => e.name().len(),
             Token::With => 4,
             Token::And => 3,
             Token::Or => 2,

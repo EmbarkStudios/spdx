@@ -56,8 +56,8 @@ impl Expression {
         let lexer = Lexer::new_mode(original, ParseMode::LAX);
 
         let push_id = |s: &mut String, id: crate::LicenseId| {
-            s.push_str(id.name);
-            if id.is_gnu() && !id.name.ends_with("-only") && !id.name.ends_with("-or-later") {
+            s.push_str(id.name());
+            if id.is_gnu() && !id.name().ends_with("-only") && !id.name().ends_with("-or-later") {
                 s.push_str("-only");
             }
         };
@@ -103,7 +103,7 @@ impl Expression {
                 }
                 Token::OpenParen => can.push('('),
                 Token::CloseParen => can.push(')'),
-                Token::Exception(exc) => can.push_str(exc.name),
+                Token::Exception(exc) => can.push_str(exc.name()),
                 Token::LicenseRef { doc_ref, lic_ref } => {
                     if let Some(dr) = doc_ref {
                         can.push_str("DocumentRef-");
@@ -256,7 +256,7 @@ impl Expression {
                                     });
                                 }
 
-                                if id.name.ends_with("-or-later") {
+                                if id.name().ends_with("-or-later") {
                                     return Err(ParseError {
                                         original: original.to_owned(),
                                         span: lt.span,
@@ -265,7 +265,7 @@ impl Expression {
                                 }
 
                                 *id = crate::gnu_license_id(
-                                    id.name.strip_suffix("-only").unwrap_or(id.name),
+                                    id.name().strip_suffix("-only").unwrap_or(id.name()),
                                     true,
                                 )
                                 .ok_or_else(|| ParseError {

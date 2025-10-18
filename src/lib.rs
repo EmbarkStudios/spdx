@@ -293,7 +293,7 @@ impl fmt::Display for LicenseReq {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct LicenseRef {
     /// Purpose: Identify any external SPDX documents referenced within this SPDX document.
     /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.h430e9ypa0j9) for
@@ -303,6 +303,15 @@ pub struct LicenseRef {
     /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.4f1mdlm) for
     /// more details.
     pub lic_ref: String,
+}
+
+impl fmt::Display for LicenseRef {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        match (&self.doc_ref, &self.lic_ref) {
+            (Some(d), a) => write!(f, "DocumentRef-{d}:LicenseRef-{a}"),
+            (None, a) => write!(f, "LicenseRef-{a}"),
+        }
+    }
 }
 
 /// A single license term in a license expression, according to the SPDX spec.
@@ -349,10 +358,7 @@ impl Ord for LicenseItem {
                 Ordering::Equal => la.cmp(lb),
                 o => o,
             },
-            (Self::Other(a), Self::Other(b)) => match a.doc_ref.cmp(&b.doc_ref) {
-                Ordering::Equal => a.lic_ref.cmp(&b.lic_ref),
-                o => o,
-            },
+            (Self::Other(a), Self::Other(b)) => a.cmp(b),
             (Self::Spdx { .. }, Self::Other { .. }) => Ordering::Less,
             (Self::Other { .. }, Self::Spdx { .. }) => Ordering::Greater,
         }
@@ -364,10 +370,7 @@ impl PartialOrd for LicenseItem {
     fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
         match (self, o) {
             (Self::Spdx { id: a, .. }, Self::Spdx { id: b, .. }) => a.partial_cmp(b),
-            (Self::Other(a), Self::Other(b)) => match a.doc_ref.cmp(&b.doc_ref) {
-                Ordering::Equal => a.lic_ref.partial_cmp(&b.lic_ref),
-                o => Some(o),
-            },
+            (Self::Other(a), Self::Other(b)) => a.partial_cmp(b),
             (Self::Spdx { .. }, Self::Other { .. }) => Some(cmp::Ordering::Less),
             (Self::Other { .. }, Self::Spdx { .. }) => Some(cmp::Ordering::Greater),
         }
@@ -398,21 +401,12 @@ impl fmt::Display for LicenseItem {
 
                 Ok(())
             }
-            LicenseItem::Other(refs) => match refs.as_ref() {
-                LicenseRef {
-                    doc_ref: Some(d),
-                    lic_ref: a,
-                } => write!(f, "DocumentRef-{d}:LicenseRef-{a}"),
-                LicenseRef {
-                    doc_ref: None,
-                    lic_ref: a,
-                } => write!(f, "LicenseRef-{a}"),
-            },
+            LicenseItem::Other(refs) => refs.fmt(f),
         }
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct AdditionRef {
     /// Purpose: Identify any external SPDX documents referenced within this SPDX document.
     /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.h430e9ypa0j9) for
@@ -422,6 +416,15 @@ pub struct AdditionRef {
     /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.4f1mdlm) for
     /// more details.
     pub add_ref: String,
+}
+
+impl fmt::Display for AdditionRef {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        match (&self.doc_ref, &self.add_ref) {
+            (Some(d), a) => write!(f, "DocumentRef-{d}:AdditionRef-{a}"),
+            (None, a) => write!(f, "AdditionRef-{a}"),
+        }
+    }
 }
 
 /// A single addition term in a addition expression, according to the SPDX spec.
@@ -454,10 +457,7 @@ impl Ord for AdditionItem {
                 Ordering::Equal => a.cmp(b),
                 o => o,
             },
-            (Self::Other(a), Self::Other(b)) => match a.doc_ref.cmp(&b.doc_ref) {
-                Ordering::Equal => a.add_ref.cmp(&b.add_ref),
-                o => o,
-            },
+            (Self::Other(a), Self::Other(b)) => a.cmp(b),
             (Self::Spdx(_), Self::Other { .. }) => Ordering::Less,
             (Self::Other { .. }, Self::Spdx(_)) => Ordering::Greater,
         }
@@ -469,10 +469,7 @@ impl PartialOrd for AdditionItem {
     fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
         match (self, o) {
             (Self::Spdx(a), Self::Spdx(b)) => a.partial_cmp(b),
-            (Self::Other(a), Self::Other(b)) => match a.doc_ref.cmp(&b.doc_ref) {
-                Ordering::Equal => a.add_ref.partial_cmp(&b.add_ref),
-                o => Some(o),
-            },
+            (Self::Other(a), Self::Other(b)) => a.partial_cmp(b),
             (Self::Spdx(_), Self::Other { .. }) => Some(cmp::Ordering::Less),
             (Self::Other { .. }, Self::Spdx(_)) => Some(cmp::Ordering::Greater),
         }
@@ -490,16 +487,7 @@ impl fmt::Display for AdditionItem {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match self {
             AdditionItem::Spdx(id) => id.name().fmt(f),
-            AdditionItem::Other(refs) => match refs.as_ref() {
-                AdditionRef {
-                    doc_ref: Some(d),
-                    add_ref: a,
-                } => write!(f, "DocumentRef-{d}:AdditionRef-{a}"),
-                AdditionRef {
-                    doc_ref: None,
-                    add_ref: a,
-                } => write!(f, "AdditionRef-{a}"),
-            },
+            AdditionItem::Other(refs) => refs.fmt(f),
         }
     }
 }

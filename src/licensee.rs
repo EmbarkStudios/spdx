@@ -224,7 +224,7 @@ impl Licensee {
                 }
             }
             (LicenseItem::Other(a), LicenseItem::Other(b)) => {
-                if a.doc_ref != b.doc_ref || a.lic_ref != b.lic_ref {
+                if a != b {
                     return false;
                 }
             }

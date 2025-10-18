@@ -1,5 +1,5 @@
 use crate::{
-    AdditionItem, AdditionRef, LicenseItem, LicenseReq, ParseMode,
+    AdditionItem, AdditionRef, LicenseItem, LicenseRef, LicenseReq, ParseMode,
     error::{ParseError, Reason},
     expression::{ExprNode, Expression, ExpressionReq, Operator},
     lexer::{Lexer, Token},
@@ -225,10 +225,10 @@ impl Expression {
                     None | Some(Token::And | Token::Or | Token::OpenParen) => {
                         expr_queue.push(ExprNode::Req(ExpressionReq {
                             req: LicenseReq {
-                                license: LicenseItem::Other {
+                                license: LicenseItem::Other(Box::new(LicenseRef {
                                     doc_ref: doc_ref.map(String::from),
                                     lic_ref: String::from(*lic_ref),
-                                },
+                                })),
                                 addition: None,
                             },
                             span: lt.span.start as u32..lt.span.end as u32,

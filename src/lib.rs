@@ -293,11 +293,23 @@ impl fmt::Display for LicenseReq {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct LicenseRef {
+    /// Purpose: Identify any external SPDX documents referenced within this SPDX document.
+    /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.h430e9ypa0j9) for
+    /// more details.
+    pub doc_ref: Option<String>,
+    /// Purpose: Provide a locally unique identifier to refer to licenses that are not found on the SPDX License List.
+    /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.4f1mdlm) for
+    /// more details.
+    pub lic_ref: String,
+}
+
 /// A single license term in a license expression, according to the SPDX spec.
 ///
 /// This can be either an SPDX license, which is mapped to a [`LicenseId`] from
 /// a valid SPDX short identifier, or else a document and/or license ref
-#[derive(Debug, Clone, Eq)]
+#[derive(Debug, Clone)]
 pub enum LicenseItem {
     /// A regular SPDX license id
     Spdx {
@@ -306,16 +318,7 @@ pub enum LicenseItem {
         /// the software under either the specific version, or any later versions
         or_later: bool,
     },
-    Other {
-        /// Purpose: Identify any external SPDX documents referenced within this SPDX document.
-        /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.h430e9ypa0j9) for
-        /// more details.
-        doc_ref: Option<String>,
-        /// Purpose: Provide a locally unique identifier to refer to licenses that are not found on the SPDX License List.
-        /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.4f1mdlm) for
-        /// more details.
-        lic_ref: String,
-    },
+    Other(Box<LicenseRef>),
 }
 
 impl LicenseItem {
@@ -346,17 +349,8 @@ impl Ord for LicenseItem {
                 Ordering::Equal => la.cmp(lb),
                 o => o,
             },
-            (
-                Self::Other {
-                    doc_ref: ad,
-                    lic_ref: al,
-                },
-                Self::Other {
-                    doc_ref: bd,
-                    lic_ref: bl,
-                },
-            ) => match ad.cmp(bd) {
-                Ordering::Equal => al.cmp(bl),
+            (Self::Other(a), Self::Other(b)) => match a.doc_ref.cmp(&b.doc_ref) {
+                Ordering::Equal => a.lic_ref.cmp(&b.lic_ref),
                 o => o,
             },
             (Self::Spdx { .. }, Self::Other { .. }) => Ordering::Less,
@@ -370,17 +364,8 @@ impl PartialOrd for LicenseItem {
     fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
         match (self, o) {
             (Self::Spdx { id: a, .. }, Self::Spdx { id: b, .. }) => a.partial_cmp(b),
-            (
-                Self::Other {
-                    doc_ref: ad,
-                    lic_ref: al,
-                },
-                Self::Other {
-                    doc_ref: bd,
-                    lic_ref: bl,
-                },
-            ) => match ad.cmp(bd) {
-                Ordering::Equal => al.partial_cmp(bl),
+            (Self::Other(a), Self::Other(b)) => match a.doc_ref.cmp(&b.doc_ref) {
+                Ordering::Equal => a.lic_ref.partial_cmp(&b.lic_ref),
                 o => Some(o),
             },
             (Self::Spdx { .. }, Self::Other { .. }) => Some(cmp::Ordering::Less),
@@ -394,6 +379,8 @@ impl PartialEq for LicenseItem {
         matches!(self.partial_cmp(o), Some(cmp::Ordering::Equal))
     }
 }
+
+impl Eq for LicenseItem {}
 
 impl fmt::Display for LicenseItem {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
@@ -411,14 +398,16 @@ impl fmt::Display for LicenseItem {
 
                 Ok(())
             }
-            LicenseItem::Other {
-                doc_ref: Some(d),
-                lic_ref: l,
-            } => write!(f, "DocumentRef-{d}:LicenseRef-{l}"),
-            LicenseItem::Other {
-                doc_ref: None,
-                lic_ref: l,
-            } => write!(f, "LicenseRef-{l}"),
+            LicenseItem::Other(refs) => match refs.as_ref() {
+                LicenseRef {
+                    doc_ref: Some(d),
+                    lic_ref: a,
+                } => write!(f, "DocumentRef-{d}:LicenseRef-{a}"),
+                LicenseRef {
+                    doc_ref: None,
+                    lic_ref: a,
+                } => write!(f, "LicenseRef-{a}"),
+            },
         }
     }
 }

@@ -196,8 +196,8 @@ impl Licensee {
                         |s: &'static str| s.chars().all(|c| c == '.' || c.is_ascii_digit());
 
                     if *or_later {
-                        let mut ai = a.name().split('-');
-                        let mut bi = b.name().split('-');
+                        let mut ai = a.name.split('-');
+                        let mut bi = b.name.split('-');
 
                         loop {
                             match (ai.next(), bi.next()) {

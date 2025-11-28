@@ -5,7 +5,7 @@ fn handles_deprecation() {
     let id = license_id("GPL-3.0-with-autoconf-exception").unwrap();
     assert!(id.is_deprecated());
     assert_eq!(
-        id.full_name(),
+        id.full_name,
         "GNU General Public License v3.0 w/Autoconf exception"
     );
 }
@@ -14,21 +14,21 @@ fn handles_deprecation() {
 fn handles_fsf() {
     let x11 = license_id("X11").unwrap();
     assert!(x11.is_fsf_free_libre() && !x11.is_osi_approved());
-    assert_eq!(x11.full_name(), "X11 License");
+    assert_eq!(x11.full_name, "X11 License");
 }
 
 #[test]
 fn handles_osi() {
     let rscpl = license_id("RSCPL").unwrap();
     assert!(rscpl.is_osi_approved() && !rscpl.is_fsf_free_libre());
-    assert_eq!(rscpl.full_name(), "Ricoh Source Code Public License");
+    assert_eq!(rscpl.full_name, "Ricoh Source Code Public License");
 }
 
 #[test]
 fn handles_fsf_and_osi() {
     let cat = license_id("Sleepycat").unwrap();
     assert!(cat.is_fsf_free_libre() && cat.is_osi_approved());
-    assert_eq!(cat.full_name(), "Sleepycat License");
+    assert_eq!(cat.full_name, "Sleepycat License");
 }
 
 #[test]
@@ -36,7 +36,7 @@ fn handles_neither() {
     let adobe = license_id("Adobe-2006").unwrap();
     assert!(!adobe.is_fsf_free_libre() && !adobe.is_osi_approved());
     assert_eq!(
-        adobe.full_name(),
+        adobe.full_name,
         "Adobe Systems Incorporated Source Code License Agreement"
     );
 }
@@ -50,7 +50,7 @@ fn handles_deprecated_fsf_and_osi() {
     // this case the + is actually a part of the name, which is why it has been deprecated,
     // but it's fine because LGPL-2.1 is also deprecated :p
     assert_eq!(
-        id.full_name(),
+        id.full_name,
         "GNU Lesser General Public License v2.1 only"
     );
 }
@@ -68,5 +68,5 @@ fn handles_exception_deprecation() {
 fn handles_copyleft() {
     let gpl = license_id("GPL-3.0-or-later").unwrap();
     assert!(gpl.is_copyleft());
-    assert_eq!(gpl.full_name(), "GNU General Public License v3.0 or later");
+    assert_eq!(gpl.full_name, "GNU General Public License v3.0 or later");
 }

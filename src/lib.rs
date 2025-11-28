@@ -12,13 +12,39 @@ pub mod text;
 
 pub use error::ParseError;
 pub use expression::Expression;
-use identifiers::{IS_COPYLEFT, IS_DEPRECATED, IS_FSF_LIBRE, IS_GNU, IS_OSI_APPROVED};
 pub use lexer::ParseMode;
 pub use licensee::Licensee;
 use std::{
     cmp::{self, Ordering},
     fmt,
 };
+
+pub mod flags {
+    pub type Type = u8;
+
+    /// Whether the license is listed as free by the [Free Software Foundation](https://www.gnu.org/licenses/license-list.en.html)
+    pub const IS_FSF_LIBRE: Type = 0x1;
+    /// Whether the license complies with the Open Source Definition as determined by the [Open Source Initiative](https://opensource.org/licenses)
+    pub const IS_OSI_APPROVED: Type = 0x2;
+    /// Whether the license or exception has been deprecated and should no longer be used
+    pub const IS_DEPRECATED: Type = 0x4;
+    /// Whether the license is considered copyleft
+    pub const IS_COPYLEFT: Type = 0x8;
+    /// Whether the license is a GNU license
+    pub const IS_GNU: Type = 0x10;
+}
+
+/// An SPDX license
+pub struct License {
+    /// The short identifier for the license
+    pub name: &'static str,
+    /// The full name of the license
+    pub full_name: &'static str,
+    /// The index in the full license list where this license is positioned
+    pub index: usize,
+    /// The flags for this license
+    pub flags: flags::Type,
+}
 
 /// Unique identifier for a particular license
 ///
@@ -32,22 +58,24 @@ use std::{
 ///     && !bsd.is_copyleft()
 /// );
 /// ```
-#[derive(Copy, Clone, Eq)]
+#[derive(Copy, Clone)]
 pub struct LicenseId {
-    index: usize,
+    l: &'static License,
 }
 
 impl PartialEq for LicenseId {
     #[inline]
     fn eq(&self, o: &Self) -> bool {
-        self.index == o.index
+        self.l.index == o.l.index
     }
 }
+
+impl Eq for LicenseId {}
 
 impl Ord for LicenseId {
     #[inline]
     fn cmp(&self, o: &Self) -> Ordering {
-        self.index.cmp(&o.index)
+        self.l.index.cmp(&o.l.index)
     }
 }
 
@@ -58,27 +86,16 @@ impl PartialOrd for LicenseId {
     }
 }
 
+impl std::ops::Deref for LicenseId {
+    type Target = License;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        self.l
+    }
+}
+
 impl LicenseId {
-    /// The short identifier for the license
-    #[inline]
-    #[must_use]
-    pub fn name(self) -> &'static str {
-        identifiers::LICENSES[self.index].0
-    }
-
-    /// The full name of the license
-    #[inline]
-    #[must_use]
-    pub fn full_name(self) -> &'static str {
-        identifiers::LICENSES[self.index].1
-    }
-
-    #[inline]
-    #[must_use]
-    fn flags(self) -> u8 {
-        identifiers::LICENSES[self.index].2
-    }
-
     /// Returns true if the license is [considered free by the FSF](https://www.gnu.org/licenses/license-list.en.html)
     ///
     /// ```
@@ -87,7 +104,7 @@ impl LicenseId {
     #[inline]
     #[must_use]
     pub fn is_fsf_free_libre(self) -> bool {
-        self.flags() & IS_FSF_LIBRE != 0
+        self.l.flags & flags::IS_FSF_LIBRE != 0
     }
 
     /// Returns true if the license is [OSI approved](https://opensource.org/licenses)
@@ -98,7 +115,7 @@ impl LicenseId {
     #[inline]
     #[must_use]
     pub fn is_osi_approved(self) -> bool {
-        self.flags() & IS_OSI_APPROVED != 0
+        self.l.flags & flags::IS_OSI_APPROVED != 0
     }
 
     /// Returns true if the license is deprecated
@@ -109,7 +126,7 @@ impl LicenseId {
     #[inline]
     #[must_use]
     pub fn is_deprecated(self) -> bool {
-        self.flags() & IS_DEPRECATED != 0
+        self.l.flags & flags::IS_DEPRECATED != 0
     }
 
     /// Returns true if the license is [copyleft](https://en.wikipedia.org/wiki/Copyleft)
@@ -120,7 +137,7 @@ impl LicenseId {
     #[inline]
     #[must_use]
     pub fn is_copyleft(self) -> bool {
-        self.flags() & IS_COPYLEFT != 0
+        self.l.flags & flags::IS_COPYLEFT != 0
     }
 
     /// Returns true if the license is a [GNU license](https://www.gnu.org/licenses/identify-licenses-clearly.html),
@@ -132,7 +149,7 @@ impl LicenseId {
     #[inline]
     #[must_use]
     pub fn is_gnu(self) -> bool {
-        self.flags() & IS_GNU != 0
+        self.l.flags & flags::IS_GNU != 0
     }
 
     /// Retrieves the version of the license ID, if any
@@ -144,7 +161,7 @@ impl LicenseId {
     /// ```
     #[inline]
     pub fn version(self) -> Option<&'static str> {
-        self.name()
+        self.l.name
             .split('-')
             .find(|comp| comp.chars().all(|c| c == '.' || c.is_ascii_digit()))
     }
@@ -157,7 +174,7 @@ impl LicenseId {
     /// ```
     #[inline]
     pub fn base(self) -> &'static str {
-        self.name().split_once('-').map_or(self.name(), |(n, _)| n)
+        self.l.name.split_once('-').map_or(self.l.name, |(n, _)| n)
     }
 
     /// Attempts to retrieve the license text
@@ -168,14 +185,24 @@ impl LicenseId {
     #[cfg(feature = "text")]
     #[inline]
     pub fn text(self) -> &'static str {
-        text::LICENSE_TEXTS[self.index].1
+        text::LICENSE_TEXTS[self.l.index].1
     }
 }
 
 impl fmt::Debug for LicenseId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.name())
+        write!(f, "{}", self.l.name)
     }
+}
+
+/// An SPDX exception
+pub struct Exception {
+    /// The name of the exception
+    pub name: &'static str,
+    /// The flags for the exception
+    pub flags: u8,
+    /// The index in the full exception list where this exception is positioned
+    pub index: usize,
 }
 
 /// Unique identifier for a particular exception
@@ -184,22 +211,24 @@ impl fmt::Debug for LicenseId {
 /// let exception_id = spdx::exception_id("LLVM-exception").unwrap();
 /// assert!(!exception_id.is_deprecated());
 /// ```
-#[derive(Copy, Clone, Eq)]
+#[derive(Copy, Clone)]
 pub struct ExceptionId {
-    index: usize,
+    e: &'static Exception,
 }
 
 impl PartialEq for ExceptionId {
     #[inline]
     fn eq(&self, o: &Self) -> bool {
-        self.index == o.index
+        self.e.index == o.e.index
     }
 }
+
+impl Eq for ExceptionId {}
 
 impl Ord for ExceptionId {
     #[inline]
     fn cmp(&self, o: &Self) -> Ordering {
-        self.index.cmp(&o.index)
+        self.e.index.cmp(&o.e.index)
     }
 }
 
@@ -210,20 +239,16 @@ impl PartialOrd for ExceptionId {
     }
 }
 
+impl std::ops::Deref for ExceptionId {
+    type Target = Exception;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        self.e
+    }
+}
+
 impl ExceptionId {
-    /// The short identifier for the exception
-    #[inline]
-    #[must_use]
-    pub fn name(self) -> &'static str {
-        identifiers::EXCEPTIONS[self.index].0
-    }
-
-    #[inline]
-    #[must_use]
-    fn flags(self) -> u8 {
-        identifiers::EXCEPTIONS[self.index].1
-    }
-
     /// Returns true if the exception is deprecated
     ///
     /// ```
@@ -232,7 +257,7 @@ impl ExceptionId {
     #[inline]
     #[must_use]
     pub fn is_deprecated(self) -> bool {
-        self.flags() & IS_DEPRECATED != 0
+        self.e.flags & flags::IS_DEPRECATED != 0
     }
 
     /// Attempts to retrieve the license exception text
@@ -243,13 +268,13 @@ impl ExceptionId {
     #[cfg(feature = "text")]
     #[inline]
     pub fn text(self) -> &'static str {
-        text::EXCEPTION_TEXTS[self.index].1
+        text::EXCEPTION_TEXTS[self.e.index].1
     }
 }
 
 impl fmt::Debug for ExceptionId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.name())
+        write!(f, "{}", self.e.name)
     }
 }
 
@@ -389,7 +414,7 @@ impl fmt::Display for LicenseItem {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match self {
             LicenseItem::Spdx { id, or_later } => {
-                id.name().fmt(f)?;
+                id.name.fmt(f)?;
 
                 if *or_later {
                     if id.is_gnu() && id.is_deprecated() {
@@ -486,13 +511,13 @@ impl Eq for AdditionItem {}
 impl fmt::Display for AdditionItem {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match self {
-            AdditionItem::Spdx(id) => id.name().fmt(f),
+            AdditionItem::Spdx(id) => id.name.fmt(f),
             AdditionItem::Other(refs) => refs.fmt(f),
         }
     }
 }
 
-/// Attempts to find a [`LicenseId`] for the string.
+/// Attempts to find a [`LicenseId`] given a short id.
 ///
 /// Note that any `+` at the end is trimmed when searching for a match.
 ///
@@ -505,8 +530,8 @@ impl fmt::Display for AdditionItem {
 pub fn license_id(name: &str) -> Option<LicenseId> {
     let name = name.trim_end_matches('+');
     identifiers::LICENSES
-        .binary_search_by(|lic| lic.0.cmp(name))
-        .map(|index| LicenseId { index })
+        .binary_search_by(|lic| lic.name.cmp(name))
+        .map(|index| LicenseId { l: &identifiers::LICENSES[index] })
         .ok()
 }
 
@@ -575,8 +600,8 @@ pub fn imprecise_license_id(name: &str) -> Option<(LicenseId, usize)> {
 #[must_use]
 pub fn exception_id(name: &str) -> Option<ExceptionId> {
     identifiers::EXCEPTIONS
-        .binary_search_by(|exc| exc.0.cmp(name))
-        .map(|index| ExceptionId { index })
+        .binary_search_by(|exc| exc.name.cmp(name))
+        .map(|index| ExceptionId { e: &identifiers::EXCEPTIONS[index] })
         .ok()
 }
 

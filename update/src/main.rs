@@ -102,10 +102,10 @@ fn write_exceptions(identifiers: &mut impl Write, texts: &mut impl Write) -> Res
         };
     }
 
-    writeln!(identifiers, "pub const EXCEPTIONS: &[(&str, u8)] = &[")?;
+    writeln!(identifiers, "pub const EXCEPTIONS: &[Exception] = &[")?;
     v.sort_by_key(|v| v.0);
-    for (exc, flags) in v.iter() {
-        writeln!(identifiers, "    (\"{exc}\", {flags}),")?;
+    for (index, (exc, flags)) in v.iter().enumerate() {
+        writeln!(identifiers, "    Exception {{ name: \"{exc}\", index: {index}, flags: {flags} }},")?;
     }
     writeln!(identifiers, "];")?;
 
@@ -147,7 +147,7 @@ fn is_gnu(license: &str) -> bool {
         || license.starts_with("LGPL-")
 }
 
-fn write_license_texts<'lic>(
+fn write_license_texts(
     texts: &mut impl Write,
     licenses: impl Iterator<Item = impl AsRef<str>>,
 ) -> Result<()> {
@@ -208,11 +208,7 @@ fn write_licenses(identifiers: &mut impl Write, texts: &mut impl Write) -> Resul
     writeln!(
         identifiers,
         "
-pub const IS_FSF_LIBRE: u8 = 0x1;
-pub const IS_OSI_APPROVED: u8 = 0x2;
-pub const IS_DEPRECATED: u8 = 0x4;
-pub const IS_COPYLEFT: u8 = 0x8;
-pub const IS_GNU: u8 = 0x10;
+use crate::{{License, Exception, flags::*}};
 "
     )?;
 
@@ -309,9 +305,9 @@ pub const IS_GNU: u8 = 0x10;
         bail!("Malformed JSON: {lic_list_ver:?}")
     }
     writeln!(identifiers)?;
-    writeln!(identifiers, "pub const LICENSES: &[(&str, &str, u8)] = &[")?;
-    for (id, name, flags) in &v {
-        writeln!(identifiers, "    (\"{id}\", r#\"{name}\"#, {flags}),")?;
+    writeln!(identifiers, "pub const LICENSES: &[License] = &[")?;
+    for (index, (id, name, flags)) in v.iter().enumerate() {
+        writeln!(identifiers, "    License {{ name: \"{id}\", full_name: r#\"{name}\"#, index: {index}, flags: {flags} }},")?;
     }
     writeln!(identifiers, "];\n")?;
 
@@ -352,7 +348,7 @@ fn real_main() -> Result<()> {
         println!("cloning...");
         assert!(
             std::process::Command::new("git")
-                .args(&[
+                .args([
                     "clone",
                     "https://github.com/spdx/license-list-data.git",
                     ROOT
@@ -365,7 +361,7 @@ fn real_main() -> Result<()> {
         println!("fetching...");
         assert!(
             std::process::Command::new("git")
-                .args(&["-C", ROOT, "fetch"])
+                .args(["-C", ROOT, "fetch"])
                 .status()
                 .unwrap()
                 .success()
@@ -375,7 +371,7 @@ fn real_main() -> Result<()> {
     println!("checking out...");
     assert!(
         std::process::Command::new("git")
-            .args(&["-C", ROOT, "checkout", &upstream_tag])
+            .args(["-C", ROOT, "checkout", &upstream_tag])
             .status()
             .unwrap()
             .success()
@@ -417,16 +413,16 @@ fn real_main() -> Result<()> {
 
     // Run rustfmt on the final files
     std::process::Command::new("rustfmt")
-        .args(&["--edition", "2018", "src/identifiers.rs"])
+        .args(["--edition", "2018", "src/identifiers.rs"])
         .status()
-        .with_context(|| format!("failed to run rustfmt"))?;
+        .context("failed to run rustfmt")?;
 
     std::process::Command::new("rustfmt")
-        .args(&["--edition", "2018", "src/text.rs"])
+        .args(["--edition", "2018", "src/text.rs"])
         .status()
-        .with_context(|| format!("failed to run rustfmt"))?;
+        .context("failed to run rustfmt")?;
 
-    let mut readme = std::fs::read_to_string("README.md").context("failed to read README.md")?;
+    let readme = std::fs::read_to_string("README.md").context("failed to read README.md")?;
 
     const VERSION: &str = "SPDX%20Version-";
 
@@ -443,13 +439,13 @@ fn real_main() -> Result<()> {
         std::fs::File::create("README.md").context("failed to open README.md")?,
     );
     rmfile
-        .write(readme[..index + VERSION.len()].as_bytes())
+        .write(&readme.as_bytes()[..index + VERSION.len()])
         .context("failed to write prefix")?;
     rmfile
-        .write(upstream_tag[1..].as_bytes())
+        .write(&upstream_tag.as_bytes()[1..])
         .context("failed to write version")?;
     rmfile
-        .write(readme[end_index..].as_bytes())
+        .write(&readme.as_bytes()[end_index..])
         .context("failed to write suffix")?;
 
     Ok(())

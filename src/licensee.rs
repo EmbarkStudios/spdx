@@ -1,5 +1,5 @@
 use crate::{
-    AdditionItem, LicenseItem, LicenseReq,
+    AdditionItem, LicenseItem, LicenseRef, LicenseReq,
     error::{ParseError, Reason},
     lexer::{Lexer, Token},
 };
@@ -110,10 +110,12 @@ impl Licensee {
                         or_later: false,
                     }
                 }
-                Token::LicenseRef { doc_ref, lic_ref } => LicenseItem::Other {
-                    doc_ref: doc_ref.map(String::from),
-                    lic_ref: lic_ref.to_owned(),
-                },
+                Token::LicenseRef { doc_ref, lic_ref } => {
+                    LicenseItem::Other(Box::new(LicenseRef {
+                        doc_ref: doc_ref.map(String::from),
+                        lic_ref: lic_ref.to_owned(),
+                    }))
+                }
                 _ => {
                     return Err(ParseError {
                         original: original.to_owned(),
@@ -138,10 +140,12 @@ impl Licensee {
 
                         match lt.token {
                             Token::Exception(id) => Some(AdditionItem::Spdx(id)),
-                            Token::AdditionRef { doc_ref, add_ref } => Some(AdditionItem::Other {
-                                doc_ref: doc_ref.map(String::from),
-                                add_ref: add_ref.to_owned(),
-                            }),
+                            Token::AdditionRef { doc_ref, add_ref } => {
+                                Some(AdditionItem::Other(Box::new(crate::AdditionRef {
+                                    doc_ref: doc_ref.map(String::from),
+                                    add_ref: add_ref.to_owned(),
+                                })))
+                            }
                             _ => {
                                 return Err(ParseError {
                                     original: original.to_owned(),
@@ -219,17 +223,8 @@ impl Licensee {
                     }
                 }
             }
-            (
-                LicenseItem::Other {
-                    doc_ref: doc_a,
-                    lic_ref: lic_a,
-                },
-                LicenseItem::Other {
-                    doc_ref: doc_b,
-                    lic_ref: lic_b,
-                },
-            ) => {
-                if doc_a != doc_b || lic_a != lic_b {
+            (LicenseItem::Other(a), LicenseItem::Other(b)) => {
+                if a != b {
                     return false;
                 }
             }
@@ -268,7 +263,9 @@ impl AsRef<LicenseReq> for Licensee {
 
 #[cfg(test)]
 mod test {
-    use crate::{AdditionItem, LicenseItem, LicenseReq, Licensee, exception_id, license_id};
+    use crate::{
+        AdditionItem, LicenseItem, LicenseRef, LicenseReq, Licensee, exception_id, license_id,
+    };
 
     const LICENSEES: &[&str] = &[
         "LicenseRef-Embark-Proprietary",
@@ -356,10 +353,10 @@ mod test {
         licensees.sort();
 
         let req = LicenseReq {
-            license: LicenseItem::Other {
+            license: LicenseItem::Other(Box::new(LicenseRef {
                 doc_ref: None,
                 lic_ref: "Embark-Proprietary".to_owned(),
-            },
+            })),
             addition: None,
         };
 

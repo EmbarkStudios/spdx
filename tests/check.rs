@@ -537,12 +537,12 @@ fn unsatisfied_minimize() {
 fn too_many_to_minimize() {
     let mut ridiculous = String::new();
     let mut ohno = Vec::new();
-    for (lic, _, flags) in spdx::identifiers::LICENSES {
-        if (flags & spdx::identifiers::IS_GNU) == 0 {
-            ridiculous.push_str(lic);
+    for lic in spdx::identifiers::LICENSES {
+        if (lic.flags & spdx::flags::IS_GNU) == 0 {
+            ridiculous.push_str(lic.name);
             ridiculous.push_str(" AND ");
 
-            ohno.push(spdx::Licensee::parse_mode(lic, spdx::ParseMode::LAX).unwrap());
+            ohno.push(spdx::Licensee::parse_mode(lic.name, spdx::ParseMode::LAX).unwrap());
         }
 
         if ohno.len() >= 65 {

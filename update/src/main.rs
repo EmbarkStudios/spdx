@@ -314,6 +314,75 @@ use crate::{{Exception, License, flags::*}};
     write_license_texts(texts, v.into_iter().map(|(name, _, _)| name))
 }
 
+fn write_cache() -> anyhow::Result<()> {
+    let json: Map = serde_json::from_str(
+        &std::fs::read_to_string(format!("{ROOT}/json/licenses.json"))
+            .context("unable to open licenses.json")?,
+    )
+    .context("failed to deserialize licenses.json")?;
+
+    let licenses = get(&json, "licenses")?;
+    let licenses = if let Value::Array(v) = licenses {
+        v
+    } else {
+        bail!("Malformed JSON: {licenses:?}")
+    };
+
+    use spdx::detection as sd;
+
+    let mut texts = std::collections::BTreeMap::<String, sd::LicenseEntry>::new();
+
+    for lic in licenses.iter() {
+        let lic = if let Value::Object(ref m) = *lic {
+            m
+        } else {
+            bail!("Malformed JSON: {lic:?}")
+        };
+
+        let lic_id = get(lic, "licenseId")?.as_str().context("licenseId was not a string")?;
+
+        let details: Map = serde_json::from_str(&std::fs::read_to_string(format!("{ROOT}/json/details/{lic_id}.json")).with_context(|| format!("failed to read license details for {lic_id}"))?).with_context(|| format!("failed to deserialize details for {lic_id}"))?;
+
+        let text = get(&details, "licenseText")?.as_str().context("licenseText was not a string")?;
+
+        let content = sd::TextData::new(text);
+
+        let mut already_existed = false;
+        for (name, v) in &mut texts {
+            if !v.original.ngram_matches(&content) {
+                continue;
+            }
+
+            v.aliases.push(lic_id.to_owned());
+            println!("{lic_id} already stored; added as an alias for {name}");
+            already_existed = true;
+        }
+
+        if already_existed {
+            continue;
+        }
+
+        let license = texts
+                .entry(lic_id.to_owned())
+                .or_insert_with(|| sd::LicenseEntry::new(content));
+
+        if let Some(header_text) = details.get("standardLicenseHeader").and_then(|h| h.as_str()) {
+            license.headers.push(sd::TextData::new(header_text));
+        }
+    }
+
+    let mut s = sd::Store::new();
+    for (key, entry) in texts {
+        s.insert_entry(key, entry);
+    }
+
+    let mut f = std::fs::File::create("src/detection/cache.bin.zstd")?;
+    s.to_cache(&mut f).context("failed to store cache")?;
+    f.flush().context("failed to flush cache to disk")?;
+
+    Ok(())
+}
+
 fn real_main() -> Result<()> {
     let mut upstream_tag = None;
     let mut debug = false;
@@ -376,6 +445,8 @@ fn real_main() -> Result<()> {
             .unwrap()
             .success()
     );
+
+    let t = std::thread::spawn(write_cache);
 
     {
         let mut identifiers = io::BufWriter::new(std::fs::File::create("src/identifiers.rs")?);
@@ -448,6 +519,7 @@ fn real_main() -> Result<()> {
         .write(&readme.as_bytes()[end_index..])
         .context("failed to write suffix")?;
 
+    t.join().unwrap()?;
     Ok(())
 }
 

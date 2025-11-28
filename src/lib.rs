@@ -6,6 +6,11 @@ pub mod identifiers;
 /// Contains types for lexing an SPDX license expression
 pub mod lexer;
 mod licensee;
+
+/// Allows analysis of text to determine if it resembles a license
+#[cfg(feature = "detection")]
+pub mod detection;
+
 /// Auto-generated full canonical text of each license
 #[cfg(feature = "text")]
 pub mod text;

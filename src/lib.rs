@@ -199,10 +199,10 @@ impl fmt::Debug for LicenseId {
 pub struct Exception {
     /// The name of the exception
     pub name: &'static str,
-    /// The flags for the exception
-    pub flags: u8,
     /// The index in the full exception list where this exception is positioned
     pub index: usize,
+    /// The flags for the exception
+    pub flags: flags::Type,
 }
 
 /// Unique identifier for a particular exception

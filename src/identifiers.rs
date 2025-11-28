@@ -7,7 +7,7 @@
  * cargo run --manifest-path update/Cargo.toml -- v<version> > src/identifiers.rs
 */
 
-use crate::{flags::*, Exception, License};
+use crate::{Exception, License, flags::*};
 
 pub const VERSION: &str = "3.27.0";
 

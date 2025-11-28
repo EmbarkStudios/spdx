@@ -208,7 +208,7 @@ fn write_licenses(identifiers: &mut impl Write, texts: &mut impl Write) -> Resul
     writeln!(
         identifiers,
         "
-use crate::{{License, Exception, flags::*}};
+use crate::{{Exception, License, flags::*}};
 "
     )?;
 

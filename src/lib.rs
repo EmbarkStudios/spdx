@@ -161,7 +161,8 @@ impl LicenseId {
     /// ```
     #[inline]
     pub fn version(self) -> Option<&'static str> {
-        self.l.name
+        self.l
+            .name
             .split('-')
             .find(|comp| comp.chars().all(|c| c == '.' || c.is_ascii_digit()))
     }
@@ -531,7 +532,9 @@ pub fn license_id(name: &str) -> Option<LicenseId> {
     let name = name.trim_end_matches('+');
     identifiers::LICENSES
         .binary_search_by(|lic| lic.name.cmp(name))
-        .map(|index| LicenseId { l: &identifiers::LICENSES[index] })
+        .map(|index| LicenseId {
+            l: &identifiers::LICENSES[index],
+        })
         .ok()
 }
 
@@ -601,7 +604,9 @@ pub fn imprecise_license_id(name: &str) -> Option<(LicenseId, usize)> {
 pub fn exception_id(name: &str) -> Option<ExceptionId> {
     identifiers::EXCEPTIONS
         .binary_search_by(|exc| exc.name.cmp(name))
-        .map(|index| ExceptionId { e: &identifiers::EXCEPTIONS[index] })
+        .map(|index| ExceptionId {
+            e: &identifiers::EXCEPTIONS[index],
+        })
         .ok()
 }
 

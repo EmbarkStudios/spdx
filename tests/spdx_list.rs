@@ -49,10 +49,7 @@ fn handles_deprecated_fsf_and_osi() {
     // This is a special case, we always remove + when doing the search, but in
     // this case the + is actually a part of the name, which is why it has been deprecated,
     // but it's fine because LGPL-2.1 is also deprecated :p
-    assert_eq!(
-        id.full_name,
-        "GNU Lesser General Public License v2.1 only"
-    );
+    assert_eq!(id.full_name, "GNU Lesser General Public License v2.1 only");
 }
 
 #[test]

@@ -1,9 +1,6 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
-
-//! A crate for parsing and evaluating [SPDX license expressions](https://spdx.github.io/spdx-spec/v3.0.1/annexes/spdx-license-expressions/)
-//! 
-//! The `detection` feature also allows detecting the SPDX license for a body of text, if any.
-
+#![deny(missing_docs)]
+#![doc = include_str!("../README.md")]
 
 /// Error types
 pub mod error;

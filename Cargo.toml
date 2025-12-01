@@ -28,8 +28,12 @@ include = [
 text = []
 # Allows analysis of text to determine if it might be an SPDX license text
 detection = ["regex", "unicode-normalization"]
+# Allows de/serialization of a spdx::detection::Store for quicker loading
 detection-cache = ["detection", "zstd"]
+# Inlines a cache into this crate, which contains all of the licenses from the
+# SPDX crate that the crate version was packaged with
 detection-inline-cache = ["detection-cache"]
+# Performs license detection in parallel within the same text
 detection-parallel = ["detection", "rayon"]
 
 [dependencies]

@@ -579,7 +579,10 @@ fn handles_unknown() {
 
     fn bad(s: &str) -> spdx::LicenseReq {
         spdx::LicenseReq {
-            license: LicenseItem::Other(Box::new(spdx::LicenseRef { lic_ref: s.into(), doc_ref: None })),
+            license: LicenseItem::Other(Box::new(spdx::LicenseRef {
+                lic_ref: s.into(),
+                doc_ref: None,
+            })),
             addition: None,
         }
     }
@@ -588,19 +591,46 @@ fn handles_unknown() {
 
     let compound = spdx::Expression::parse_mode("bad or MIT", UNKNOWN).unwrap();
 
-    assert_eq!(get_reqs(&compound), vec![bad("bad"), spdx::LicenseReq::from(spdx::license_id("MIT").unwrap())]);
+    assert_eq!(
+        get_reqs(&compound),
+        vec![
+            bad("bad"),
+            spdx::LicenseReq::from(spdx::license_id("MIT").unwrap())
+        ]
+    );
 
     let parens = spdx::Expression::parse_mode("(bad and Apache-2.0) or superbad", UNKNOWN).unwrap();
 
-    assert_eq!(get_reqs(&parens), vec![bad("bad"), spdx::LicenseReq::from(spdx::license_id("Apache-2.0").unwrap()), bad("superbad")]);
+    assert_eq!(
+        get_reqs(&parens),
+        vec![
+            bad("bad"),
+            spdx::LicenseReq::from(spdx::license_id("Apache-2.0").unwrap()),
+            bad("superbad")
+        ]
+    );
 
-    let exc = spdx::Expression::parse_mode("terrible and (Apache-2.0 with even-worse or superbad)", UNKNOWN).unwrap();
+    let exc = spdx::Expression::parse_mode(
+        "terrible and (Apache-2.0 with even-worse or superbad)",
+        UNKNOWN,
+    )
+    .unwrap();
 
-    assert_eq!(get_reqs(&exc), vec![bad("terrible"), spdx::LicenseReq {
-        license: spdx::LicenseItem::Spdx { id: spdx::license_id("Apache-2.0").unwrap(), or_later: false },
-        addition: Some(spdx::AdditionItem::Other(Box::new(spdx::AdditionRef {
-            add_ref: "even-worse".into(),
-            doc_ref: None,
-        }))),
-    }, bad("superbad")]);
+    assert_eq!(
+        get_reqs(&exc),
+        vec![
+            bad("terrible"),
+            spdx::LicenseReq {
+                license: spdx::LicenseItem::Spdx {
+                    id: spdx::license_id("Apache-2.0").unwrap(),
+                    or_later: false
+                },
+                addition: Some(spdx::AdditionItem::Other(Box::new(spdx::AdditionRef {
+                    add_ref: "even-worse".into(),
+                    doc_ref: None,
+                }))),
+            },
+            bad("superbad")
+        ]
+    );
 }

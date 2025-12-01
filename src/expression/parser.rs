@@ -284,7 +284,9 @@ impl Expression {
                     _ => return make_err_for_token(last_token, lt.span),
                 },
                 Token::With => match last_token {
-                    Some(Token::Spdx(_) | Token::LicenseRef { .. } | Token::Plus | Token::Unknown(_)) => {}
+                    Some(
+                        Token::Spdx(_) | Token::LicenseRef { .. } | Token::Plus | Token::Unknown(_),
+                    ) => {}
                     _ => return make_err_for_token(last_token, lt.span),
                 },
                 Token::Or | Token::And => match last_token {
@@ -398,7 +400,10 @@ impl Expression {
                             // so assume that is what the user was attempting
                             expr_queue.push(ExprNode::Req(ExpressionReq {
                                 req: LicenseReq {
-                                    license: LicenseItem::Other(Box::new(LicenseRef { doc_ref: None, lic_ref: (*unknown).to_owned() })),
+                                    license: LicenseItem::Other(Box::new(LicenseRef {
+                                        doc_ref: None,
+                                        lic_ref: (*unknown).to_owned(),
+                                    })),
                                     addition: None,
                                 },
                                 span: lt.span.start as u32..lt.span.end as u32,
@@ -408,8 +413,11 @@ impl Expression {
                             let Some(ExprNode::Req(lic)) = expr_queue.last_mut() else {
                                 return make_err_for_token(last_token, lt.span);
                             };
-                        
-                            lic.req.addition = Some(AdditionItem::Other(Box::new(AdditionRef { doc_ref: None, add_ref: (*unknown).to_owned() })));
+
+                            lic.req.addition = Some(AdditionItem::Other(Box::new(AdditionRef {
+                                doc_ref: None,
+                                add_ref: (*unknown).to_owned(),
+                            })));
                         }
                         _ => return make_err_for_token(last_token, lt.span),
                     }

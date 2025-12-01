@@ -189,10 +189,9 @@ impl Expression {
                 None | Some(Token::And | Token::Or | Token::OpenParen) => &["<license>", "("],
                 Some(Token::CloseParen) => &["AND", "OR"],
                 Some(Token::Exception(_) | Token::AdditionRef { .. }) => &["AND", "OR", ")"],
-                Some(Token::Spdx(_)) => &["AND", "OR", "WITH", ")", "+"],
+                Some(Token::Spdx(_) | Token::Unknown(_)) => &["AND", "OR", "WITH", ")", "+"],
                 Some(Token::LicenseRef { .. } | Token::Plus) => &["AND", "OR", "WITH", ")"],
                 Some(Token::With) => &["<addition>"],
-                Some(Token::Unknown(_)) => &["AND", "OR", "WITH", ")", "+"],
             };
 
             Err(ParseError {

@@ -331,16 +331,14 @@ impl<'a> Iterator for Lexer<'a> {
                         }
                     {
                         Some(Ok((Token::Spdx(lic_id), token_len)))
+                    } else if self.mode.allow_unknown {
+                        ok_token(Token::Unknown(m))
                     } else {
-                        if self.mode.allow_unknown {
-                            ok_token(Token::Unknown(m))
-                        } else {
-                            Some(Err(ParseError {
-                                original: self.original.to_owned(),
-                                span: self.offset..self.offset + m.len(),
-                                reason: Reason::UnknownTerm,
-                            }))
-                        }
+                        Some(Err(ParseError {
+                            original: self.original.to_owned(),
+                            span: self.offset..self.offset + m.len(),
+                            reason: Reason::UnknownTerm,
+                        }))
                     }
                 }
             },

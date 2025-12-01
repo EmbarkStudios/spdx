@@ -1,13 +1,24 @@
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![deny(missing_docs)]
+#![doc = include_str!("../README.md")]
+
 /// Error types
 pub mod error;
 pub mod expression;
 /// Auto-generated lists of license identifiers and exception identifiers
+#[allow(missing_docs)]
 pub mod identifiers;
 /// Contains types for lexing an SPDX license expression
 pub mod lexer;
 mod licensee;
+
+/// Allows analysis of text to determine if it resembles a license
+#[cfg(feature = "detection")]
+pub mod detection;
+
 /// Auto-generated full canonical text of each license
 #[cfg(feature = "text")]
+#[allow(missing_docs)]
 pub mod text;
 
 pub use error::ParseError;
@@ -19,7 +30,9 @@ use std::{
     fmt,
 };
 
+/// Flags that can apply to licenses and/or license exceptions
 pub mod flags {
+    /// Inner type of the flags
     pub type Type = u8;
 
     /// Whether the license is listed as free by the [Free Software Foundation](https://www.gnu.org/licenses/license-list.en.html)
@@ -319,13 +332,17 @@ impl fmt::Display for LicenseReq {
     }
 }
 
+/// SPDX allows the use of `LicenseRef-<user supplied string>` to provide
+/// arbitrary licenses that aren't a part of the official SPDX license list
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct LicenseRef {
-    /// Purpose: Identify any external SPDX documents referenced within this SPDX document.
+    /// Identify any external SPDX documents referenced within this SPDX document.
+    ///
     /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.h430e9ypa0j9) for
     /// more details.
     pub doc_ref: Option<String>,
-    /// Purpose: Provide a locally unique identifier to refer to licenses that are not found on the SPDX License List.
+    /// Provide a locally unique identifier to refer to licenses that are not found on the SPDX License List.
+    ///
     /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.4f1mdlm) for
     /// more details.
     pub lic_ref: String,
@@ -348,11 +365,14 @@ impl fmt::Display for LicenseRef {
 pub enum LicenseItem {
     /// A regular SPDX license id
     Spdx {
+        /// The license identifier
         id: LicenseId,
         /// Indicates the license had a `+`, allowing the licensee to license
         /// the software under either the specific version, or any later versions
         or_later: bool,
     },
+    /// SPDX allows the use of `LicenseRef-<user supplied string>` to provide
+    /// arbitrary licenses that aren't a part of the official SPDX license list
     Other(Box<LicenseRef>),
 }
 
@@ -432,6 +452,8 @@ impl fmt::Display for LicenseItem {
     }
 }
 
+/// A user supplied `AddtionRef-<user string>` to specify additional text to
+/// associate with a license that falls outside the SPDX license list
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct AdditionRef {
     /// Purpose: Identify any external SPDX documents referenced within this SPDX document.
@@ -461,6 +483,8 @@ impl fmt::Display for AdditionRef {
 pub enum AdditionItem {
     /// A regular SPDX license exception id
     Spdx(ExceptionId),
+    /// A user supplied `AddtionRef-<user string>` to specify additional text to
+    /// associate with a license that falls outside the SPDX license list
     Other(Box<AdditionRef>),
 }
 

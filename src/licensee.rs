@@ -234,6 +234,7 @@ impl Licensee {
         req.addition == self.inner.addition
     }
 
+    /// Converts this [`Self`] into a [`LicenseReq`]
     #[must_use]
     pub fn into_req(self) -> LicenseReq {
         self.inner

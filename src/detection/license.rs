@@ -197,6 +197,7 @@ impl TextData {
         self.match_data.dice(&other.match_data)
     }
 
+    /// Determines if this [`TextData`] is equal to another
     #[inline]
     pub fn ngram_matches(&self, other: &Self) -> bool {
         self.match_data.eq(&other.match_data)

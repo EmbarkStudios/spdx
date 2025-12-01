@@ -19,16 +19,24 @@ mod license;
 pub use license::{LicenseType, TextData};
 mod ngram;
 mod preproc;
+/// Contains utilities for scanning texts for license information
 pub mod scan;
 
+/// An entry in a [`Store`]
 pub struct LicenseEntry {
+    /// The original license text
     pub original: TextData,
+    /// Set of license identifiers that are aliases (ie. same license text) as
+    /// this entry
     pub aliases: Vec<String>,
+    /// Set of headers that can be used to specify this license applies to a larger file
     pub headers: Vec<TextData>,
+    /// Similar license texts that will also be scored as this license if detected
     pub alternates: Vec<TextData>,
 }
 
 impl LicenseEntry {
+    /// Creates a new [`Self`] with the specified text
     pub fn new(original: TextData) -> Self {
         Self {
             original,
@@ -160,6 +168,7 @@ impl Store {
     }
 }
 
+/// The errors that can occur when interacting with a [`Store`]
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum StoreError {
     /// The license name was not in the Store

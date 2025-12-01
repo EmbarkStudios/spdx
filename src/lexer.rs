@@ -70,14 +70,18 @@ pub enum Token<'a> {
     Spdx(LicenseId),
     /// A `LicenseRef-` prefixed id, with an optional `DocumentRef-`
     LicenseRef {
+        /// An optional document reference
         doc_ref: Option<&'a str>,
+        /// The name of the license reference
         lic_ref: &'a str,
     },
     /// A recognized SPDX exception id
     Exception(ExceptionId),
     /// A `AdditionRef-` prefixed id, with an optional `DocumentRef-`
     AdditionRef {
+        /// An optional document reference
         doc_ref: Option<&'a str>,
+        /// The name of the addition reference
         add_ref: &'a str,
     },
     /// A postfix `+` indicating "or later" for a particular SPDX license id

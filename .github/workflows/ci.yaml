@@ -40,9 +40,6 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
-        with:
-          lfs: true
-      - run: git lfs checkout
       - uses: dtolnay/rust-toolchain@1.85.0
       - run: cargo fetch
       - name: cargo check
@@ -56,6 +53,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          lfs: true
+      - run: git lfs checkout
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo fetch
       - name: cargo build

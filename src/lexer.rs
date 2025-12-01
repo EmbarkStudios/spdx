@@ -26,8 +26,10 @@ pub struct ParseMode {
     /// This option just allows GPL licenses to be treated similarly to all of
     /// the other SPDX licenses.
     pub allow_postfix_plus_on_gpl: bool,
-    /// How deprecated license identifiers are treated
+    /// Whether deprecated license or exception identifiers are allowed
     pub allow_deprecated: bool,
+    /// Whether unknown license or exception identifiers are allowed
+    pub allow_unknown: bool,
 }
 
 impl ParseMode {
@@ -38,11 +40,13 @@ impl ParseMode {
     ///    case-sensitive.
     /// 1. `WITH`, `AND`, and `OR`, case-insensitive, are the only valid operators
     /// 1. Deprecated licenses are not allowed
+    /// 1. Unknown licenses or exeptions are not allowed
     pub const STRICT: Self = Self {
         allow_slash_as_or_operator: false,
         allow_imprecise_license_names: false,
         allow_postfix_plus_on_gpl: false,
         allow_deprecated: false,
+        allow_unknown: false,
     };
 
     /// Allow non-conforming syntax for crates-io compatibility
@@ -55,11 +59,13 @@ impl ParseMode {
     /// 1. `/` can by used as a synonym for `OR`, and doesn't need to be
     ///    separated by whitespace from the terms it combines
     /// 1. Deprecated license identifiers are allowed
+    /// 1. Unknown licenses or exeptions are not allowed
     pub const LAX: Self = Self {
         allow_slash_as_or_operator: true,
         allow_imprecise_license_names: true,
         allow_postfix_plus_on_gpl: true,
         allow_deprecated: true,
+        allow_unknown: false,
     };
 }
 
@@ -84,6 +90,8 @@ pub enum Token<'a> {
         /// The name of the addition reference
         add_ref: &'a str,
     },
+    /// An unknown license term was encountered
+    Unknown(&'a str),
     /// A postfix `+` indicating "or later" for a particular SPDX license id
     Plus,
     /// A `(` for starting a group
@@ -127,6 +135,7 @@ impl Token<'_> {
                 }) + "AdditionRef-".len()
                     + add_ref.len()
             }
+            Token::Unknown(u) => u.len(),
         }
     }
 }
@@ -322,6 +331,8 @@ impl<'a> Iterator for Lexer<'a> {
                         }
                     {
                         Some(Ok((Token::Spdx(lic_id), token_len)))
+                    } else if self.mode.allow_unknown {
+                        ok_token(Token::Unknown(m))
                     } else {
                         Some(Err(ParseError {
                             original: self.original.to_owned(),

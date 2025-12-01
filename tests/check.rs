@@ -1,6 +1,6 @@
 #![allow(clippy::nonminimal_bool, clippy::eq_op, clippy::cognitive_complexity)]
 
-use spdx::LicenseItem;
+use spdx::{Expression, LicenseItem};
 
 macro_rules! exact {
     ($req:expr, $e:expr) => {
@@ -557,5 +557,80 @@ fn too_many_to_minimize() {
     assert_eq!(
         ridiculous.minimized_requirements(ohno.iter()).unwrap_err(),
         spdx::expression::MinimizeError::TooManyRequirements(65)
+    );
+}
+
+/// Test that we handle unknown licenses and exceptions
+#[test]
+fn handles_unknown() {
+    const UNKNOWN: spdx::ParseMode = spdx::ParseMode {
+        allow_deprecated: false,
+        allow_imprecise_license_names: false,
+        allow_postfix_plus_on_gpl: false,
+        allow_slash_as_or_operator: false,
+        allow_unknown: true,
+    };
+
+    let single = spdx::Expression::parse_mode("sigh", UNKNOWN).unwrap();
+
+    fn get_reqs(e: &Expression) -> Vec<spdx::LicenseReq> {
+        e.requirements().map(|er| er.req.clone()).collect()
+    }
+
+    fn bad(s: &str) -> spdx::LicenseReq {
+        spdx::LicenseReq {
+            license: LicenseItem::Other(Box::new(spdx::LicenseRef {
+                lic_ref: s.into(),
+                doc_ref: None,
+            })),
+            addition: None,
+        }
+    }
+
+    assert_eq!(get_reqs(&single), vec![bad("sigh")]);
+
+    let compound = spdx::Expression::parse_mode("bad or MIT", UNKNOWN).unwrap();
+
+    assert_eq!(
+        get_reqs(&compound),
+        vec![
+            bad("bad"),
+            spdx::LicenseReq::from(spdx::license_id("MIT").unwrap())
+        ]
+    );
+
+    let parens = spdx::Expression::parse_mode("(bad and Apache-2.0) or superbad", UNKNOWN).unwrap();
+
+    assert_eq!(
+        get_reqs(&parens),
+        vec![
+            bad("bad"),
+            spdx::LicenseReq::from(spdx::license_id("Apache-2.0").unwrap()),
+            bad("superbad")
+        ]
+    );
+
+    let exc = spdx::Expression::parse_mode(
+        "terrible and (Apache-2.0 with even-worse or superbad)",
+        UNKNOWN,
+    )
+    .unwrap();
+
+    assert_eq!(
+        get_reqs(&exc),
+        vec![
+            bad("terrible"),
+            spdx::LicenseReq {
+                license: spdx::LicenseItem::Spdx {
+                    id: spdx::license_id("Apache-2.0").unwrap(),
+                    or_later: false
+                },
+                addition: Some(spdx::AdditionItem::Other(Box::new(spdx::AdditionRef {
+                    add_ref: "even-worse".into(),
+                    doc_ref: None,
+                }))),
+            },
+            bad("superbad")
+        ]
     );
 }

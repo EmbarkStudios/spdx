@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! This module is basically an inling of [askalono](https://github.com/jpeddicord/askalono)
-//! 
+//!
 //! Askalono is not really maintained and also depends on other unmaintained
 //! crates, since this crate is used by both cargo-deny and cargo-about in
 //! conjunction with askalono for checking licenses, I'm pulling it directly into
@@ -12,13 +12,14 @@ use std::collections::HashMap;
 
 #[cfg(feature = "detection-cache")]
 mod cache;
+mod detect;
 #[cfg(feature = "detection-inline-cache")]
 mod inline_cache;
-mod detect;
 mod license;
 pub use license::{LicenseType, TextData};
 mod ngram;
 mod preproc;
+pub mod scan;
 
 pub struct LicenseEntry {
     pub original: TextData,
@@ -119,7 +120,7 @@ impl Store {
             .licenses
             .get_mut(name)
             .ok_or(StoreError::UnknownLicense)?;
-        
+
         match variant {
             LicenseType::Alternate => {
                 entry.alternates.push(data);
@@ -138,9 +139,7 @@ impl Store {
     /// Get the list of aliases for a given license.
     #[inline]
     pub fn aliases(&self, name: &str) -> Option<&Vec<String>> {
-        self
-            .licenses
-            .get(name).map(|le| &le.aliases)
+        self.licenses.get(name).map(|le| &le.aliases)
     }
 
     /// Set the list of aliases for a given license.
@@ -167,7 +166,9 @@ impl std::fmt::Display for StoreError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::UnknownLicense => f.write_str("specified license did not exist in the store"),
-            Self::OriginalInvalidForVariant => f.write_str("attempted to add an original license text as a variant"),
+            Self::OriginalInvalidForVariant => {
+                f.write_str("attempted to add an original license text as a variant")
+            }
         }
     }
 }

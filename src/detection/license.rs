@@ -21,53 +21,6 @@ pub enum LicenseType {
     Alternate,
 }
 
-// impl LicenseType {
-//     #[inline]
-//     fn do_unpack(s: &str) -> Result<Self, msgpacker::Error> {
-//         let lt = match s {
-//             "original" => Self::Original,
-//             "header" => Self::Header,
-//             "alternate" => Self::Alternate,
-//             _ => return Err(msgpacker::Error::InvalidEnumVariant),
-//         };
-//         Ok(lt)
-//     }
-// }
-
-// impl msgpacker::Packable for LicenseType {
-//     fn pack<T>(&self, buf: &mut T) -> usize
-//     where
-//         T: Extend<u8>,
-//     {
-//         let s = match self {
-//             Self::Original => "original",
-//             Self::Header => "header",
-//             Self::Alternate => "alternate",
-//         };
-
-//         s.pack(buf)
-//     }
-// }
-
-// impl msgpacker::Unpackable for LicenseType {
-//     type Error = msgpacker::Error;
-
-//     fn unpack(buf: &[u8]) -> Result<(usize, Self), Self::Error> {
-//         let (read, s) = String::unpack(buf)?;
-//         let this = Self::do_unpack(&s)?;
-//         Ok((read, this))
-//     }
-
-//     fn unpack_iter<I>(bytes: I) -> Result<(usize, Self), Self::Error>
-//     where
-//         I: IntoIterator<Item = u8>,
-//     {
-//         let (read, s) = String::unpack_iter(bytes)?;
-//         let this = Self::do_unpack(&s)?;
-//         Ok((read, this))
-//     }
-// }
-
 impl fmt::Display for LicenseType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
@@ -235,11 +188,6 @@ impl TextData {
     /// Get a slice of the normalized lines in this `TextData`.
     pub fn lines(&self) -> &[String] {
         &self.lines_normalized[self.lines_view.0..self.lines_view.1]
-    }
-
-    #[doc(hidden)]
-    pub fn text_processed(&self) -> &str {
-        &self.text_processed
     }
 
     /// Compare this `TextData` with another, returning a similarity score.
@@ -431,13 +379,13 @@ mod tests {
     #[test]
     fn view_and_white_out() {
         let a = TextData::from("aaa\nbbb\nccc\nddd");
-        assert_eq!(Some("aaa bbb ccc ddd"), a.text_processed());
+        assert_eq!("aaa bbb ccc ddd", a.text_processed);
 
         let b = a.with_view(1, 3);
         assert_eq!(2, b.lines().len());
-        assert_eq!(Some("bbb ccc"), b.text_processed());
+        assert_eq!("bbb ccc", b.text_processed);
 
         let c = b.white_out();
-        assert_eq!(Some("aaa ddd"), c.text_processed());
+        assert_eq!("aaa ddd", c.text_processed);
     }
 }

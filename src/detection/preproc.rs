@@ -73,25 +73,20 @@ fn normalize_unicode(input: Cow<'_, str>) -> Cow<'_, str> {
 }
 
 fn remove_junk(input: Cow<'_, str>) -> Cow<'_, str> {
-    static RX: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r"[^\w\s\pP]+").unwrap()
-    });
+    static RX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"[^\w\s\pP]+").unwrap());
 
     RX.replace_all_cow(input, "")
 }
 
 fn blackbox_urls(input: Cow<'_, str>) -> Cow<'_, str> {
-    static RX: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r"https?://\S+").unwrap()
-    });
+    static RX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"https?://\S+").unwrap());
 
     RX.replace_all_cow(input, "http://blackboxed/url")
 }
 
 fn normalize_horizontal_whitespace(input: Cow<'_, str>) -> Cow<'_, str> {
-    static RX: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r"(?x)[ \t\p{Zs} \\ / \| \x2044 ]+").unwrap()
-    });
+    static RX: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r"(?x)[ \t\p{Zs} \\ / \| \x2044 ]+").unwrap());
 
     RX.replace_all_cow(input, " ")
 }
@@ -105,15 +100,13 @@ fn normalize_punctuation(input: Cow<'_, str>) -> Cow<'_, str> {
         under: Regex,
         copy: Regex,
     }
-    static RX: LazyLock<Rx> = LazyLock::new(|| {
-        Rx {
-            quotes: Regex::new(r#"["'\p{Pi}\p{Pf}]+"#).unwrap(),
-            dash: Regex::new(r"\p{Pd}+").unwrap(),
-            open:Regex::new(r"\p{Ps}+").unwrap(),
-            close: Regex::new(r"\p{Pe}+").unwrap(),
-            under: Regex::new(r"\p{Pc}+").unwrap(),
-            copy:Regex::new(r"[©Ⓒⓒ]").unwrap(),
-        }
+    static RX: LazyLock<Rx> = LazyLock::new(|| Rx {
+        quotes: Regex::new(r#"["'\p{Pi}\p{Pf}]+"#).unwrap(),
+        dash: Regex::new(r"\p{Pd}+").unwrap(),
+        open: Regex::new(r"\p{Ps}+").unwrap(),
+        close: Regex::new(r"\p{Pe}+").unwrap(),
+        under: Regex::new(r"\p{Pc}+").unwrap(),
+        copy: Regex::new(r"[©Ⓒⓒ]").unwrap(),
     });
 
     let mut out = input;
@@ -237,11 +230,9 @@ fn normalize_vertical_whitespace(input: Cow<'_, str>) -> Cow<'_, str> {
         misc: Regex,
         num: Regex,
     }
-    static RX: LazyLock<Rx> = LazyLock::new(|| {
-        Rx {
-            misc: Regex::new(r"[\r\n\v\f]").unwrap(),
-            num: Regex::new(r"\n{3,}").unwrap(),
-        }
+    static RX: LazyLock<Rx> = LazyLock::new(|| Rx {
+        misc: Regex::new(r"[\r\n\v\f]").unwrap(),
+        num: Regex::new(r"\n{3,}").unwrap(),
     });
 
     let mut out = input;
@@ -251,9 +242,7 @@ fn normalize_vertical_whitespace(input: Cow<'_, str>) -> Cow<'_, str> {
 }
 
 fn remove_punctuation(input: Cow<'_, str>) -> Cow<'_, str> {
-    static RX: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r"[^\w\s]+").unwrap()
-    });
+    static RX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"[^\w\s]+").unwrap());
 
     RX.replace_all_cow(input, "")
 }
@@ -263,9 +252,8 @@ fn lowercaseify(input: Cow<'_, str>) -> Cow<'_, str> {
 }
 
 fn remove_title_line(input: Cow<'_, str>) -> Cow<'_, str> {
-    static RX: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r"^.*license( version \S+)?( copyright.*)?\n\n").unwrap()
-    });
+    static RX: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r"^.*license( version \S+)?( copyright.*)?\n\n").unwrap());
 
     RX.replace_all_cow(input, "")
 }
@@ -291,7 +279,7 @@ fn remove_copyright_statements(input: Cow<'_, str>) -> Cow<'_, str> {
                 # or any lines that really look like a copyright statement
                 ^copyright (\s+(c|\d+))+ .*?$
             )
-        "
+        ",
         )
         .unwrap()
     });
@@ -300,9 +288,7 @@ fn remove_copyright_statements(input: Cow<'_, str>) -> Cow<'_, str> {
 }
 
 fn collapse_whitespace(input: Cow<'_, str>) -> Cow<'_, str> {
-    static RX: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r"\s+").unwrap()
-    });
+    static RX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\s+").unwrap());
     RX.replace_all_cow(input, " ")
 }
 
@@ -340,7 +326,7 @@ mod tests {
         ];
 
         for (i, &outcome) in expected.iter().enumerate() {
-            assert_eq!(outcome, trim_byte_adjusted(input, i))
+            assert_eq!(outcome, trim_byte_adjusted(input, i));
         }
     }
 

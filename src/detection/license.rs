@@ -46,7 +46,7 @@ impl fmt::Display for LicenseType {
 /// Basic scoring of two texts:
 ///
 /// ```
-/// use askalono::TextData;
+/// use spdx::detection::TextData;
 ///
 /// let license = TextData::from("My First License");
 /// let sample = TextData::from("copyright 20xx me irl\n\n //  my   first license");
@@ -61,7 +61,7 @@ impl fmt::Display for LicenseType {
 ///
 /// ```
 /// # use std::error::Error;
-/// # use askalono::TextData;
+/// # use spdx::detection::TextData;
 /// # fn main() -> Result<(), Box<dyn Error>> {
 /// # let license = TextData::from("My First License");
 /// let sample = TextData::from("copyright 20xx me irl\n// My First License\nfn hello() {\n ...");
@@ -284,9 +284,6 @@ impl From<String> for TextData {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    // psst:
-    // cargo test -- --nocapture
 
     #[test]
     fn optimize_bounds() {

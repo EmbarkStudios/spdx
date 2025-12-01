@@ -68,7 +68,7 @@ pub struct ContainedResult<'a> {
 ///
 /// ```rust,should_panic
 /// # use std::error::Error;
-/// use askalono::{Scanner, Store};
+/// use spdx::detection::{scan::Scanner, Store};
 ///
 /// # fn main() -> Result<(), Box<dyn Error>> {
 /// let store = Store::new();
@@ -76,7 +76,7 @@ pub struct ContainedResult<'a> {
 /// let strategy = Scanner::new(&store)
 ///     .confidence_threshold(0.9)
 ///     .optimize(true);
-/// let results = strategy.scan(&"my text to scan".into())?;
+/// let results = strategy.scan(&"my text to scan".into());
 /// # Ok(())
 /// # }
 /// ```

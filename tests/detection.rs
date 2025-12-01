@@ -20,7 +20,11 @@ fn reads_inline_cache() {
     // so that should be the only license that isn't present in the store
     for lic in spdx::identifiers::LICENSES {
         if lic.name != "NOASSERTION" {
-            assert!(set.contains(lic.name), "failed to find expected license {} in inline cache store", lic.name);
+            assert!(
+                set.contains(lic.name),
+                "failed to find expected license {} in inline cache store",
+                lic.name
+            );
         }
     }
 }

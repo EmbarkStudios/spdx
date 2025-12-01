@@ -3,7 +3,7 @@
 
 use std::{
     cmp::min,
-    collections::{hash_map::Iter, HashMap, VecDeque},
+    collections::{HashMap, VecDeque, hash_map::Iter},
 };
 
 #[derive(Clone, Debug)]
@@ -38,7 +38,9 @@ impl NgramSet {
             deque.push_back(w);
             if deque.len() == self.n as usize {
                 let gram = {
-                    let mut g = String::with_capacity(deque.iter().map(|s| s.len()).sum::<usize>() + self.n as usize - 1);
+                    let mut g = String::with_capacity(
+                        deque.iter().map(|s| s.len()).sum::<usize>() + self.n as usize - 1,
+                    );
 
                     for (i, s) in deque.iter().enumerate() {
                         if i > 0 {

@@ -1,7 +1,7 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::detection::{Store, LicenseEntry, license::TextData, ngram::NgramSet};
+use crate::detection::{LicenseEntry, Store, license::TextData, ngram::NgramSet};
 use std::io;
 
 const CACHE_VERSION: &str = "spdx-crate-01";
@@ -58,9 +58,10 @@ impl Store {
     ///
     /// This method is highly useful for quickly loading a cache, as creating
     /// one from text data is rather slow. This method can typically load
-    /// the full SPDX set from disk in 200-300 ms. The cache will be
-    /// sanity-checked to ensure it was generated with a similar version of
-    /// askalono.
+    /// the full SPDX set from disk in < 100ms.
+    ///
+    /// The cache contains a simple version header that ensure that the cache
+    /// is loadable
     pub fn from_cache<R>(mut readable: R) -> Result<Self, CacheError>
     where
         R: io::Read + Sized,
@@ -71,7 +72,7 @@ impl Store {
         if header != CACHE_VERSION.as_bytes() {
             return Err(CacheError::InvalidVersion {
                 actual: String::from_utf8_lossy(&header).into_owned(),
-                expected: CACHE_VERSION
+                expected: CACHE_VERSION,
             });
         }
 
@@ -138,7 +139,8 @@ impl From<ProtoError> for BinErr {
 
 #[inline]
 fn write_u16<W>(u: usize, w: &mut W) -> Result<(), BinErr>
-where W: io::Write + Sized
+where
+    W: io::Write + Sized,
 {
     let u: u16 = u.try_into().map_err(|_e| ProtoError::TooLong(u))?;
     w.write_all(&u.to_le_bytes()).map_err(BinErr::Io)
@@ -146,7 +148,8 @@ where W: io::Write + Sized
 
 #[inline]
 fn read_u16<R>(r: &mut R) -> Result<usize, BinErr>
-where R: io::Read + Sized
+where
+    R: io::Read + Sized,
 {
     let mut u = [0u8; 2];
     r.read_exact(&mut u)?;
@@ -155,14 +158,16 @@ where R: io::Read + Sized
 
 #[inline]
 fn write_u64<W>(u: usize, w: &mut W) -> Result<(), BinErr>
-where W: io::Write + Sized
+where
+    W: io::Write + Sized,
 {
     w.write_all(&(u as u64).to_le_bytes()).map_err(BinErr::Io)
 }
 
 #[inline]
 fn read_u64<R>(r: &mut R) -> Result<usize, BinErr>
-where R: io::Read + Sized
+where
+    R: io::Read + Sized,
 {
     let mut b = [0u8; 8];
     r.read_exact(&mut b)?;
@@ -171,14 +176,16 @@ where R: io::Read + Sized
 
 impl Bin for String {
     fn bwrite<W>(&self, w: &mut W) -> Result<(), BinErr>
-        where W: io::Write + Sized
+    where
+        W: io::Write + Sized,
     {
         write_u16(self.len(), w)?;
         w.write_all(self.as_bytes()).map_err(BinErr::Io)
     }
 
     fn bread<R>(r: &mut R) -> Result<Self, BinErr>
-        where R: io::Read + Sized
+    where
+        R: io::Read + Sized,
     {
         let mut len = read_u16(r)?;
         let mut pos = 0;
@@ -196,8 +203,9 @@ impl Bin for String {
 
 #[inline]
 fn write_vec<W, B>(v: &[B], w: &mut W) -> Result<(), BinErr>
-    where W: io::Write + Sized,
-        B: Bin,
+where
+    W: io::Write + Sized,
+    B: Bin,
 {
     write_u16(v.len(), w)?;
 
@@ -210,8 +218,9 @@ fn write_vec<W, B>(v: &[B], w: &mut W) -> Result<(), BinErr>
 
 #[inline]
 fn read_vec<R, B>(r: &mut R) -> Result<Vec<B>, BinErr>
-    where R: io::Read + Sized,
-        B: Bin,
+where
+    R: io::Read + Sized,
+    B: Bin,
 {
     let len = read_u16(r)?;
 
@@ -226,14 +235,17 @@ fn read_vec<R, B>(r: &mut R) -> Result<Vec<B>, BinErr>
 
 trait Bin: Sized {
     fn bwrite<W>(&self, w: &mut W) -> Result<(), BinErr>
-        where W: io::Write + Sized;
+    where
+        W: io::Write + Sized;
     fn bread<R>(r: &mut R) -> Result<Self, BinErr>
-        where R: io::Read + Sized;
+    where
+        R: io::Read + Sized;
 }
 
 impl Bin for Store {
     fn bwrite<W>(&self, w: &mut W) -> Result<(), BinErr>
-        where W: io::Write + Sized
+    where
+        W: io::Write + Sized,
     {
         write_u16(self.licenses.len(), w)?;
 
@@ -246,11 +258,12 @@ impl Bin for Store {
     }
 
     fn bread<R>(r: &mut R) -> Result<Self, BinErr>
-        where R: io::Read + Sized
+    where
+        R: io::Read + Sized,
     {
         let map_count = read_u16(r)?;
 
-        let mut licenses = std::collections::HashMap::new(); 
+        let mut licenses = std::collections::HashMap::new();
 
         for _ in 0..map_count {
             let key = String::bread(r)?;
@@ -265,7 +278,8 @@ impl Bin for Store {
 
 impl Bin for LicenseEntry {
     fn bwrite<W>(&self, w: &mut W) -> Result<(), BinErr>
-        where W: io::Write + Sized
+    where
+        W: io::Write + Sized,
     {
         self.original.bwrite(w)?;
         write_vec(&self.aliases, w)?;
@@ -276,7 +290,8 @@ impl Bin for LicenseEntry {
     }
 
     fn bread<R>(r: &mut R) -> Result<Self, BinErr>
-        where R: io::Read + Sized
+    where
+        R: io::Read + Sized,
     {
         Ok(Self {
             original: TextData::bread(r)?,
@@ -289,7 +304,8 @@ impl Bin for LicenseEntry {
 
 impl Bin for TextData {
     fn bwrite<W>(&self, w: &mut W) -> Result<(), BinErr>
-        where W: io::Write + Sized
+    where
+        W: io::Write + Sized,
     {
         self.match_data.bwrite(w)?;
         write_u64(self.lines_view.0, w)?;
@@ -301,7 +317,8 @@ impl Bin for TextData {
     }
 
     fn bread<R>(r: &mut R) -> Result<Self, BinErr>
-        where R: io::Read + Sized
+    where
+        R: io::Read + Sized,
     {
         Ok(Self {
             match_data: NgramSet::bread(r)?,
@@ -314,15 +331,17 @@ impl Bin for TextData {
 
 impl Bin for u32 {
     fn bwrite<W>(&self, w: &mut W) -> Result<(), BinErr>
-        where W: io::Write + Sized
+    where
+        W: io::Write + Sized,
     {
         w.write_all(&self.to_le_bytes()).map_err(BinErr::Io)
     }
 
     fn bread<R>(r: &mut R) -> Result<Self, BinErr>
-        where R: io::Read + Sized
+    where
+        R: io::Read + Sized,
     {
-        let mut b = [0;4];
+        let mut b = [0; 4];
         r.read_exact(&mut b)?;
         Ok(u32::from_le_bytes(b))
     }
@@ -330,7 +349,8 @@ impl Bin for u32 {
 
 impl Bin for NgramSet {
     fn bwrite<W>(&self, w: &mut W) -> Result<(), BinErr>
-        where W: io::Write + Sized
+    where
+        W: io::Write + Sized,
     {
         write_u16(self.map.len(), w)?;
         for (k, v) in &self.map {
@@ -344,7 +364,8 @@ impl Bin for NgramSet {
     }
 
     fn bread<R>(r: &mut R) -> Result<Self, BinErr>
-        where R: io::Read + Sized
+    where
+        R: io::Read + Sized,
     {
         let map_len = read_u16(r)?;
         let mut map = std::collections::HashMap::new();
@@ -358,10 +379,6 @@ impl Bin for NgramSet {
         r.read_exact(&mut n)?;
         let size = read_u64(r)?;
 
-        Ok(Self {
-            map,
-            n: n[0],
-            size,
-        })
+        Ok(Self { map, n: n[0], size })
     }
 }

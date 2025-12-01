@@ -12,7 +12,7 @@ name: CI
 jobs:
   lint:
     name: Lint
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -30,16 +30,18 @@ jobs:
 
   deny-check:
     name: cargo-deny check
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: EmbarkStudios/cargo-deny-action@v2
 
   msrv-check:
     name: Minimum Stable Rust Version Check
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       - uses: dtolnay/rust-toolchain@1.85.0
       - run: cargo fetch
       - name: cargo check
@@ -49,7 +51,7 @@ jobs:
     name: Test
     strategy:
       matrix:
-        os: [ubuntu-22.04]
+        os: [ubuntu-24.04]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4

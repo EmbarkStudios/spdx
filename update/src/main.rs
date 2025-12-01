@@ -355,6 +355,13 @@ fn write_cache() -> anyhow::Result<()> {
 
             v.aliases.push(lic_id.to_owned());
             println!("{lic_id} already stored; added as an alias for {name}");
+
+            if lic_id.starts_with("GFDL-") {
+                if let Some(id) = lic_id.strip_suffix("-invariants-only") {
+                    v.aliases.push(format!("{id}-invariants"));
+                }
+            }
+
             already_existed = true;
         }
 
@@ -368,6 +375,12 @@ fn write_cache() -> anyhow::Result<()> {
 
         if let Some(header_text) = details.get("standardLicenseHeader").and_then(|h| h.as_str()) {
             license.headers.push(sd::TextData::new(header_text));
+        }
+
+        if lic_id.starts_with("GFDL-") {
+            if let Some(id) = lic_id.strip_suffix("-invariants-only") {
+                license.aliases.push(format!("{id}-invariants"));
+            }
         }
     }
 

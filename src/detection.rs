@@ -104,6 +104,12 @@ impl Store {
         self.licenses.insert(name, entry);
     }
 
+    /// Gets an iterator over all of the licenses
+    #[inline]
+    pub fn iter(&self) -> std::collections::hash_map::Iter<'_, String, LicenseEntry> {
+        self.licenses.iter()
+    }
+
     /// Add a variant (a header or alternate formatting) of a given license to
     /// the store.
     ///

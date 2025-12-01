@@ -14,7 +14,7 @@ jobs:
     name: Lint
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: "rustfmt,clippy"
@@ -32,16 +32,17 @@ jobs:
     name: cargo-deny check
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: EmbarkStudios/cargo-deny-action@v2
 
   msrv-check:
     name: Minimum Stable Rust Version Check
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           lfs: true
+      - run: git lfs checkout
       - uses: dtolnay/rust-toolchain@1.85.0
       - run: cargo fetch
       - name: cargo check
@@ -54,7 +55,7 @@ jobs:
         os: [ubuntu-24.04]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo fetch
       - name: cargo build

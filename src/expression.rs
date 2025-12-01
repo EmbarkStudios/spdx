@@ -9,7 +9,7 @@ use smallvec::SmallVec;
 use std::fmt;
 
 /// A license requirement inside an SPDX license expression
-/// 
+///
 /// Inclueds the span in the expression where it is located
 #[derive(Debug, Clone)]
 pub struct ExpressionReq {

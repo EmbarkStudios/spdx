@@ -337,12 +337,12 @@ impl fmt::Display for LicenseReq {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct LicenseRef {
     /// Identify any external SPDX documents referenced within this SPDX document.
-    /// 
+    ///
     /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.h430e9ypa0j9) for
     /// more details.
     pub doc_ref: Option<String>,
     /// Provide a locally unique identifier to refer to licenses that are not found on the SPDX License List.
-    /// 
+    ///
     /// See the [spec](https://spdx.org/spdx-specification-21-web-version#h.4f1mdlm) for
     /// more details.
     pub lic_ref: String,

@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Added
+- [PR#84](https://github.com/EmbarkStudios/spdx/pull/84) resolved [#67](https://github.com/EmbarkStudios/spdx/issues/67) by inling the `askalono` crate to allow detection of license texts or headers from arbitrary text data. There are multiple features flags associated with this new feature.
+
 ## [0.12.0] - 2025-08-19
 ### Added
 - [PR#81](https://github.com/EmbarkStudios/spdx/pull/81) resolved [#68](https://github.com/EmbarkStudios/spdx/issues/68) by adding support for the ` WITH [%s"DocumentRef-"(idstring)":"]%s"AdditionRef-"(idstring)` syntax. Thanks [@weihanglo](https://github.com/weihanglo)!

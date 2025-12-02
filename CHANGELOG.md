@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.13.0] - 2025-12-02
 ### Added
 - [PR#84](https://github.com/EmbarkStudios/spdx/pull/84) resolved [#67](https://github.com/EmbarkStudios/spdx/issues/67) by inlining the `askalono` crate to allow detection of license texts or headers from arbitrary text data. There are multiple features flags associated with this new feature.
 - [PR#85](https://github.com/EmbarkStudios/spdx/pull/85) resolved [#82](https://github.com/EmbarkStudios/spdx/issues/82) by optionally allowing the parsing of unknown identifiers via `ParseMode::allow_unknown`. Unknown identifiers are either treated as `LicenseRef-<unknown identifier>` or `AdditionRef-<unknown identifier>` depending on their position. Unknown identifiers on positions that are invalid for either licenses or exceptions are still considered parse errors.
@@ -215,7 +216,8 @@ a user provided callback
 [PR#78]: https://github.com/EmbarkStudios/spdx/pull/78
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.12.0...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.13.0...HEAD
+[0.13.0]: https://github.com/EmbarkStudios/spdx/compare/0.12.0...0.13.0
 [0.12.0]: https://github.com/EmbarkStudios/spdx/compare/0.11.1...0.12.0
 [0.11.1]: https://github.com/EmbarkStudios/spdx/compare/0.11.0...0.11.1
 [0.11.0]: https://github.com/EmbarkStudios/spdx/compare/0.10.9...0.11.0

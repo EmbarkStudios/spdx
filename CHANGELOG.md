@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.13.1] - 2025-12-03
 ### Changed
 - [PR#86](https://github.com/EmbarkStudios/spdx/pull/86) changes the license detection for GNU licenses (GPL, AGPL, LGPL, GFDL). In 0.13.0 they would be detected as their deprecated (eg. `AGPL-3.0`) variant due to the variants (root, `-only`, and `-or-later`) using the exact same license text. GNU licenses are now detected as the `<root>-or-later` version. This is an arbitrary decision, which I hope to not change, but if someone makes a convincing argument it could be.
 
@@ -219,7 +220,8 @@ a user provided callback
 [PR#78]: https://github.com/EmbarkStudios/spdx/pull/78
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.13.0...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.13.1...HEAD
+[0.13.1]: https://github.com/EmbarkStudios/spdx/compare/0.13.0...0.13.1
 [0.13.0]: https://github.com/EmbarkStudios/spdx/compare/0.12.0...0.13.0
 [0.12.0]: https://github.com/EmbarkStudios/spdx/compare/0.11.1...0.12.0
 [0.11.1]: https://github.com/EmbarkStudios/spdx/compare/0.11.0...0.11.1

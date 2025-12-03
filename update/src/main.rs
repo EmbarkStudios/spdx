@@ -68,7 +68,7 @@ fn write_exceptions(identifiers: &mut impl Write, texts: &mut impl Write) -> Res
     .context("failed to deserialize exceptions.json")?;
 
     let exceptions = get(&json, "exceptions")?;
-    let exceptions = if let Value::Array(ref v) = exceptions {
+    let exceptions = if let Value::Array(v) = exceptions {
         v
     } else {
         bail!("Malformed JSON: {:?}", exceptions)
@@ -105,7 +105,10 @@ fn write_exceptions(identifiers: &mut impl Write, texts: &mut impl Write) -> Res
     writeln!(identifiers, "pub const EXCEPTIONS: &[Exception] = &[")?;
     v.sort_by_key(|v| v.0);
     for (index, (exc, flags)) in v.iter().enumerate() {
-        writeln!(identifiers, "    Exception {{ name: \"{exc}\", index: {index}, flags: {flags} }},")?;
+        writeln!(
+            identifiers,
+            "    Exception {{ name: \"{exc}\", index: {index}, flags: {flags} }},"
+        )?;
     }
     writeln!(identifiers, "];")?;
 
@@ -154,7 +157,12 @@ fn write_license_texts(
     // Splat the license text into their own file and accumulate
     writeln!(texts, "pub const LICENSE_TEXTS: &[(&str, &str)] = &[")?;
 
-    for license in licenses {
+    // The GPL licenses in particular have text that is the exact same between
+    // the deprecated old version, the -only and the -or-later with no distinction
+    // between them
+    let mut text_map = std::collections::BTreeMap::<String, (String, Vec<String>)>::new();
+
+    'outer: for license in licenses {
         let license = license.as_ref();
         if license == "NOASSERTION" {
             writeln!(texts, "    (\"{license}\", \"\"),")?;
@@ -164,7 +172,7 @@ fn write_license_texts(
         use std::borrow::Cow;
         let license_name = if license.starts_with("GFDL-") {
             if let Some(root) = license.strip_suffix("-invariants") {
-                Cow::Owned(format!("{}-invariants-only", root))
+                Cow::Owned(format!("{root}-invariants-only"))
             } else {
                 Cow::Borrowed(license)
             }
@@ -172,31 +180,40 @@ fn write_license_texts(
             Cow::Borrowed(license)
         };
 
-        let text_path = format!("src/text/licenses/{}", license_name);
-        if !std::path::Path::new(&text_path).exists() {
-            let json: Map = serde_json::from_str(
-                &std::fs::read_to_string(format!("{ROOT}/json/details/{license_name}.json"))
-                    .with_context(|| format!("unable to open details/{license_name}.json"))?,
-            )
-            .with_context(|| format!("unable to deserialize details/{license_name}.json"))?;
+        let json: Map = serde_json::from_str(
+            &std::fs::read_to_string(format!("{ROOT}/json/details/{license_name}.json"))
+                .with_context(|| format!("unable to open details/{license_name}.json"))?,
+        )
+        .with_context(|| format!("unable to deserialize details/{license_name}.json"))?;
 
-            let text = get(&json, "licenseText")
-                .with_context(|| format!("failed to get license text for {license_name}"))?;
+        let text = get(&json, "licenseText")
+            .with_context(|| format!("failed to get license text for {license_name}"))?
+            .as_str()
+            .expect("not a string");
 
-            std::fs::write(
-                text_path,
-                format!(
-                    "r#\"{}\"#",
-                    text.as_str().context("licenseText is not a string")?
-                ),
-            )
-            .with_context(|| format!("failed to write license text for {license_name}"))?;
+        for v in text_map.values_mut() {
+            if v.0 == text {
+                v.1.push(license_name.into_owned());
+                continue 'outer;
+            }
         }
 
-        writeln!(
-            texts,
-            "    (\"{license}\", include!(\"text/licenses/{license_name}\")),"
-        )?;
+        text_map.insert(license_name.into_owned(), (text.to_owned(), Vec::new()));
+    }
+
+    for (key, (text, aliases)) in text_map {
+        let text_path = format!("src/text/licenses/{key}");
+        std::fs::write(text_path, format!("r#\"{text}\"#",))
+            .with_context(|| format!("failed to write license text for {key}"))?;
+
+        writeln!(texts, "    (\"{key}\", include!(\"text/licenses/{key}\")),")?;
+
+        for alias in aliases {
+            writeln!(
+                texts,
+                "    (\"{alias}\", include!(\"text/licenses/{key}\")),"
+            )?;
+        }
     }
 
     writeln!(texts, "];\n")?;
@@ -208,7 +225,8 @@ fn write_licenses(identifiers: &mut impl Write, texts: &mut impl Write) -> Resul
     writeln!(
         identifiers,
         "
-use crate::{{Exception, License, flags::*}};
+use crate::flags::*;
+use crate::{{Exception, License}};
 "
     )?;
 
@@ -307,7 +325,10 @@ use crate::{{Exception, License, flags::*}};
     writeln!(identifiers)?;
     writeln!(identifiers, "pub const LICENSES: &[License] = &[")?;
     for (index, (id, name, flags)) in v.iter().enumerate() {
-        writeln!(identifiers, "    License {{ name: \"{id}\", full_name: r#\"{name}\"#, index: {index}, flags: {flags} }},")?;
+        writeln!(
+            identifiers,
+            "    License {{ name: \"{id}\", full_name: r#\"{name}\"#, index: {index}, flags: {flags} }},"
+        )?;
     }
     writeln!(identifiers, "];\n")?;
 
@@ -339,11 +360,19 @@ fn write_cache() -> anyhow::Result<()> {
             bail!("Malformed JSON: {lic:?}")
         };
 
-        let lic_id = get(lic, "licenseId")?.as_str().context("licenseId was not a string")?;
+        let lic_id = get(lic, "licenseId")?
+            .as_str()
+            .context("licenseId was not a string")?;
 
-        let details: Map = serde_json::from_str(&std::fs::read_to_string(format!("{ROOT}/json/details/{lic_id}.json")).with_context(|| format!("failed to read license details for {lic_id}"))?).with_context(|| format!("failed to deserialize details for {lic_id}"))?;
+        let details: Map = serde_json::from_str(
+            &std::fs::read_to_string(format!("{ROOT}/json/details/{lic_id}.json"))
+                .with_context(|| format!("failed to read license details for {lic_id}"))?,
+        )
+        .with_context(|| format!("failed to deserialize details for {lic_id}"))?;
 
-        let text = get(&details, "licenseText")?.as_str().context("licenseText was not a string")?;
+        let text = get(&details, "licenseText")?
+            .as_str()
+            .context("licenseText was not a string")?;
 
         let content = sd::TextData::new(text);
 
@@ -370,10 +399,13 @@ fn write_cache() -> anyhow::Result<()> {
         }
 
         let license = texts
-                .entry(lic_id.to_owned())
-                .or_insert_with(|| sd::LicenseEntry::new(content));
+            .entry(lic_id.to_owned())
+            .or_insert_with(|| sd::LicenseEntry::new(content));
 
-        if let Some(header_text) = details.get("standardLicenseHeader").and_then(|h| h.as_str()) {
+        if let Some(header_text) = details
+            .get("standardLicenseHeader")
+            .and_then(|h| h.as_str())
+        {
             license.headers.push(sd::TextData::new(header_text));
         }
 
@@ -385,7 +417,31 @@ fn write_cache() -> anyhow::Result<()> {
     }
 
     let mut s = sd::Store::new();
-    for (key, entry) in texts {
+    for (key, mut entry) in texts {
+        let id = spdx::license_id(&key).expect("impossible");
+        // Unfortunately all of the GPL licenses just have multiple copies of
+        // the license text, which due to ordering get attribute to the deprecated
+        // id, so just correct it to assume that license text always applies the
+        // -or-later variant of the license. It's unfortunate, but determining
+        // license via text instead of an actual license expression has caveats
+        if id.is_deprecated() {
+            let or_later = entry.aliases.iter().position(|a| a.ends_with("-or-later"));
+
+            if let Some(ol) = or_later {
+                let new_key = entry.aliases.remove(ol);
+                entry.aliases.insert(0, key);
+
+                println!(
+                    "changed deprecated license from {} to {new_key} {} aliases",
+                    entry.aliases[0],
+                    entry.aliases.len()
+                );
+
+                s.insert_entry(new_key, entry);
+                continue;
+            }
+        }
+
         s.insert_entry(key, entry);
     }
 

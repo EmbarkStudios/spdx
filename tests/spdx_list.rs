@@ -67,3 +67,17 @@ fn handles_copyleft() {
     assert!(gpl.is_copyleft());
     assert_eq!(gpl.full_name, "GNU General Public License v3.0 or later");
 }
+
+#[test]
+#[cfg(feature = "text")]
+fn has_correct_license_text() {
+    let mit = license_id("MIT").unwrap();
+
+    assert_eq!(
+        mit.text(),
+        spdx::text::LICENSE_TEXTS
+            .iter()
+            .find_map(|(name, text)| (*name == "MIT").then_some(*text))
+            .unwrap()
+    );
+}

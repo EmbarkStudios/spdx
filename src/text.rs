@@ -1,5 +1,4 @@
 pub const LICENSE_TEXTS: &[(&str, &str)] = &[
-    ("NOASSERTION", ""),
     ("0BSD", include!("text/licenses/0BSD")),
     ("3D-Slicer-1.0", include!("text/licenses/3D-Slicer-1.0")),
     ("AAL", include!("text/licenses/AAL")),
@@ -773,6 +772,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("NLOD-1.0", include!("text/licenses/NLOD-1.0")),
     ("NLOD-2.0", include!("text/licenses/NLOD-2.0")),
     ("NLPL", include!("text/licenses/NLPL")),
+    ("NOASSERTION", include!("text/licenses/NOASSERTION")),
     ("NOSL", include!("text/licenses/NOSL")),
     ("NPL-1.0", include!("text/licenses/NPL-1.0")),
     ("NPL-1.1", include!("text/licenses/NPL-1.1")),

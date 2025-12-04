@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Fixed
+- [PR#87](https://github.com/EmbarkStudios/spdx/pull/87) fixed a code generation bug introduced in [PR#86](https://github.com/EmbarkStudios/spdx/pull/86) that caused `LicenseId::text()` to return the incorrect license text.
+
 ## [0.13.1] - 2025-12-03
 ### Changed
 - [PR#86](https://github.com/EmbarkStudios/spdx/pull/86) changes the license detection for GNU licenses (GPL, AGPL, LGPL, GFDL). In 0.13.0 they would be detected as their deprecated (eg. `AGPL-3.0`) variant due to the variants (root, `-only`, and `-or-later`) using the exact same license text. GNU licenses are now detected as the `<root>-or-later` version. This is an arbitrary decision, which I hope to not change, but if someone makes a convincing argument it could be.

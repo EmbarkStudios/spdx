@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.13.2] - 2025-12-04
 ### Fixed
 - [PR#87](https://github.com/EmbarkStudios/spdx/pull/87) fixed a code generation bug introduced in [PR#86](https://github.com/EmbarkStudios/spdx/pull/86) that caused `LicenseId::text()` to return the incorrect license text.
 
@@ -223,7 +224,8 @@ a user provided callback
 [PR#78]: https://github.com/EmbarkStudios/spdx/pull/78
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.13.1...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.13.2...HEAD
+[0.13.2]: https://github.com/EmbarkStudios/spdx/compare/0.13.1...0.13.2
 [0.13.1]: https://github.com/EmbarkStudios/spdx/compare/0.13.0...0.13.1
 [0.13.0]: https://github.com/EmbarkStudios/spdx/compare/0.12.0...0.13.0
 [0.12.0]: https://github.com/EmbarkStudios/spdx/compare/0.11.1...0.12.0

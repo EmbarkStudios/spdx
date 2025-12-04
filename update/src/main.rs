@@ -165,7 +165,7 @@ fn write_license_texts(
     'outer: for license in licenses {
         let license = license.as_ref();
         if license == "NOASSERTION" {
-            writeln!(texts, "    (\"{license}\", \"\"),")?;
+            text_map.insert("NOASSERTION".into(), ("".into(), Vec::new()));
             continue;
         }
 

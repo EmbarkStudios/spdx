@@ -13,7 +13,9 @@ documentation = "https://docs.rs/spdx"
 readme = "README.md"
 keywords = ["spdx", "license"]
 categories = ["parser-implementations"]
-license = "MIT OR Apache-2.0"
+# The entire source is (MIT OR Apache-2.0), except:
+# - some source file are only Apache-2.0
+license = "(MIT OR Apache-2.0) AND Apache-2.0"
 repository = "https://github.com/EmbarkStudios/spdx"
 include = [
     "Cargo.toml",

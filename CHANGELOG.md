@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.13.3] - 2025-12-17
 ### Changed
 - [PR#90](https://github.com/EmbarkStudios/spdx/pull/90) changed this crate to default to `no_std`, unless the `detection` feature is enabled, closing [PR#89](https://github.com/EmbarkStudios/spdx/pull/89). Thanks [@so-rose](https://github.com/so-rose)!
 - [PR#91](https://github.com/EmbarkStudios/spdx/pull/91) changed the license terms from `MIT OR Apache2.0` to just `Apache-2.0`, as [PR#84](https://github.com/EmbarkStudios/spdx/pull/84) merged external code that was only licensed under `Apache-2.0`. See [#88](https://github.com/EmbarkStudios/spdx/pull/88) for the original raising of this mismatch.
@@ -228,7 +229,8 @@ a user provided callback
 [PR#78]: https://github.com/EmbarkStudios/spdx/pull/78
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.13.2...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.13.3...HEAD
+[0.13.3]: https://github.com/EmbarkStudios/spdx/compare/0.13.2...0.13.3
 [0.13.2]: https://github.com/EmbarkStudios/spdx/compare/0.13.1...0.13.2
 [0.13.1]: https://github.com/EmbarkStudios/spdx/compare/0.13.0...0.13.1
 [0.13.0]: https://github.com/EmbarkStudios/spdx/compare/0.12.0...0.13.0

@@ -24,8 +24,7 @@ pub mod detection;
 #[allow(missing_docs)]
 pub mod text;
 
-use alloc::boxed::Box;
-use alloc::string::String;
+use alloc::{boxed::Box, string::String};
 use core::{
     cmp::{self, Ordering},
     fmt,

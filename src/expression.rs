@@ -4,8 +4,7 @@ mod minimize;
 mod parser;
 
 use crate::{LicenseReq, error::ParseError};
-use alloc::string::String;
-use alloc::vec::Vec;
+use alloc::{string::String, vec::Vec};
 use core::fmt;
 pub use minimize::MinimizeError;
 use smallvec::SmallVec;

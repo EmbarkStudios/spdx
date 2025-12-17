@@ -268,9 +268,7 @@ mod test {
     use crate::{
         AdditionItem, LicenseItem, LicenseRef, LicenseReq, Licensee, exception_id, license_id,
     };
-    use alloc::borrow::ToOwned;
-    use alloc::boxed::Box;
-    use alloc::vec::Vec;
+    use alloc::{borrow::ToOwned, boxed::Box, vec::Vec};
 
     const LICENSEES: &[&str] = &[
         "LicenseRef-Embark-Proprietary",

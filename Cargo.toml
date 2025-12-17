@@ -13,7 +13,7 @@ documentation = "https://docs.rs/spdx"
 readme = "README.md"
 keywords = ["spdx", "license"]
 categories = ["parser-implementations"]
-license = "MIT OR Apache-2.0"
+license = "Apache-2.0"
 repository = "https://github.com/EmbarkStudios/spdx"
 include = [
     "Cargo.toml",
@@ -33,7 +33,7 @@ detection = ["std", "regex", "unicode-normalization"]
 # Allows de/serialization of a spdx::detection::Store for quicker loading
 detection-cache = ["std", "detection", "zstd"]
 # Inlines a cache into this crate, which contains all of the licenses from the
-# SPDX crate that the crate version was packaged with
+# SPDX license list that the crate version was packaged with
 detection-inline-cache = ["std", "detection-cache"]
 # Performs license detection in parallel within the same text
 detection-parallel = ["std", "detection", "rayon"]

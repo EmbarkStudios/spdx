@@ -1,6 +1,7 @@
 use super::Expression;
 use crate::{LicenseReq, Licensee};
-use std::fmt;
+use alloc::vec::Vec;
+use core::fmt;
 
 /// Errors that can occur when trying to minimize the requirements for an [`Expression`]
 #[derive(Debug, PartialEq, Eq)]
@@ -25,7 +26,7 @@ impl fmt::Display for MinimizeError {
     }
 }
 
-impl std::error::Error for MinimizeError {
+impl core::error::Error for MinimizeError {
     fn description(&self) -> &str {
         match self {
             Self::TooManyRequirements(_) => "too many requirements in license expression",

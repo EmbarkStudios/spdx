@@ -1,4 +1,5 @@
-use std::{error::Error, fmt};
+use alloc::string::String;
+use core::{error::Error, fmt};
 
 /// An error related to parsing of an SPDX license expression
 /// or identifier
@@ -8,7 +9,7 @@ pub struct ParseError {
     pub original: String,
     /// The range of characters in the original string that result
     /// in this error
-    pub span: std::ops::Range<usize>,
+    pub span: core::ops::Range<usize>,
     /// The specific reason for the error
     pub reason: Reason,
 }

@@ -1,6 +1,9 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![deny(missing_docs)]
 #![doc = include_str!("../README.md")]
+#![cfg_attr(not(feature = "std"), no_std)]
+
+extern crate alloc;
 
 /// Error types
 pub mod error;
@@ -21,14 +24,15 @@ pub mod detection;
 #[allow(missing_docs)]
 pub mod text;
 
+use alloc::{boxed::Box, string::String};
+use core::{
+    cmp::{self, Ordering},
+    fmt,
+};
 pub use error::ParseError;
 pub use expression::Expression;
 pub use lexer::ParseMode;
 pub use licensee::Licensee;
-use std::{
-    cmp::{self, Ordering},
-    fmt,
-};
 
 /// Flags that can apply to licenses and/or license exceptions
 pub mod flags {
@@ -99,7 +103,7 @@ impl PartialOrd for LicenseId {
     }
 }
 
-impl std::ops::Deref for LicenseId {
+impl core::ops::Deref for LicenseId {
     type Target = License;
 
     #[inline]
@@ -253,7 +257,7 @@ impl PartialOrd for ExceptionId {
     }
 }
 
-impl std::ops::Deref for ExceptionId {
+impl core::ops::Deref for ExceptionId {
     type Target = Exception;
 
     #[inline]
@@ -411,8 +415,8 @@ impl Ord for LicenseItem {
     }
 }
 
+#[allow(clippy::non_canonical_partial_ord_impl)]
 impl PartialOrd for LicenseItem {
-    #[allow(clippy::non_canonical_partial_ord_impl)]
     fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
         match (self, o) {
             (Self::Spdx { id: a, .. }, Self::Spdx { id: b, .. }) => a.partial_cmp(b),
@@ -514,8 +518,8 @@ impl Ord for AdditionItem {
     }
 }
 
+#[allow(clippy::non_canonical_partial_ord_impl)]
 impl PartialOrd for AdditionItem {
-    #[allow(clippy::non_canonical_partial_ord_impl)]
     fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
         match (self, o) {
             (Self::Spdx(a), Self::Spdx(b)) => a.partial_cmp(b),
@@ -585,7 +589,7 @@ pub fn gnu_license_id(base: &str, or_later: bool) -> Option<LicenseId> {
             v[base.len()..].copy_from_slice(b"-only");
         }
 
-        let Ok(s) = std::str::from_utf8(v.as_slice()) else {
+        let Ok(s) = core::str::from_utf8(v.as_slice()) else {
             // Unreachable, but whatever
             return None;
         };
@@ -645,8 +649,8 @@ pub fn license_version() -> &'static str {
 #[cfg(test)]
 mod test {
     use super::LicenseItem;
-
     use crate::{Expression, license_id};
+    use alloc::string::ToString;
 
     #[test]
     fn gnu_or_later_display() {

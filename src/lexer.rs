@@ -2,6 +2,8 @@ use crate::{
     ExceptionId, LicenseId,
     error::{ParseError, Reason},
 };
+use alloc::borrow::ToOwned;
+use core::fmt;
 
 /// Parsing configuration for SPDX expression
 #[derive(Default, Copy, Clone)]
@@ -106,9 +108,9 @@ pub enum Token<'a> {
     Or,
 }
 
-impl std::fmt::Display for Token<'_> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Debug::fmt(self, f)
+impl fmt::Display for Token<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(self, f)
     }
 }
 
@@ -244,7 +246,7 @@ pub struct LexerToken<'a> {
     /// The token that was lexed
     pub token: Token<'a>,
     /// The range of the token characters in the original license expression
-    pub span: std::ops::Range<usize>,
+    pub span: core::ops::Range<usize>,
 }
 
 impl<'a> Iterator for Lexer<'a> {

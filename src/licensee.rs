@@ -3,7 +3,8 @@ use crate::{
     error::{ParseError, Reason},
     lexer::{Lexer, Token},
 };
-use std::fmt;
+use alloc::{borrow::ToOwned, boxed::Box, string::String};
+use core::fmt;
 
 /// A convenience wrapper for a license and optional additional text that can be
 /// checked against a license requirement to see if it satisfies the requirement
@@ -26,7 +27,7 @@ impl fmt::Display for Licensee {
     }
 }
 
-impl std::str::FromStr for Licensee {
+impl core::str::FromStr for Licensee {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -243,7 +244,7 @@ impl Licensee {
 
 impl PartialOrd<LicenseReq> for Licensee {
     #[inline]
-    fn partial_cmp(&self, o: &LicenseReq) -> Option<std::cmp::Ordering> {
+    fn partial_cmp(&self, o: &LicenseReq) -> Option<core::cmp::Ordering> {
         self.inner.partial_cmp(o)
     }
 }
@@ -267,6 +268,7 @@ mod test {
     use crate::{
         AdditionItem, LicenseItem, LicenseRef, LicenseReq, Licensee, exception_id, license_id,
     };
+    use alloc::{borrow::ToOwned, boxed::Box, vec::Vec};
 
     const LICENSEES: &[&str] = &[
         "LicenseRef-Embark-Proprietary",

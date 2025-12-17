@@ -4,6 +4,9 @@ use crate::{
     expression::{ExprNode, Expression, ExpressionReq, Operator},
     lexer::{Lexer, Token},
 };
+use alloc::borrow::ToOwned;
+use alloc::boxed::Box;
+use alloc::string::String;
 use smallvec::SmallVec;
 
 impl Expression {
@@ -163,7 +166,7 @@ impl Expression {
 
         struct OpAndSpan {
             op: Op,
-            span: std::ops::Range<usize>,
+            span: core::ops::Range<usize>,
         }
 
         let lexer = Lexer::new_mode(original, mode);
@@ -184,7 +187,7 @@ impl Expression {
             Ok(())
         };
 
-        let make_err_for_token = |last_token: Option<Token<'_>>, span: std::ops::Range<usize>| {
+        let make_err_for_token = |last_token: Option<Token<'_>>, span: core::ops::Range<usize>| {
             let expected: &[&str] = match last_token {
                 None | Some(Token::And | Token::Or | Token::OpenParen) => &["<license>", "("],
                 Some(Token::CloseParen) => &["AND", "OR"],

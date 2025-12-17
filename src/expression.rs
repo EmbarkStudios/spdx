@@ -4,9 +4,11 @@ mod minimize;
 mod parser;
 
 use crate::{LicenseReq, error::ParseError};
+use alloc::string::String;
+use alloc::vec::Vec;
+use core::fmt;
 pub use minimize::MinimizeError;
 use smallvec::SmallVec;
-use std::fmt;
 
 /// A license requirement inside an SPDX license expression
 ///
@@ -16,7 +18,7 @@ pub struct ExpressionReq {
     /// The license requirement
     pub req: LicenseReq,
     /// The span in the original license expression string containing the requirement
-    pub span: std::ops::Range<u32>,
+    pub span: core::ops::Range<u32>,
 }
 
 impl PartialEq for ExpressionReq {
@@ -238,7 +240,7 @@ impl fmt::Display for Expression {
     }
 }
 
-impl std::str::FromStr for Expression {
+impl core::str::FromStr for Expression {
     type Err = ParseError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Self::parse(s)

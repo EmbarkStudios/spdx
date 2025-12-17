@@ -1,6 +1,9 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![deny(missing_docs)]
 #![doc = include_str!("../README.md")]
+#![cfg_attr(not(feature = "std"), no_std)]
+
+extern crate alloc;
 
 /// Error types
 pub mod error;
@@ -21,14 +24,16 @@ pub mod detection;
 #[allow(missing_docs)]
 pub mod text;
 
+use alloc::boxed::Box;
+use alloc::string::String;
+use core::{
+    cmp::{self, Ordering},
+    fmt,
+};
 pub use error::ParseError;
 pub use expression::Expression;
 pub use lexer::ParseMode;
 pub use licensee::Licensee;
-use std::{
-    cmp::{self, Ordering},
-    fmt,
-};
 
 /// Flags that can apply to licenses and/or license exceptions
 pub mod flags {
@@ -87,7 +92,7 @@ impl Eq for LicenseId {}
 
 impl Ord for LicenseId {
     #[inline]
-    fn cmp(&self, o: &Self) -> Ordering {
+    fn cmp(&self, o: &Self) -> core::cmp::Ordering {
         self.l.index.cmp(&o.l.index)
     }
 }
@@ -99,7 +104,7 @@ impl PartialOrd for LicenseId {
     }
 }
 
-impl std::ops::Deref for LicenseId {
+impl core::ops::Deref for LicenseId {
     type Target = License;
 
     #[inline]
@@ -253,7 +258,7 @@ impl PartialOrd for ExceptionId {
     }
 }
 
-impl std::ops::Deref for ExceptionId {
+impl core::ops::Deref for ExceptionId {
     type Target = Exception;
 
     #[inline]
@@ -585,7 +590,7 @@ pub fn gnu_license_id(base: &str, or_later: bool) -> Option<LicenseId> {
             v[base.len()..].copy_from_slice(b"-only");
         }
 
-        let Ok(s) = std::str::from_utf8(v.as_slice()) else {
+        let Ok(s) = core::str::from_utf8(v.as_slice()) else {
             // Unreachable, but whatever
             return None;
         };
@@ -645,8 +650,8 @@ pub fn license_version() -> &'static str {
 #[cfg(test)]
 mod test {
     use super::LicenseItem;
-
     use crate::{Expression, license_id};
+    use alloc::string::ToString;
 
     #[test]
     fn gnu_or_later_display() {

@@ -24,21 +24,23 @@ include = [
 ]
 
 [features]
+default = ["std"]
+std = ["regex?/std", "unicode-normalization?/std"]
 # Includes the full canonical text of each license
 text = []
 # Allows analysis of text to determine if it might be an SPDX license text
-detection = ["regex", "unicode-normalization"]
+detection = ["std", "regex", "unicode-normalization"]
 # Allows de/serialization of a spdx::detection::Store for quicker loading
-detection-cache = ["detection", "zstd"]
+detection-cache = ["std", "detection", "zstd"]
 # Inlines a cache into this crate, which contains all of the licenses from the
 # SPDX crate that the crate version was packaged with
-detection-inline-cache = ["detection-cache"]
+detection-inline-cache = ["std", "detection-cache"]
 # Performs license detection in parallel within the same text
-detection-parallel = ["detection", "rayon"]
+detection-parallel = ["std", "detection", "rayon"]
 
 [dependencies]
 rayon = { version = "1.11", optional = true }
-regex = { version = "1.12", optional = true }
+regex = { version = "1.12", optional = true, default-features = false, features = ["perf", "unicode"] }
 # In most cases expressions are quite small so we can avoid heap allocations
 smallvec = "1.15"
 unicode-normalization = { version = "0.1", optional = true }

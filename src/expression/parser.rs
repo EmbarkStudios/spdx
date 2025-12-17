@@ -4,9 +4,7 @@ use crate::{
     expression::{ExprNode, Expression, ExpressionReq, Operator},
     lexer::{Lexer, Token},
 };
-use alloc::borrow::ToOwned;
-use alloc::boxed::Box;
-use alloc::string::String;
+use alloc::{borrow::ToOwned, boxed::Box, string::String};
 use smallvec::SmallVec;
 
 impl Expression {
@@ -150,6 +148,8 @@ impl Expression {
     /// ).unwrap();
     /// ```
     pub fn parse_mode(original: &str, mode: ParseMode) -> Result<Self, ParseError> {
+        use core::ops::Range;
+
         // Operator precedence in SPDX 2.1
         // +
         // WITH
@@ -166,7 +166,7 @@ impl Expression {
 
         struct OpAndSpan {
             op: Op,
-            span: core::ops::Range<usize>,
+            span: Range<usize>,
         }
 
         let lexer = Lexer::new_mode(original, mode);
@@ -187,7 +187,7 @@ impl Expression {
             Ok(())
         };
 
-        let make_err_for_token = |last_token: Option<Token<'_>>, span: core::ops::Range<usize>| {
+        let make_err_for_token = |last_token: Option<Token<'_>>, span: Range<usize>| {
             let expected: &[&str] = match last_token {
                 None | Some(Token::And | Token::Or | Token::OpenParen) => &["<license>", "("],
                 Some(Token::CloseParen) => &["AND", "OR"],

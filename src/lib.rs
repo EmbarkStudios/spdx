@@ -92,7 +92,7 @@ impl Eq for LicenseId {}
 
 impl Ord for LicenseId {
     #[inline]
-    fn cmp(&self, o: &Self) -> core::cmp::Ordering {
+    fn cmp(&self, o: &Self) -> Ordering {
         self.l.index.cmp(&o.l.index)
     }
 }
@@ -416,8 +416,8 @@ impl Ord for LicenseItem {
     }
 }
 
+#[allow(clippy::non_canonical_partial_ord_impl)]
 impl PartialOrd for LicenseItem {
-    #[allow(clippy::non_canonical_partial_ord_impl)]
     fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
         match (self, o) {
             (Self::Spdx { id: a, .. }, Self::Spdx { id: b, .. }) => a.partial_cmp(b),
@@ -519,8 +519,8 @@ impl Ord for AdditionItem {
     }
 }
 
+#[allow(clippy::non_canonical_partial_ord_impl)]
 impl PartialOrd for AdditionItem {
-    #[allow(clippy::non_canonical_partial_ord_impl)]
     fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
         match (self, o) {
             (Self::Spdx(a), Self::Spdx(b)) => a.partial_cmp(b),

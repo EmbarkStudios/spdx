@@ -3,9 +3,7 @@ use crate::{
     error::{ParseError, Reason},
     lexer::{Lexer, Token},
 };
-use alloc::borrow::ToOwned;
-use alloc::boxed::Box;
-use alloc::string::String;
+use alloc::{borrow::ToOwned, boxed::Box, string::String};
 use core::fmt;
 
 /// A convenience wrapper for a license and optional additional text that can be

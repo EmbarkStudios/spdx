@@ -3,6 +3,7 @@ use crate::{
     error::{ParseError, Reason},
 };
 use alloc::borrow::ToOwned;
+use core::fmt;
 
 /// Parsing configuration for SPDX expression
 #[derive(Default, Copy, Clone)]
@@ -107,9 +108,9 @@ pub enum Token<'a> {
     Or,
 }
 
-impl core::fmt::Display for Token<'_> {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        core::fmt::Debug::fmt(self, f)
+impl fmt::Display for Token<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(self, f)
     }
 }
 

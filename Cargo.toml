@@ -24,7 +24,7 @@ include = [
 ]
 
 [features]
-default = ["std"]
+default = []
 std = ["regex?/std", "unicode-normalization?/std"]
 # Includes the full canonical text of each license
 text = []

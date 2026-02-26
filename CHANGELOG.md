@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Changed
+- [PR#92](https://github.com/EmbarkStudios/spdx/pull/92) updated SPDX license list to [3.28.0](https://github.com/spdx/license-list-XML/releases/tag/v3.28.0).
+
 ## [0.13.3] - 2025-12-17
 ### Changed
 - [PR#90](https://github.com/EmbarkStudios/spdx/pull/90) changed this crate to default to `no_std`, unless the `detection` feature is enabled, closing [PR#89](https://github.com/EmbarkStudios/spdx/pull/89). Thanks [@so-rose](https://github.com/so-rose)!

@@ -418,7 +418,9 @@ fn write_cache() -> anyhow::Result<()> {
 
     let mut s = sd::Store::new();
     for (key, mut entry) in texts {
-        let id = spdx::license_id(&key).expect("impossible");
+        let Some(id) = spdx::license_id(&key) else {
+            panic!("failed to find license id {key}");
+        };
         // Unfortunately all of the GPL licenses just have multiple copies of
         // the license text, which due to ordering get attribute to the deprecated
         // id, so just correct it to assume that license text always applies the

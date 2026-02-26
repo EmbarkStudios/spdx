@@ -14,6 +14,10 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("AGPL-3.0", include!("text/licenses/AGPL-3.0")),
     ("AGPL-3.0-only", include!("text/licenses/AGPL-3.0")),
     ("AGPL-3.0-or-later", include!("text/licenses/AGPL-3.0")),
+    (
+        "ALGLIB-Documentation",
+        include!("text/licenses/ALGLIB-Documentation"),
+    ),
     ("AMD-newlib", include!("text/licenses/AMD-newlib")),
     ("AMDPLPA", include!("text/licenses/AMDPLPA")),
     ("AML", include!("text/licenses/AML")),
@@ -47,6 +51,10 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ),
     ("Adobe-Glyph", include!("text/licenses/Adobe-Glyph")),
     ("Adobe-Utopia", include!("text/licenses/Adobe-Utopia")),
+    (
+        "Advanced-Cryptics-Dictionary",
+        include!("text/licenses/Advanced-Cryptics-Dictionary"),
+    ),
     ("Afmparse", include!("text/licenses/Afmparse")),
     ("Aladdin", include!("text/licenses/Aladdin")),
     ("Apache-1.0", include!("text/licenses/Apache-1.0")),
@@ -66,6 +74,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("Artistic-2.0", include!("text/licenses/Artistic-2.0")),
     ("Artistic-dist", include!("text/licenses/Artistic-dist")),
     ("Aspell-RU", include!("text/licenses/Aspell-RU")),
+    ("BOLA-1.1", include!("text/licenses/BOLA-1.1")),
     ("BSD-1-Clause", include!("text/licenses/BSD-1-Clause")),
     ("BSD-2-Clause", include!("text/licenses/BSD-2-Clause")),
     (
@@ -139,6 +148,10 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
         include!("text/licenses/BSD-3-Clause-Sun"),
     ),
     (
+        "BSD-3-Clause-Tso",
+        include!("text/licenses/BSD-3-Clause-Tso"),
+    ),
+    (
         "BSD-3-Clause-acpica",
         include!("text/licenses/BSD-3-Clause-acpica"),
     ),
@@ -165,6 +178,10 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     (
         "BSD-Inferno-Nettverk",
         include!("text/licenses/BSD-Inferno-Nettverk"),
+    ),
+    (
+        "BSD-Mark-Modifications",
+        include!("text/licenses/BSD-Mark-Modifications"),
     ),
     ("BSD-Protection", include!("text/licenses/BSD-Protection")),
     ("BSD-Source-Code", include!("text/licenses/BSD-Source-Code")),
@@ -205,12 +222,14 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
         "Brian-Gladman-3-Clause",
         include!("text/licenses/Brian-Gladman-3-Clause"),
     ),
+    ("Buddy", include!("text/licenses/Buddy")),
     ("C-UDA-1.0", include!("text/licenses/C-UDA-1.0")),
     ("CAL-1.0", include!("text/licenses/CAL-1.0")),
     (
         "CAL-1.0-Combined-Work-Exception",
         include!("text/licenses/CAL-1.0"),
     ),
+    ("CAPEC-tou", include!("text/licenses/CAPEC-tou")),
     ("CATOSL-1.1", include!("text/licenses/CATOSL-1.1")),
     ("CC-BY-1.0", include!("text/licenses/CC-BY-1.0")),
     ("CC-BY-2.0", include!("text/licenses/CC-BY-2.0")),
@@ -376,6 +395,18 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("EPICS", include!("text/licenses/EPICS")),
     ("EPL-1.0", include!("text/licenses/EPL-1.0")),
     ("EPL-2.0", include!("text/licenses/EPL-2.0")),
+    (
+        "ESA-PL-permissive-2.4",
+        include!("text/licenses/ESA-PL-permissive-2.4"),
+    ),
+    (
+        "ESA-PL-strong-copyleft-2.4",
+        include!("text/licenses/ESA-PL-strong-copyleft-2.4"),
+    ),
+    (
+        "ESA-PL-weak-copyleft-2.4",
+        include!("text/licenses/ESA-PL-weak-copyleft-2.4"),
+    ),
     ("EUDatagrid", include!("text/licenses/EUDatagrid")),
     ("EUPL-1.0", include!("text/licenses/EUPL-1.0")),
     ("EUPL-1.1", include!("text/licenses/EUPL-1.1")),
@@ -567,6 +598,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ),
     ("HPND-Netrek", include!("text/licenses/HPND-Netrek")),
     ("HPND-Pbmplus", include!("text/licenses/HPND-Pbmplus")),
+    ("HPND-SMC", include!("text/licenses/HPND-SMC")),
     ("HPND-UC", include!("text/licenses/HPND-UC")),
     (
         "HPND-UC-export-US",
@@ -608,6 +640,10 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
         "HPND-sell-variant-MIT-disclaimer-rev",
         include!("text/licenses/HPND-sell-variant-MIT-disclaimer-rev"),
     ),
+    (
+        "HPND-sell-variant-critical-systems",
+        include!("text/licenses/HPND-sell-variant-critical-systems"),
+    ),
     ("HTMLTIDY", include!("text/licenses/HTMLTIDY")),
     ("HaskellReport", include!("text/licenses/HaskellReport")),
     ("Hippocratic-2.1", include!("text/licenses/Hippocratic-2.1")),
@@ -623,6 +659,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("IPL-1.0", include!("text/licenses/IPL-1.0")),
     ("ISC", include!("text/licenses/ISC")),
     ("ISC-Veillard", include!("text/licenses/ISC-Veillard")),
+    ("ISO-permission", include!("text/licenses/ISO-permission")),
     ("ImageMagick", include!("text/licenses/ImageMagick")),
     ("Imlib2", include!("text/licenses/Imlib2")),
     ("Info-ZIP", include!("text/licenses/Info-ZIP")),
@@ -710,6 +747,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
         "MIT-Modern-Variant",
         include!("text/licenses/MIT-Modern-Variant"),
     ),
+    ("MIT-STK", include!("text/licenses/MIT-STK")),
     ("MIT-Wu", include!("text/licenses/MIT-Wu")),
     ("MIT-advertising", include!("text/licenses/MIT-advertising")),
     ("MIT-enna", include!("text/licenses/MIT-enna")),
@@ -718,6 +756,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("MIT-testregex", include!("text/licenses/MIT-testregex")),
     ("MITNFA", include!("text/licenses/MITNFA")),
     ("MMIXware", include!("text/licenses/MMIXware")),
+    ("MMPL-1.0.1", include!("text/licenses/MMPL-1.0.1")),
     ("MPEG-SSG", include!("text/licenses/MPEG-SSG")),
     ("MPL-1.0", include!("text/licenses/MPL-1.0")),
     ("MPL-1.1", include!("text/licenses/MPL-1.1")),
@@ -764,6 +803,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("NGPL", include!("text/licenses/NGPL")),
     ("NICTA-1.0", include!("text/licenses/NICTA-1.0")),
     ("NIST-PD", include!("text/licenses/NIST-PD")),
+    ("NIST-PD-TNT", include!("text/licenses/NIST-PD-TNT")),
     (
         "NIST-PD-fallback",
         include!("text/licenses/NIST-PD-fallback"),
@@ -829,12 +869,15 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("OPL-1.0", include!("text/licenses/OPL-1.0")),
     ("OPL-UK-3.0", include!("text/licenses/OPL-UK-3.0")),
     ("OPUBL-1.0", include!("text/licenses/OPUBL-1.0")),
+    ("OSC-1.0", include!("text/licenses/OSC-1.0")),
     ("OSET-PL-2.1", include!("text/licenses/OSET-PL-2.1")),
     ("OSL-1.0", include!("text/licenses/OSL-1.0")),
     ("OSL-1.1", include!("text/licenses/OSL-1.1")),
     ("OSL-2.0", include!("text/licenses/OSL-2.0")),
     ("OSL-2.1", include!("text/licenses/OSL-2.1")),
     ("OSL-3.0", include!("text/licenses/OSL-3.0")),
+    ("OSSP", include!("text/licenses/OSSP")),
+    ("OpenMDW-1.0", include!("text/licenses/OpenMDW-1.0")),
     ("OpenPBS-2.3", include!("text/licenses/OpenPBS-2.3")),
     ("OpenSSL", include!("text/licenses/OpenSSL")),
     (
@@ -848,6 +891,10 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("PHP-3.01", include!("text/licenses/PHP-3.01")),
     ("PPL", include!("text/licenses/PPL")),
     ("PSF-2.0", include!("text/licenses/PSF-2.0")),
+    (
+        "ParaType-Free-Font-1.3",
+        include!("text/licenses/ParaType-Free-Font-1.3"),
+    ),
     ("Parity-6.0.0", include!("text/licenses/Parity-6.0.0")),
     ("Parity-7.0.0", include!("text/licenses/Parity-7.0.0")),
     ("Pixar", include!("text/licenses/Pixar")),
@@ -885,6 +932,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("SGI-B-1.1", include!("text/licenses/SGI-B-1.1")),
     ("SGI-B-2.0", include!("text/licenses/SGI-B-2.0")),
     ("SGI-OpenGL", include!("text/licenses/SGI-OpenGL")),
+    ("SGMLUG-PM", include!("text/licenses/SGMLUG-PM")),
     ("SGP4", include!("text/licenses/SGP4")),
     ("SHL-0.5", include!("text/licenses/SHL-0.5")),
     ("SHL-0.51", include!("text/licenses/SHL-0.51")),
@@ -939,6 +987,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("TTYP0", include!("text/licenses/TTYP0")),
     ("TU-Berlin-1.0", include!("text/licenses/TU-Berlin-1.0")),
     ("TU-Berlin-2.0", include!("text/licenses/TU-Berlin-2.0")),
+    ("TekHVC", include!("text/licenses/TekHVC")),
     ("TermReadKey", include!("text/licenses/TermReadKey")),
     ("ThirdEye", include!("text/licenses/ThirdEye")),
     ("TrustedQSL", include!("text/licenses/TrustedQSL")),
@@ -948,6 +997,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("UPL-1.0", include!("text/licenses/UPL-1.0")),
     ("URT-RLE", include!("text/licenses/URT-RLE")),
     ("Ubuntu-font-1.0", include!("text/licenses/Ubuntu-font-1.0")),
+    ("UnRAR", include!("text/licenses/UnRAR")),
     ("Unicode-3.0", include!("text/licenses/Unicode-3.0")),
     (
         "Unicode-DFS-2015",
@@ -971,17 +1021,24 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("VOSTROM", include!("text/licenses/VOSTROM")),
     ("VSL-1.0", include!("text/licenses/VSL-1.0")),
     ("Vim", include!("text/licenses/Vim")),
+    ("Vixie-Cron", include!("text/licenses/Vixie-Cron")),
     ("W3C", include!("text/licenses/W3C")),
     ("W3C-19980720", include!("text/licenses/W3C-19980720")),
     ("W3C-20150513", include!("text/licenses/W3C-20150513")),
+    ("WTFNMFPL", include!("text/licenses/WTFNMFPL")),
     ("WTFPL", include!("text/licenses/WTFPL")),
     ("Watcom-1.0", include!("text/licenses/Watcom-1.0")),
     ("Widget-Workshop", include!("text/licenses/Widget-Workshop")),
+    ("WordNet", include!("text/licenses/WordNet")),
     ("Wsuipa", include!("text/licenses/Wsuipa")),
     ("X11", include!("text/licenses/X11")),
     (
         "X11-distribute-modifications-variant",
         include!("text/licenses/X11-distribute-modifications-variant"),
+    ),
+    (
+        "X11-no-permit-persons",
+        include!("text/licenses/X11-no-permit-persons"),
     ),
     ("X11-swapped", include!("text/licenses/X11-swapped")),
     ("XFree86-1.1", include!("text/licenses/XFree86-1.1")),
@@ -1037,6 +1094,10 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("gnuplot", include!("text/licenses/gnuplot")),
     ("gtkbook", include!("text/licenses/gtkbook")),
     ("hdparm", include!("text/licenses/hdparm")),
+    (
+        "hyphen-bulgarian",
+        include!("text/licenses/hyphen-bulgarian"),
+    ),
     ("iMatix", include!("text/licenses/iMatix")),
     ("jove", include!("text/licenses/jove")),
     ("libpng-1.6.35", include!("text/licenses/libpng-1.6.35")),
@@ -1138,6 +1199,10 @@ pub const EXCEPTION_TEXTS: &[(&str, &str)] = &[
     (
         "Classpath-exception-2.0",
         include!("text/exceptions/Classpath-exception-2.0"),
+    ),
+    (
+        "Classpath-exception-2.0-short",
+        include!("text/exceptions/Classpath-exception-2.0-short"),
     ),
     (
         "DigiRule-FOSS-exception",
@@ -1275,6 +1340,10 @@ pub const EXCEPTION_TEXTS: &[(&str, &str)] = &[
     ("SHL-2.1", include!("text/exceptions/SHL-2.1")),
     ("SWI-exception", include!("text/exceptions/SWI-exception")),
     (
+        "Simple-Library-Usage-exception",
+        include!("text/exceptions/Simple-Library-Usage-exception"),
+    ),
+    (
         "Swift-exception",
         include!("text/exceptions/Swift-exception"),
     ),
@@ -1321,6 +1390,10 @@ pub const EXCEPTION_TEXTS: &[(&str, &str)] = &[
         include!("text/exceptions/i2p-gpl-java-exception"),
     ),
     (
+        "kvirc-openssl-exception",
+        include!("text/exceptions/kvirc-openssl-exception"),
+    ),
+    (
         "libpri-OpenH323-exception",
         include!("text/exceptions/libpri-OpenH323-exception"),
     ),
@@ -1337,6 +1410,14 @@ pub const EXCEPTION_TEXTS: &[(&str, &str)] = &[
     (
         "romic-exception",
         include!("text/exceptions/romic-exception"),
+    ),
+    (
+        "rsync-linking-exception",
+        include!("text/exceptions/rsync-linking-exception"),
+    ),
+    (
+        "sqlitestudio-OpenSSL-exception",
+        include!("text/exceptions/sqlitestudio-OpenSSL-exception"),
     ),
     (
         "stunnel-exception",

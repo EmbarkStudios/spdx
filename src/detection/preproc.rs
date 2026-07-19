@@ -202,7 +202,7 @@ fn remove_common_tokens(input: Cow<'_, str>) -> Cow<'_, str> {
     // reconcile the count with other longer prefixes that may be stored
     let common_count = prefix_counts
         .iter()
-        .filter_map(|(s, count)| Some(count).filter(|_| s.starts_with(most_common)))
+        .filter_map(|(s, count)| s.starts_with(most_common).then_some(count))
         .sum::<u32>();
 
     let line_count = input.split('\n').count();

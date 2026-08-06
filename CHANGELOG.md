@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 ### Fixed
-- Fixed `LicenseItem`'s `PartialEq` and `PartialOrd` implementations to agree with its total ordering, resolving [#95](https://github.com/EmbarkStudios/spdx/issues/95).
+- [PR#96](https://github.com/EmbarkStudios/spdx/pull/96) fixed `LicenseItem`'s `PartialEq` and `PartialOrd` implementations to agree with its total ordering, resolving [#95](https://github.com/EmbarkStudios/spdx/issues/95).
 
 ## [0.13.4] - 2026-02-26
 ### Changed

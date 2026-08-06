@@ -245,14 +245,24 @@ impl Licensee {
 impl PartialOrd<LicenseReq> for Licensee {
     #[inline]
     fn partial_cmp(&self, o: &LicenseReq) -> Option<core::cmp::Ordering> {
-        self.inner.partial_cmp(o)
+        let license = match (&self.inner.license, &o.license) {
+            (LicenseItem::Spdx { id: a, .. }, LicenseItem::Spdx { id: b, .. }) => a.cmp(b),
+            (LicenseItem::Other(a), LicenseItem::Other(b)) => a.cmp(b),
+            (LicenseItem::Spdx { .. }, LicenseItem::Other { .. }) => core::cmp::Ordering::Less,
+            (LicenseItem::Other { .. }, LicenseItem::Spdx { .. }) => core::cmp::Ordering::Greater,
+        };
+
+        match license {
+            core::cmp::Ordering::Equal => self.inner.addition.partial_cmp(&o.addition),
+            ordering => Some(ordering),
+        }
     }
 }
 
 impl PartialEq<LicenseReq> for Licensee {
     #[inline]
     fn eq(&self, o: &LicenseReq) -> bool {
-        self.inner.eq(o)
+        self.partial_cmp(o) == Some(core::cmp::Ordering::Equal)
     }
 }
 
@@ -309,12 +319,12 @@ mod test {
         // Licensees can't have the `or_later`
         assert!(licensees.binary_search_by(|l| l.inner.cmp(&req)).is_err());
 
-        match &licensees[licensees
+        let licensee = &licensees[licensees
             .binary_search_by(|l| l.partial_cmp(&req).unwrap())
-            .unwrap()]
-        .inner
-        .license
-        {
+            .unwrap()];
+        assert_eq!(licensee, &req);
+
+        match &licensee.inner.license {
             LicenseItem::Spdx { id, .. } => assert_eq!(*id, mpl_id),
             o @ LicenseItem::Other { .. } => panic!("unexpected {o:?}"),
         }

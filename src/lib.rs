@@ -415,21 +415,15 @@ impl Ord for LicenseItem {
     }
 }
 
-#[allow(clippy::non_canonical_partial_ord_impl)]
 impl PartialOrd for LicenseItem {
     fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
-        match (self, o) {
-            (Self::Spdx { id: a, .. }, Self::Spdx { id: b, .. }) => a.partial_cmp(b),
-            (Self::Other(a), Self::Other(b)) => a.partial_cmp(b),
-            (Self::Spdx { .. }, Self::Other { .. }) => Some(cmp::Ordering::Less),
-            (Self::Other { .. }, Self::Spdx { .. }) => Some(cmp::Ordering::Greater),
-        }
+        Some(self.cmp(o))
     }
 }
 
 impl PartialEq for LicenseItem {
     fn eq(&self, o: &Self) -> bool {
-        matches!(self.partial_cmp(o), Some(cmp::Ordering::Equal))
+        self.cmp(o) == cmp::Ordering::Equal
     }
 }
 
@@ -648,9 +642,10 @@ pub fn license_version() -> &'static str {
 
 #[cfg(test)]
 mod test {
-    use super::LicenseItem;
+    use super::{LicenseItem, LicenseRef, LicenseReq};
     use crate::{Expression, license_id};
-    use alloc::string::ToString;
+    use alloc::{borrow::ToOwned, boxed::Box, string::ToString};
+    use core::cmp::Ordering;
 
     #[test]
     fn gnu_or_later_display() {
@@ -675,5 +670,78 @@ mod test {
         assert_eq!(gpl_or_later_parsed.to_string(), "GPL-3.0-or-later");
         assert_eq!(gpl_or_later_in_id.to_string(), "GPL-3.0-or-later");
         assert_eq!(non_gnu_or_later.to_string(), "Apache-2.0+");
+    }
+
+    #[test]
+    fn license_item_ordering_is_canonical() {
+        let mit = license_id("MIT").unwrap();
+        let apache = license_id("Apache-2.0").unwrap();
+        let items = [
+            LicenseItem::Spdx {
+                id: apache,
+                or_later: false,
+            },
+            LicenseItem::Spdx {
+                id: mit,
+                or_later: false,
+            },
+            LicenseItem::Spdx {
+                id: mit,
+                or_later: true,
+            },
+            LicenseItem::Other(Box::new(LicenseRef {
+                doc_ref: None,
+                lic_ref: "custom".to_owned(),
+            })),
+            LicenseItem::Other(Box::new(LicenseRef {
+                doc_ref: Some("document".to_owned()),
+                lic_ref: "custom".to_owned(),
+            })),
+        ];
+
+        assert_eq!(items[1].cmp(&items[2]), Ordering::Less);
+        assert_ne!(items[1], items[2]);
+
+        for left in &items {
+            for right in &items {
+                assert_eq!(left.partial_cmp(right), Some(left.cmp(right)));
+                assert_eq!(*left == *right, left.cmp(right) == Ordering::Equal);
+                assert_eq!(left.cmp(right), right.cmp(left).reverse());
+
+                for last in &items {
+                    if left <= right && right <= last {
+                        assert!(left <= last);
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn license_req_ordering_is_canonical() {
+        let mit = license_id("MIT").unwrap();
+        let requirements = [
+            LicenseReq {
+                license: LicenseItem::Spdx {
+                    id: mit,
+                    or_later: false,
+                },
+                addition: None,
+            },
+            LicenseReq {
+                license: LicenseItem::Spdx {
+                    id: mit,
+                    or_later: true,
+                },
+                addition: None,
+            },
+        ];
+
+        for left in &requirements {
+            for right in &requirements {
+                assert_eq!(left.partial_cmp(right), Some(left.cmp(right)));
+                assert_eq!(*left == *right, left.cmp(right) == Ordering::Equal);
+            }
+        }
     }
 }

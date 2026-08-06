@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Fixed
+- Fixed `LicenseItem`'s `PartialEq` and `PartialOrd` implementations to agree with its total ordering, resolving [#95](https://github.com/EmbarkStudios/spdx/issues/95).
+
 ## [0.13.4] - 2026-02-26
 ### Changed
 - [PR#92](https://github.com/EmbarkStudios/spdx/pull/92) updated SPDX license list to [3.28.0](https://github.com/spdx/license-list-XML/releases/tag/v3.28.0).

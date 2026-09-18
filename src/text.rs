@@ -105,6 +105,10 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
         "BSD-2-Clause-pkgconf-disclaimer",
         include!("text/licenses/BSD-2-Clause-pkgconf-disclaimer"),
     ),
+    (
+        "BSD-2-Clause-pos-unchanged",
+        include!("text/licenses/BSD-2-Clause-pos-unchanged"),
+    ),
     ("BSD-3-Clause", include!("text/licenses/BSD-3-Clause")),
     (
         "BSD-3-Clause-Attribution",
@@ -142,6 +146,10 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     (
         "BSD-3-Clause-Open-MPI",
         include!("text/licenses/BSD-3-Clause-Open-MPI"),
+    ),
+    (
+        "BSD-3-Clause-OpenWebUI",
+        include!("text/licenses/BSD-3-Clause-OpenWebUI"),
     ),
     (
         "BSD-3-Clause-Sun",
@@ -186,6 +194,14 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("BSD-Protection", include!("text/licenses/BSD-Protection")),
     ("BSD-Source-Code", include!("text/licenses/BSD-Source-Code")),
     (
+        "BSD-Source-Code-no-disclaimer",
+        include!("text/licenses/BSD-Source-Code-no-disclaimer"),
+    ),
+    (
+        "BSD-Source-alt-GPL",
+        include!("text/licenses/BSD-Source-alt-GPL"),
+    ),
+    (
         "BSD-Source-beginning-file",
         include!("text/licenses/BSD-Source-beginning-file"),
     ),
@@ -193,6 +209,10 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     (
         "BSD-Systemics-W3Works",
         include!("text/licenses/BSD-Systemics-W3Works"),
+    ),
+    (
+        "BSD-ask-to-endorse",
+        include!("text/licenses/BSD-ask-to-endorse"),
     ),
     ("BSL-1.0", include!("text/licenses/BSL-1.0")),
     ("BUSL-1.1", include!("text/licenses/BUSL-1.1")),
@@ -222,7 +242,12 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
         "Brian-Gladman-3-Clause",
         include!("text/licenses/Brian-Gladman-3-Clause"),
     ),
+    (
+        "Brian-Gladman-3-Clause-no-conversion",
+        include!("text/licenses/Brian-Gladman-3-Clause-no-conversion"),
+    ),
     ("Buddy", include!("text/licenses/Buddy")),
+    ("Bugroff", include!("text/licenses/Bugroff")),
     ("C-UDA-1.0", include!("text/licenses/C-UDA-1.0")),
     ("CAL-1.0", include!("text/licenses/CAL-1.0")),
     (
@@ -248,6 +273,10 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("CC-BY-NC-2.5", include!("text/licenses/CC-BY-NC-2.5")),
     ("CC-BY-NC-3.0", include!("text/licenses/CC-BY-NC-3.0")),
     ("CC-BY-NC-3.0-DE", include!("text/licenses/CC-BY-NC-3.0-DE")),
+    (
+        "CC-BY-NC-3.0-IGO",
+        include!("text/licenses/CC-BY-NC-3.0-IGO"),
+    ),
     ("CC-BY-NC-4.0", include!("text/licenses/CC-BY-NC-4.0")),
     ("CC-BY-NC-ND-1.0", include!("text/licenses/CC-BY-NC-ND-1.0")),
     ("CC-BY-NC-ND-2.0", include!("text/licenses/CC-BY-NC-ND-2.0")),
@@ -417,6 +446,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("Eurosym", include!("text/licenses/Eurosym")),
     ("FBM", include!("text/licenses/FBM")),
     ("FDK-AAC", include!("text/licenses/FDK-AAC")),
+    ("FDK-MPEG-H", include!("text/licenses/FDK-MPEG-H")),
     ("FSFAP", include!("text/licenses/FSFAP")),
     (
         "FSFAP-no-warranty-disclaimer",
@@ -647,6 +677,10 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("HTMLTIDY", include!("text/licenses/HTMLTIDY")),
     ("HaskellReport", include!("text/licenses/HaskellReport")),
     ("Hippocratic-2.1", include!("text/licenses/Hippocratic-2.1")),
+    (
+        "Hippocratic-3.0-core",
+        include!("text/licenses/Hippocratic-3.0-core"),
+    ),
     ("IBM-pibs", include!("text/licenses/IBM-pibs")),
     ("ICU", include!("text/licenses/ICU")),
     (
@@ -663,6 +697,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("ImageMagick", include!("text/licenses/ImageMagick")),
     ("Imlib2", include!("text/licenses/Imlib2")),
     ("Info-ZIP", include!("text/licenses/Info-ZIP")),
+    ("Informatica", include!("text/licenses/Informatica")),
     ("Inner-Net-2.0", include!("text/licenses/Inner-Net-2.0")),
     ("InnoSetup", include!("text/licenses/InnoSetup")),
     ("Intel", include!("text/licenses/Intel")),
@@ -769,6 +804,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
     ("MS-PL", include!("text/licenses/MS-PL")),
     ("MS-RL", include!("text/licenses/MS-RL")),
     ("MTLL", include!("text/licenses/MTLL")),
+    ("MVT-1.1", include!("text/licenses/MVT-1.1")),
     (
         "Mackerras-3-Clause",
         include!("text/licenses/Mackerras-3-Clause"),
@@ -1063,6 +1099,7 @@ pub const LICENSE_TEXTS: &[(&str, &str)] = &[
         "any-OSI-perl-modules",
         include!("text/licenses/any-OSI-perl-modules"),
     ),
+    ("atc-game", include!("text/licenses/atc-game")),
     (
         "bcrypt-Solar-Designer",
         include!("text/licenses/bcrypt-Solar-Designer"),
@@ -1269,6 +1306,10 @@ pub const EXCEPTION_TEXTS: &[(&str, &str)] = &[
     ),
     ("Gmsh-exception", include!("text/exceptions/Gmsh-exception")),
     (
+        "Google-Patent-WebM",
+        include!("text/exceptions/Google-Patent-WebM"),
+    ),
+    (
         "Independent-modules-exception",
         include!("text/exceptions/Independent-modules-exception"),
     ),
@@ -1342,6 +1383,10 @@ pub const EXCEPTION_TEXTS: &[(&str, &str)] = &[
     (
         "Simple-Library-Usage-exception",
         include!("text/exceptions/Simple-Library-Usage-exception"),
+    ),
+    (
+        "Spelling-Provider-LGPL-exception",
+        include!("text/exceptions/Spelling-Provider-LGPL-exception"),
     ),
     (
         "Swift-exception",

@@ -19,8 +19,8 @@ pub enum CacheError {
 impl std::fmt::Display for CacheError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Io(io) => write!(f, "{io}"),
-            Self::Proto(p) => write!(f, "{p}"),
+            Self::Io(_) => write!(f, "cache I/O error"),
+            Self::Proto(_) => write!(f, "cache format error"),
             Self::InvalidVersion { actual, expected } => {
                 write!(f, "expected version {expected}, but got version {actual}")
             }
@@ -105,7 +105,7 @@ impl std::fmt::Display for ProtoError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::TooLong(tl) => write!(f, "{tl:016x} is too large to fit in a u16"),
-            Self::Utf8(u) => write!(f, "{u}"),
+            Self::Utf8(_) => write!(f, "invalid UTF-8 in cache string"),
         }
     }
 }

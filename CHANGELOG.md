@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.13.6] - 2026-10-02
 ### Fixed
 - [PR#98](https://github.com/EmbarkStudios/spdx/pull/98) cleaned up the error representation.
 
@@ -243,7 +244,8 @@ a user provided callback
 [PR#78]: https://github.com/EmbarkStudios/spdx/pull/78
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.13.5...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.13.6...HEAD
+[0.13.6]: https://github.com/EmbarkStudios/spdx/compare/0.13.5...0.13.6
 [0.13.5]: https://github.com/EmbarkStudios/spdx/compare/0.13.4...0.13.5
 [0.13.4]: https://github.com/EmbarkStudios/spdx/compare/0.13.3...0.13.4
 [0.13.3]: https://github.com/EmbarkStudios/spdx/compare/0.13.2...0.13.3

@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Fixed
+- [PR#98](https://github.com/EmbarkStudios/spdx/pull/98) cleaned up the error representation.
+
+### Changed
+- [PR#97](https://github.com/EmbarkStudios/spdx/pull/97) updated SPDX license list to [3.29.0](https://github.com/spdx/license-list-XML/releases/tag/v3.29.0).
+
 ## [0.13.5] - 2026-08-06
 ### Fixed
 - [PR#96](https://github.com/EmbarkStudios/spdx/pull/96) fixed `LicenseItem`'s `PartialEq` and `PartialOrd` implementations to agree with its total ordering, resolving [#95](https://github.com/EmbarkStudios/spdx/issues/95).

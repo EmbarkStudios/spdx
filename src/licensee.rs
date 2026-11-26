@@ -167,6 +167,23 @@ impl Licensee {
             }
         };
 
+        // Fail if there is any trailing non-whitespace, Licensee only ever has a single license term and optional exception
+        if let offset = lexer.offset()
+            && offset < original.len()
+        {
+            let trailing = &original[offset..];
+            if let Some(non_whitespace) = trailing
+                .char_indices()
+                .find_map(|(ind, c)| (!c.is_whitespace()).then_some(ind))
+            {
+                return Err(ParseError {
+                    original: original.to_owned(),
+                    span: offset + non_whitespace..original.len(),
+                    reason: Reason::Unexpected(&["EOF", "whitespace"]),
+                });
+            }
+        }
+
         Ok(Self {
             inner: LicenseReq { license, addition },
         })
@@ -197,6 +214,13 @@ impl Licensee {
                         |s: &'static str| s.chars().all(|c| c == '.' || c.is_ascii_digit());
 
                     if *or_later {
+                        // At the moment this is the only license with multiple versions that uses this stupid scheme, so
+                        // we just special case it, but if more turn up in the future then it should be generalized
+                        if a.name.starts_with("LPPL-") && b.name.starts_with("LPPL-") {
+                            core::hint::cold_path();
+                            return a.name > b.name;
+                        }
+
                         let mut ai = a.name.split('-');
                         let mut bi = b.name.split('-');
 
@@ -276,7 +300,8 @@ impl AsRef<LicenseReq> for Licensee {
 #[cfg(test)]
 mod test {
     use crate::{
-        AdditionItem, LicenseItem, LicenseRef, LicenseReq, Licensee, exception_id, license_id,
+        AdditionItem, LicenseItem, LicenseRef, LicenseReq, Licensee, ParseError, error::Reason,
+        exception_id, license_id,
     };
     use alloc::{borrow::ToOwned, boxed::Box, vec::Vec};
 
@@ -413,5 +438,43 @@ mod test {
                 o @ LicenseItem::Other { .. } => panic!("unexpected {o:?}"),
             }
         }
+    }
+
+    /// Ensures that we fail when the are trailing tokens after we've parsed a valid Licensee
+    #[test]
+    fn fails_trailing() {
+        assert_eq!(
+            Licensee::parse_mode(
+                "Apache-2.0 WITH LLVM-exception some nonsense",
+                crate::ParseMode::LAX
+            ),
+            Err(ParseError {
+                original: "Apache-2.0 WITH LLVM-exception some nonsense".into(),
+                span: 31..44,
+                reason: Reason::Unexpected(&["EOF", "whitespace"]),
+            })
+        );
+        assert_eq!(
+            Licensee::parse_mode(
+                "Apache-2.0 WITH LLVM-exception OR BSD-2-Clause",
+                crate::ParseMode::LAX
+            ),
+            Err(ParseError {
+                original: "Apache-2.0 WITH LLVM-exception OR BSD-2-Clause".into(),
+                span: 31..46,
+                reason: Reason::Unexpected(&["EOF", "whitespace"]),
+            })
+        );
+        assert_eq!(
+            Licensee::parse_mode(
+                "BSD-2-Clause WITH LLVM-exception AND mit",
+                crate::ParseMode::LAX
+            ),
+            Err(ParseError {
+                original: "BSD-2-Clause WITH LLVM-exception AND mit".into(),
+                span: 33..40,
+                reason: Reason::Unexpected(&["EOF", "whitespace"]),
+            })
+        );
     }
 }

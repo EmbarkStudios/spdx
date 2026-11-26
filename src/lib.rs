@@ -607,10 +607,10 @@ pub fn gnu_license_id(base: &str, or_later: bool) -> Option<LicenseId> {
 #[must_use]
 pub fn imprecise_license_id(name: &str) -> Option<(LicenseId, usize)> {
     for (prefix, correct_name) in identifiers::IMPRECISE_NAMES {
-        if let Some(name_prefix) = name.as_bytes().get(0..prefix.len()) {
-            if prefix.as_bytes().eq_ignore_ascii_case(name_prefix) {
-                return license_id(correct_name).map(|lic| (lic, prefix.len()));
-            }
+        if let Some(name_prefix) = name.as_bytes().get(0..prefix.len())
+            && prefix.as_bytes().eq_ignore_ascii_case(name_prefix)
+        {
+            return license_id(correct_name).map(|lic| (lic, prefix.len()));
         }
     }
     None

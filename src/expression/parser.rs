@@ -69,10 +69,10 @@ impl Expression {
         for tok in lexer {
             let tok = tok?;
 
-            if !matches!(tok.token, Token::Plus) {
-                if let Some(id) = last.take() {
-                    push_id(&mut can, id);
-                }
+            if !matches!(tok.token, Token::Plus)
+                && let Some(id) = last.take()
+            {
+                push_id(&mut can, id);
             }
 
             match tok.token {

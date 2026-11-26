@@ -180,6 +180,12 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    /// Gets the current offset in the string being lexed
+    #[inline]
+    pub fn offset(&self) -> usize {
+        self.offset
+    }
+
     #[inline]
     fn is_ref_char(c: &char) -> bool {
         c.is_ascii_alphanumeric() || *c == '-' || *c == '.'

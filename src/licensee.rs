@@ -214,6 +214,13 @@ impl Licensee {
                         |s: &'static str| s.chars().all(|c| c == '.' || c.is_ascii_digit());
 
                     if *or_later {
+                        // At the moment this is the only license with multiple versions that uses this stupid scheme, so
+                        // we just special case it, but if more turn up in the future then it should be generalized
+                        if a.name.starts_with("LPPL-") && b.name.starts_with("LPPL-") {
+                            core::hint::cold_path();
+                            return a.name > b.name;
+                        }
+
                         let mut ai = a.name.split('-');
                         let mut bi = b.name.split('-');
 

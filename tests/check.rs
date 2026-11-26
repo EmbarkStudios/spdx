@@ -344,7 +344,7 @@ fn gfdl() {
 }
 
 #[test]
-fn bsd() {
+fn bsd_satisfies() {
     check!("BSD-1-Clause+" => [
         true => |req| exact!(req, "BSD-1-Clause"),
         true => |req| exact!(req, "BSD-2-Clause"),
@@ -352,6 +352,46 @@ fn bsd() {
         false => |req| exact!(req, "BSD-2-Clause-Darwin"),
         false => |req| exact!(req, "BSD-2-Clause-pkgconf-disclaimer"),
         false => |req| exact!(req, "BSD-3-Clause-flex"),
+    ]);
+}
+
+/// LPPL 1.3 introduces the stupid alphabetic versioning for some reason
+#[test]
+fn lppl_satisfies() {
+    check!("LPPL-1.0+" => [
+        true => |req| exact!(req, "LPPL-1.0"),
+        true => |req| exact!(req, "LPPL-1.1"),
+        true => |req| exact!(req, "LPPL-1.2"),
+        true => |req| exact!(req, "LPPL-1.3a"),
+        true => |req| exact!(req, "LPPL-1.3c"),
+    ]);
+    check!("LPPL-1.1+" => [
+        false => |req| exact!(req, "LPPL-1.0"),
+        true => |req| exact!(req, "LPPL-1.1"),
+        true => |req| exact!(req, "LPPL-1.2"),
+        true => |req| exact!(req, "LPPL-1.3a"),
+        true => |req| exact!(req, "LPPL-1.3c"),
+    ]);
+    check!("LPPL-1.2+" => [
+        false => |req| exact!(req, "LPPL-1.0"),
+        false => |req| exact!(req, "LPPL-1.1"),
+        true => |req| exact!(req, "LPPL-1.2"),
+        true => |req| exact!(req, "LPPL-1.3a"),
+        true => |req| exact!(req, "LPPL-1.3c"),
+    ]);
+    check!("LPPL-1.3a+" => [
+        false => |req| exact!(req, "LPPL-1.0"),
+        false => |req| exact!(req, "LPPL-1.1"),
+        false => |req| exact!(req, "LPPL-1.2"),
+        true => |req| exact!(req, "LPPL-1.3a"),
+        true => |req| exact!(req, "LPPL-1.3c"),
+    ]);
+    check!("LPPL-1.3c+" => [
+        false => |req| exact!(req, "LPPL-1.0"),
+        false => |req| exact!(req, "LPPL-1.1"),
+        false => |req| exact!(req, "LPPL-1.2"),
+        false => |req| exact!(req, "LPPL-1.3a"),
+        true => |req| exact!(req, "LPPL-1.3c"),
     ]);
 }
 

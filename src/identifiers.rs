@@ -5,7 +5,7 @@
  * DO NOT MODIFY
  *
  * cargo run --manifest-path update/Cargo.toml -- v<version> > src/identifiers.rs
-*/
+ */
 
 use crate::flags::*;
 use crate::{Exception, License};

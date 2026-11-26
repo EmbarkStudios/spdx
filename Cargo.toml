@@ -8,7 +8,6 @@ authors = [
 description = "Helper crate for SPDX expressions"
 edition = "2024"
 rust-version = "1.85.0"
-homepage = "https://github.com/EmbarkStudios/spdx"
 documentation = "https://docs.rs/spdx"
 readme = "README.md"
 keywords = ["spdx", "license"]
@@ -40,7 +39,10 @@ detection-parallel = ["std", "detection", "rayon"]
 
 [dependencies]
 rayon = { version = "1.11", optional = true }
-regex = { version = "1.12", optional = true, default-features = false, features = ["perf", "unicode"] }
+regex = { version = "1.12", optional = true, default-features = false, features = [
+    "perf",
+    "unicode",
+] }
 # In most cases expressions are quite small so we can avoid heap allocations
 smallvec = "1.15"
 unicode-normalization = { version = "0.1", optional = true }

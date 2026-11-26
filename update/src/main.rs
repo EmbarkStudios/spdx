@@ -532,7 +532,7 @@ fn real_main() -> Result<()> {
  * DO NOT MODIFY
  *
  * cargo run --manifest-path update/Cargo.toml -- v<version> > src/identifiers.rs
-*/",
+ */",
             upstream_tag
         )?;
 

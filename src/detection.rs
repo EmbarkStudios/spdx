@@ -11,7 +11,7 @@
 use std::collections::HashMap;
 
 #[cfg(feature = "detection-cache")]
-mod cache;
+pub mod cache;
 mod detect;
 #[cfg(feature = "detection-inline-cache")]
 mod inline_cache;

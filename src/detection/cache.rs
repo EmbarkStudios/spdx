@@ -1,18 +1,26 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+//! Types for loading a zstd-compressed cache of the SPDX license list
+
 use crate::detection::{LicenseEntry, Store, license::TextData, ngram::NgramSet};
 use std::io;
 
 const CACHE_VERSION: &str = "spdx-crate-01";
 
+/// Errors that can occur when loading a cache
 #[derive(Debug)]
 pub enum CacheError {
+    /// An I/O error occurred reading the cache contents
     Io(io::Error),
+    /// The cache version was invalid or unknown
     InvalidVersion {
+        /// The version we tried to parse
         actual: String,
+        /// The expected version
         expected: &'static str,
     },
+    /// Failed to deserialize the contents of the cache
     Proto(ProtoError),
 }
 
@@ -95,9 +103,12 @@ impl Store {
     }
 }
 
+/// An error that can occur deserializing the cache
 #[derive(Debug)]
 pub enum ProtoError {
+    /// The element count was larger than `u16::MAX`
     TooLong(usize),
+    /// Expected a utf-8 string that failed to decode
     Utf8(std::string::FromUtf8Error),
 }
 

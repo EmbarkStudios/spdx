@@ -1,7 +1,9 @@
+[graph]
+all-features = true
+
 [advisories]
 yanked = "deny"
-ignore = [
-]
+ignore = []
 
 [bans]
 multiple-versions = "deny"
@@ -9,7 +11,5 @@ multiple-versions = "deny"
 [licenses]
 # We want really high confidence when inferring licenses from text
 confidence-threshold = 0.92
-allow = [
-    "Apache-2.0",
-    "MIT",
-]
+allow = ["Apache-2.0", "MIT", "BSD-2-Clause", "BSD-3-Clause"]
+exceptions = [{ crate = "unicode-normalization", allow = ["Unicode-3.0"] }]

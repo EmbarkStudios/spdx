@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+### Fixed
+- [PR#103](https://github.com/EmbarkStudios/spdx/pull/103) resolved [#99](https://github.com/EmbarkStudios/spdx/issues/99) by making `spdx::detection::cache` pub.
+- [PR#104](https://github.com/EmbarkStudios/spdx/pull/104) resolved [#101](https://github.com/EmbarkStudios/spdx/issues/101) by returning a parse error if there were any non-whitespace tokens after the optional `WITH <exception-id>` when parsing a `Licensee`.
+- [PR#104](https://github.com/EmbarkStudios/spdx/pull/104) resolved [#101](https://github.com/EmbarkStudios/spdx/issues/102) by special casing the very annoying `LPPL-1.3*` licenses in `Licensee::satisifies`.
+
 ## [0.13.6] - 2026-10-02
 ### Fixed
 - [PR#98](https://github.com/EmbarkStudios/spdx/pull/98) cleaned up the error representation.

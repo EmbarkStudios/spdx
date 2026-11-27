@@ -267,7 +267,7 @@ checksum = "3244542535d5de959d90ec55d1b5ff0fd2bb7b1310223907d5f11932847f7b59"
 
 [[package]]
 name = "spdx"
-version = "0.13.6"
+version = "0.13.7"
 dependencies = [
  "rayon",
  "regex",

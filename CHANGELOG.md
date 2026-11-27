@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
+## [0.13.7] - 2026-11-27
 ### Fixed
 - [PR#103](https://github.com/EmbarkStudios/spdx/pull/103) resolved [#99](https://github.com/EmbarkStudios/spdx/issues/99) by making `spdx::detection::cache` pub.
 - [PR#104](https://github.com/EmbarkStudios/spdx/pull/104) resolved [#101](https://github.com/EmbarkStudios/spdx/issues/101) by returning a parse error if there were any non-whitespace tokens after the optional `WITH <exception-id>` when parsing a `Licensee`.
@@ -249,7 +250,8 @@ a user provided callback
 [PR#78]: https://github.com/EmbarkStudios/spdx/pull/78
 
 <!-- next-url -->
-[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.13.6...HEAD
+[Unreleased]: https://github.com/EmbarkStudios/spdx/compare/0.13.7...HEAD
+[0.13.7]: https://github.com/EmbarkStudios/spdx/compare/0.13.6...0.13.7
 [0.13.6]: https://github.com/EmbarkStudios/spdx/compare/0.13.5...0.13.6
 [0.13.5]: https://github.com/EmbarkStudios/spdx/compare/0.13.4...0.13.5
 [0.13.4]: https://github.com/EmbarkStudios/spdx/compare/0.13.3...0.13.4
